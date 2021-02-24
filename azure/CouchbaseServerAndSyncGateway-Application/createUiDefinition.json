@@ -278,7 +278,11 @@
                 {
                   "label": "6.6.0",
                   "value": "6.6.0"
-                },   
+                },
+                {
+                  "label": "6.5.2",
+                  "value": "6.5.2"
+                },    
                 {
                   "label": "6.5.1",
                   "value": "6.5.1"
@@ -306,51 +310,7 @@
                 {
                   "label": "6.0.0",
                   "value": "6.0.0"
-                },                
-                {
-                  "label": "5.5.4",
-                  "value": "5.5.4"
-                },                
-                {
-                  "label": "5.5.3",
-                  "value": "5.5.3"
-                },                
-                {
-                  "label": "5.5.2",
-                  "value": "5.5.2"
-                },                
-                {
-                  "label": "5.5.1",
-                  "value": "5.5.1"
-                },                
-                {
-                  "label": "5.5.0",
-                  "value": "5.5.0"
-                },                
-                {
-                  "label": "5.1.3",
-                  "value": "5.1.3"
-                },                
-                {
-                  "label": "5.1.2",
-                  "value": "5.1.2"
-                },                
-                {
-                  "label": "5.1.1",
-                  "value": "5.1.1"
-                },                
-                {
-                  "label": "5.1.0",
-                  "value": "5.1.0"
-                },                
-                {
-                  "label": "5.0.1",
-                  "value": "5.0.1"
-                },                
-                {
-                  "label": "5.0.0",
-                  "value": "5.0.0"
-                }                
+                }               
               ]
             }
           },
@@ -358,7 +318,7 @@
             "name": "syncGatewayNodeCount",
             "type": "Microsoft.Common.DropDown",
             "label": "Sync Gateway Node Count",
-            "defaultValue": "2",
+            "defaultValue": "0",
             "toolTip": "Number of virtual machines to provision for Sync Gateway cluster",
             "constraints": {
               "allowedValues": [
