@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-  "handler": "Microsoft.Compute.MultiVm",
+  "handler": "Microsoft.Azure.CreateUIDef",
   "version": "0.1.2-preview",
   "parameters": {
     "basics": [
@@ -27,7 +27,44 @@
         "options": {
           "hideConfirmation": false
         }
-      }
+      },
+	  {
+		"name": "virtualNetwork",
+		"type": "Microsoft.Network.VirtualNetworkCombo",
+		"label": {
+			"virtualNetwork": "Virtual network",
+			"subnets": "Subnets"
+		},
+		"toolTip": {
+			"virtualNetwork": "",
+			"subnets": ""
+		},
+		"defaultValue": {
+			"name": "Couchbase-Vnet",
+			"addressPrefixSize": "/16"
+		},
+		"constraints": {
+			"minAddressPrefixSize": "/24"
+		},
+		"options": {
+			"hideExisting": false
+		},
+		"subnets": {
+			"subnet1": {
+				"label": "CouchbaseSubnet",
+				"defaultValue": {
+					"name": "CouchbaseSubnet",
+					"addressPrefixSize": "/24"
+				},
+				"constraints": {
+					"minAddressPrefixSize": "/24",
+					"minAddressCount": 3,
+					"requireContiguousAddresses": false
+				}
+			}
+		},
+		"visible": true
+		}
     ],
     "steps": [
       {
@@ -544,7 +581,8 @@
       "syncGatewayNodeCount": "[steps('couchbaseConfig').syncGatewayNodeCount]",
       "syncGatewayVersion": "[steps('couchbaseConfig').syncGatewayVersion]",
       "vmSize": "[steps('couchbaseConfig').vmSize]",
-      "location": "[location()]"
+      "location": "[location()]",
+	  "vnet": "[basics('virtualNetwork')]"
     }
   }
 }

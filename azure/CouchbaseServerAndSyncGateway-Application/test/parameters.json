@@ -6,13 +6,13 @@
       "value": 30
     },
     "serverVersion": {
-      "value": "6.6.1"
+      "value": "6.6.2"
     },
     "syncGatewayNodeCount": {
       "value": 2
     },
     "syncGatewayVersion": {
-      "value": "2.8.1"
+      "value": "2.8.2"
     },
     "vmSize": {
       "value": "Standard_DS3_v2"
@@ -25,6 +25,24 @@
     },
     "location": {
       "value": "eastus"
+    },
+    "vnet": {
+      "value": {
+        "name": "Couchbase-Vnet",
+        "resourceGroup": "ja-test-1",
+        "addressPrefixes": [
+          "10.32.0.0/16"
+        ],
+        "addressPrefix": "10.32.0.0/16",
+        "newOrExisting": "new",
+        "subnets": {
+          "subnet1": {
+            "name": "CouchbaseSubnet",
+            "addressPrefix": "10.32.0.0/24",
+            "startAddress": "10.32.0.4"
+          }
+        }
+      }
     },
     "license": {
       "value": "byol_2019"

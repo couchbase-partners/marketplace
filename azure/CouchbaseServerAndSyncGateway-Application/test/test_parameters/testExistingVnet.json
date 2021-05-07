@@ -9,7 +9,7 @@
       "value": "6.6.2"
     },
     "syncGatewayNodeCount": {
-      "value": 0
+      "value": 2
     },
     "syncGatewayVersion": {
       "value": "2.8.2"
@@ -28,16 +28,16 @@
     },
     "vnet": {
       "value": {
-        "name": "Couchbase-Vnet",
+        "name": "cbtestvnet",
         "resourceGroup": "ja-test-1",
         "addressPrefixes": [
           "10.32.0.0/16"
         ],
         "addressPrefix": "10.32.0.0/16",
-        "newOrExisting": "new",
+        "newOrExisting": "existing",
         "subnets": {
           "subnet1": {
-            "name": "CouchbaseSubnet",
+            "name": "cb-test",
             "addressPrefix": "10.32.0.0/24",
             "startAddress": "10.32.0.4"
           }
@@ -46,7 +46,7 @@
     },
     "license": {
       "value": "byol_2019"
-    },    
+    },
     "publisher": {
       "value": "couchbase"
     },
@@ -61,10 +61,10 @@
     },
     "sync_gateway_image_version": {
       "value": "18.4.0"
-    },
+    },    
     "sync_gateway_sku": {
       "value": "byol_2019"
-    },    
+    },
     "_artifactsLocation": {
       "value": "https://github.com/couchbase-partners/marketplace-scripts/releases/latest/download/"
     },
