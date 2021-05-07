@@ -278,6 +278,14 @@
                   "Ref": "ServerInstanceCount"
               }
           },
+          "CreationPolicy": {
+            "ResourceSignal": {
+                "Count": {
+                    "Ref": "ServerInstanceCount"
+                },
+                "Timeout": "PT15M"
+            }
+          },
           "DependsOn": ["UsernameParameter", "PasswordParameter"]
       },
       "ServerLaunchConfiguration": {
@@ -347,6 +355,14 @@
               "DesiredCapacity": {
                   "Ref": "SyncGatewayInstanceCount"
               }
+          },
+          "CreationPolicy": {
+            "ResourceSignal": {
+                "Count": {
+                    "Ref": "SyncGatewayInstanceCount"
+                },
+                "Timeout": "PT15M"
+            }
           },
           "DependsOn": ["UsernameParameter", "PasswordParameter"]
       },

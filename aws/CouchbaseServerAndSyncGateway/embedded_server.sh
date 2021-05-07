@@ -2,7 +2,7 @@
 
 set -x
 echo "Beginning"
-yum install jq -y -q
+yum install jq aws-cfn-bootstrap -y -q
 #These values will be replaced with appropriate values during compilation into the Cloud Formation Template
 #To run directly, simply set values prior to executing script.  Any variable with $__ prefix and __ suffix will
 #get replaced during compliation
@@ -15,6 +15,7 @@ VERSION=$__ServerVersion__
 
 region=$(ec2-metadata -z | cut -d " " -f 2 | sed 's/.$//')
 instanceId=$(ec2-metadata -i | cut -d " " -f 2)
+resource="ServerAutoScalingGroup"
 
 USERNAME=$(aws ssm get-parameter --with-decryption --name  "/${stackName}/cb_username" --region "$region" | jq -r '.Parameter.Value')
 PASSWORD=$(aws ssm get-parameter --with-decryption --name  "/${stackName}/cb_password" --region "$region" | jq -r '.Parameter.Value')
@@ -76,3 +77,5 @@ if [[ ! -e "couchbase_installer.sh" ]]; then
 fi
 
 bash ./couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d
+# Calls back to AWS to signify that installation is complete
+/opt/aws/bin/cfn-signal -e 0 --stack "$stackName" --resource "$resource" --region "$region"
