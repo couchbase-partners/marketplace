@@ -72,6 +72,7 @@
             "Type": "String",
             "Default": "7.0.0",
             "AllowedValues": [
+                "6.6.3",
                 "6.6.2",
                 "6.6.1",
                 "6.6.0",
