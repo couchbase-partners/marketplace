@@ -61,10 +61,24 @@ rallyPublicDNS=$(aws ec2 describe-instances \
                                  --query  'Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicDnsName' \
                                  --instance-ids "${rallyInstanceID}" \
                  --output text)
-if [[ "$rallyPublicDNS" == "None" ]]; then
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
+rallyPublicDNS=$(aws ec2 describe-instances \
+                            --region "${region}" \
+                                 --query  'Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp' \
+                                 --instance-ids "${rallyInstanceID}" \
+                 --output text)
+fi
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
    rallyPublicDNS=$(aws ec2 describe-instances \
                             --region "${region}" \
                                  --query  'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateDnsName' \
+                                 --instance-ids "${rallyInstanceID}" \
+                 --output text)
+fi
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
+rallyPublicDNS=$(aws ec2 describe-instances \
+                            --region "${region}" \
+                                 --query  'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress' \
                                  --instance-ids "${rallyInstanceID}" \
                  --output text)
 fi
