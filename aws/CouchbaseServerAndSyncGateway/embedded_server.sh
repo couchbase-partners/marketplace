@@ -52,10 +52,24 @@ rallyPublicDNS=$(aws ec2 describe-instances \
                                  --query  'Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicDnsName' \
                                  --instance-ids "${rallyInstanceID}" \
                  --output text)
-if [[ "$rallyPublicDNS" == "None" ]]; then
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
+rallyPublicDNS=$(aws ec2 describe-instances \
+                            --region "${region}" \
+                                 --query  'Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp' \
+                                 --instance-ids "${rallyInstanceID}" \
+                 --output text)
+fi
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
    rallyPublicDNS=$(aws ec2 describe-instances \
                             --region "${region}" \
                                  --query  'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateDnsName' \
+                                 --instance-ids "${rallyInstanceID}" \
+                 --output text)
+fi
+if [[ -z "$rallyPublicDNS" || "$rallyPublicDNS" == "None" ]]; then
+rallyPublicDNS=$(aws ec2 describe-instances \
+                            --region "${region}" \
+                                 --query  'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress' \
                                  --instance-ids "${rallyInstanceID}" \
                  --output text)
 fi
@@ -80,9 +94,9 @@ else
 fi
 
 CLUSTER_HOST=$rallyPublicDNS
-# https://github.com/couchbase-partners/marketplace-scripts/releases/download/v1.0.10/couchbase_installer.sh gets replaced during build
+# __SCRIPT_URL__ gets replaced during build
 if [[ ! -e "couchbase_installer.sh" ]]; then
-    curl -L --output "couchbase_installer.sh" "https://github.com/couchbase-partners/marketplace-scripts/releases/download/v1.0.10/couchbase_installer.sh"
+    curl -L --output "couchbase_installer.sh" "__SCRIPT_URL__"
 fi
 
 if bash ./couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d; then

@@ -4,6 +4,12 @@ const fs = require("fs"),
       readline = require("readline");
 let template = JSON.parse(fs.readFileSync(__dirname + "/couchbase-amzn-lnx2.template", "utf-8"));
 const replacementRegex = /\$__\w*__/g
+const scriptURLReplacementRegex = /__SCRIPT_URL__/g
+
+
+function swapInScriptUrl(line) {
+    return line.replace(scriptURLReplacementRegex, script_url) + "\n"
+}
 
 async function processEmbeddedLines(file) {
     let lines = [];
@@ -15,6 +21,8 @@ async function processEmbeddedLines(file) {
     for await (const line of reader) {
         if (line.match(replacementRegex)) {
             lines.push(...performReplacement(line));
+        } else if (line.match(scriptURLReplacementRegex)) {
+            lines.push(swapInScriptUrl(line));
         } else {
             lines.push(line + "\n");
         }
@@ -56,6 +64,12 @@ if (!args[0] || args[0] === "" || !fs.existsSync(args[0])) {
 }
 const mapping = JSON.parse(fs.readFileSync(args[0], "utf-8"));
 template.Mappings = mapping;
+if (args[1] && args[1] == "" && !fs.existsSync(args[1])) {
+    console.error("You must specify the location of the script_url.txt file.")
+    process.exit(1)
+}
+
+const script_url = fs.readFileSync(args[1], "utf-8")
 
 processEmbeddedLines(__dirname + '/embedded_server.sh').then(t => {
     template.Resources.ServerLaunchTemplate.Properties.LaunchTemplateData.UserData = t;
