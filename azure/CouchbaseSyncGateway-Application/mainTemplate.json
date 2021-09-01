@@ -1,0 +1,462 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "syncGatewayNodeCount": {
+      "type": "int"
+    },
+    "syncGatewayVersion": {
+      "type": "string"
+    },
+    "couchbaseServerUrl": {
+      "type": "string"
+    },
+    "couchbaseUser": {
+      "type": "string"
+    },
+    "couchbasePassword": {
+      "type": "string"
+    },
+    "couchbaseDatabaseName": {
+      "type": "string"
+    },
+    "couchbaseBucket": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "vnet": {
+      "type": "object",
+      "defaultValue": {
+        "value": {
+          "name": "Couchbase-Vnet",
+          "resourceGroup": "",
+          "addressPrefixes": [
+            "10.32.0.0/16"
+          ],
+          "addressPrefix": "10.32.0.0/16",
+          "newOrExisting": "new",
+          "subnets": {
+            "subnet1": {
+              "name": "CouchbaseSubnet",
+              "addressPrefix": "10.32.0.0/24",
+              "startAddress": "10.32.0.4"
+            }
+          }
+        }
+      }
+    },
+    "publisher": {
+      "type": "string",
+      "defaultValue": "<<PUBLISHER>>"
+    },
+    "sync_gateway_offer": {
+      "type": "string",
+      "defaultValue": "<<SYNC_GATEWAY_OFFER>>"
+    },
+    "sync_gateway_image_version": {
+      "type": "string",
+      "defaultValue": "<<SYNC_GATEWAY_IMAGE_VERSION>>"
+    },
+    "sync_gateway_sku": {
+      "type": "string",
+      "defaultValue": "<<SYNC_GATEWAY_SKU>>"
+    }
+  },
+  "functions": [
+    {
+      "namespace": "couchbase",
+      "members": {
+        "generateResourceName": {
+          "parameters": [
+            {
+              "name": "resource",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat('cb-', parameters('resource'), '-', uniquestring(resourceGroup().id, deployment().name))]"
+          }
+        }
+      }
+    }
+  ],
+  "variables": {
+    "scriptValue": ""
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[couchbase.generateResourceName('networkSecurityGroups')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "SyncGateway",
+            "properties": {
+              "description": "Sync Gateway",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4984-4985",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Server",
+            "properties": {
+              "description": "Server",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "8091-8096",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('vnet').name]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "condition": "[equals(parameters('vnet').newOrExisting, 'new')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": "[parameters('vnet').addressPrefixes]"
+        },
+        "subnets": [
+          {
+            "name": "[parameters('vnet').subnets.subnet1.name]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet').subnets.subnet1.addressPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[couchbase.generateResourceName('sg-lb-ip')]",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[couchbase.generateResourceName('sg-lb-ip-outbound')]",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[couchbase.generateResourceName('sg-lb')]",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIpAddresses', couchbase.generateResourceName('sg-lb-ip'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', couchbase.generateResourceName('sg-lb-ip-outbound'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-front-end')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', couchbase.generateResourceName('sg-lb-ip'))]"
+              }
+            }
+          },
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-front-end-outbound')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', couchbase.generateResourceName('sg-lb-ip-outbound'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-backend-pool-name')]"
+          },
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-backend-pool-outbound-name')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-rule-base-api')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-front-end'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',couchbase.generateResourceName('sg-lb'),couchbase.generateResourceName('sg-lb-backend-pool-name'))]"
+              },
+              "frontendPort": 4984,
+              "backendPort": 4984,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 15,
+              "protocol": "Tcp",
+              "enableTcpReset": true,
+              "loadDistribution": "Default",
+              "disableOutboundSnat": true,
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', couchbase.generateResourceName('sg-lb'),'base-api')]"
+              }
+            }
+          },
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-rule-admin-api')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations',couchbase.generateResourceName('sg-lb'),couchbase.generateResourceName('sg-lb-front-end'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',couchbase.generateResourceName('sg-lb'),couchbase.generateResourceName('sg-lb-backend-pool-name'))]"
+              },
+              "frontendPort": 4985,
+              "backendPort": 4985,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 15,
+              "protocol": "Tcp",
+              "enableTcpReset": true,
+              "loadDistribution": "Default",
+              "disableOutboundSnat": true,
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', couchbase.generateResourceName('sg-lb'), 'admin-api')]"
+              }
+            }
+          },
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-rule-metrics')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations',couchbase.generateResourceName('sg-lb'),couchbase.generateResourceName('sg-lb-front-end'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-backend-pool-name'))]"
+              },
+              "frontendPort": 4986,
+              "backendPort": 4986,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 15,
+              "protocol": "Tcp",
+              "enableTcpReset": true,
+              "loadDistribution": "Default",
+              "disableOutboundSnat": true,
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', couchbase.generateResourceName('sg-lb'), 'metrics-api')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "base-api",
+            "properties": {
+              "protocol": "Http",
+              "port": 4984,
+              "requestPath": "/",
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            }
+          },
+          {
+            "name": "admin-api",
+            "properties": {
+              "protocol": "Http",
+              "port": 4985,
+              "requestPath": "/",
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            }
+          },
+          {
+            "name": "metrics-api",
+            "properties": {
+              "protocol": "Http",
+              "port": 4986,
+              "requestPath": "/",
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            }
+          }
+        ],
+        "outboundRules": [
+          {
+            "name": "[couchbase.generateResourceName('sg-lb-outbound-rule')]",
+            "properties": {
+              "allocatedOutboundPorts": 10000,
+              "protocol": "All",
+              "enableTcpReset": false,
+              "idleTimeoutInMinutes": 15,
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-backend-pool-outbound-name'))]"
+              },
+              "frontendIPConfigurations": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations',couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-front-end-outbound'))]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[couchbase.generateResourceName('syncgateway')]",
+      "location": "[parameters('location')]",
+      "apiVersion": "2019-03-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
+        "[resourceId('Microsoft.Network/loadBalancers', couchbase.generateResourceName('sg-lb'))]"
+      ],
+      "plan": {
+        "publisher": "[parameters('publisher')]",
+        "product": "[parameters('sync_gateway_offer')]",
+        "name": "[parameters('sync_gateway_sku')]"
+      },
+      "sku": {
+        "name": "[parameters('vmSize')]",
+        "tier": "Standard",
+        "capacity": "[parameters('syncGatewayNodeCount')]"
+      },
+      "properties": {
+        "overprovision": false,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "[parameters('publisher')]",
+              "offer": "[parameters('sync_gateway_offer')]",
+              "sku": "[parameters('sync_gateway_sku')]",
+              "version": "[parameters('sync_gateway_image_version')]"
+            }
+          },
+          "osProfile": {
+            "computerNamePrefix": "[couchbase.generateResourceName('syncgateway')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "[couchbase.generateResourceName('syncgateway-nic')]",
+                "properties": {
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "[couchbase.generateResourceName('syncgateway-ipconfig')]",
+                      "properties": {
+                        "subnet": {
+                          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name, parameters('vnet').subnets.subnet1.name)]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-backend-pool-name'))]"
+                          },
+                          {
+                            "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', couchbase.generateResourceName('sg-lb'), couchbase.generateResourceName('sg-lb-backend-pool-outbound-name'))]"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups'))]"
+                  }
+                }
+              }
+            ]
+          },
+          "extensionProfile": {
+            "extensions": [
+              {
+                "name": "[couchbase.generateResourceName('syncgateway-extension')]",
+                "properties": {
+                  "publisher": "Microsoft.Azure.Extensions",
+                  "type": "CustomScript",
+                  "typeHandlerVersion": "2.0",
+                  "autoUpgradeMinorVersion": true,
+                  "protectedSettings": {
+                    "script": "[base64(variables('scriptValue'))]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "syncGatewayAdminURL": {
+      "type": "string",
+      "value": "[concat('http://', reference(resourceId('Microsoft.Network/publicIPAddresses', couchbase.generateResourceName('sg-lb-ip'))).ipAddress, ':4985/_admin/', 'n/a')]"
+    }
+  }
+}

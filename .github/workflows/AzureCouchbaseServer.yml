@@ -1,0 +1,52 @@
+name: Azure - CouchbaseServer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "azure/CouchbaseServer-Application/**"
+  workflow_dispatch:
+jobs:
+  AzureLaunch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Echo $GITHUB_WORKSPACE
+        run: echo "$GITHUB_WORKSPACE"
+      - name: Deploy To Azure
+        timeout-minutes: 15
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/parameters.json -g cb-mkt-test-byol -n ga-cbs-app-byol
+      - name: Teardown From Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-test-byol -s
+  AzureLaunchHourly:
+    runs-on: ubuntu-latest
+    needs: AzureLaunch
+    steps:
+      - uses: actions/checkout@v2
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Echo $GITHUB_WORKSPACE
+        run: echo "$GITHUB_WORKSPACE"
+      - name: Deploy To Azure
+        timeout-minutes: 15
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/test_parameters/HourlyPricing.json -g cb-mkt-test-byol -n ga-cbs-sg-app-hourly-two
+      - name: Teardown From Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-test-byol -s

@@ -1,0 +1,422 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serverNodeCount": {
+      "type": "int"
+    },
+    "serverDiskSize": {
+      "type": "int"
+    },
+    "serverVersion": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "vnet": {
+      "type": "object",
+      "defaultValue": {
+        "value": {
+          "name": "Couchbase-Vnet",
+          "resourceGroup": "",
+          "addressPrefixes": [
+            "10.32.0.0/16"
+          ],
+          "addressPrefix": "10.32.0.0/16",
+          "newOrExisting": "new",
+          "subnets": {
+            "subnet1": {
+              "name": "CouchbaseSubnet",
+              "addressPrefix": "10.32.0.0/24",
+              "startAddress": "10.32.0.4"
+            }
+          }
+        }
+      }
+    },
+    "license": {
+      "type": "string",
+      "defaultValue": "<<LICENSE>>"
+    },
+    "publisher": {
+      "type": "string",
+      "defaultValue": "<<PUBLISHER>>"
+    },
+    "offer": {
+      "type": "string",
+      "defaultValue": "<<OFFER>>"
+    },
+    "image_version": {
+      "type": "string",
+      "defaultValue": "<<IMAGE_VERSION>>"
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+      },
+      "defaultValue": "[deployment().properties.templateLink.uri]"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+          "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
+      },
+      "defaultValue": ""
+   }
+  },
+  "functions":[
+      {
+        "namespace": "couchbase",
+        "members": {
+            "generateResourceName": {
+                "parameters": [{
+                  "name": "resource",
+                  "type": "string"
+                }],
+                "output": {
+                  "type": "string",
+                  "value": "[
+                              concat(
+                                      'cb-', 
+                                      parameters('resource'),
+                                      '-', 
+                                      uniquestring(resourceGroup().id, deployment().name)
+                                    )
+                            ]"
+                }
+          }
+        }
+    }
+  ],
+  "variables": {
+    "uniqueString": "[uniquestring(resourceGroup().id, deployment().name)]",
+    "serverPubIP": "[
+                      concat(
+                        resourceGroup().id, 
+                        '/providers/Microsoft.Compute/virtualMachineScaleSets/',
+                        couchbase.generateResourceName('server'), 
+                        '/virtualMachines/0/networkInterfaces/',
+                        couchbase.generateResourceName('server-nic'),
+                        '/ipConfigurations/',
+                        couchbase.generateResourceName('server-ipconfig'),
+                        '/publicIPAddresses/',
+                        couchbase.generateResourceName('server-public-ip')
+                      )
+                    ]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-11-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[couchbase.generateResourceName('networkSecurityGroups')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ErlangPortMapper",
+            "properties": {
+              "description": "Erlang Port Mapper (epmd)",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4369",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Server",
+            "properties": {
+              "description": "Server",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "8091-8096",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Index",
+            "properties": {
+              "description": "Index",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9100-9105",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 104,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Analytics",
+            "properties": {
+              "description": "Analytics",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9110-9122",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 105,
+              "direction": "Inbound"
+            }
+          },          
+          {
+            "name": "FTSGrpcPort",
+            "properties": {
+              "description": "FTSGrpcPort",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9130",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "Internal",
+            "properties": {
+              "description": "Internal",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "9998-9999",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 106,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "XDCR",
+            "properties": {
+              "description": "XDCR",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "11207-11215",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 107,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "SSL",
+            "properties": {
+              "description": "SSL",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "18091-18096",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 108,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "NodeDataExchange",
+            "properties": {
+              "description": "Node data exchange",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "21100-21299",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 109,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('vnet').name]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "condition": "[equals(parameters('vnet').newOrExisting, 'new')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": "[parameters('vnet').addressPrefixes]"
+        },
+        "subnets": [
+          {
+            "name": "[parameters('vnet').subnets.subnet1.name]",
+            "properties": {
+              "addressPrefix": "[parameters('vnet').subnets.subnet1.addressPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[couchbase.generateResourceName('server')]",
+      "location": "[parameters('location')]",
+      "apiVersion": "2019-03-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]"
+      ],
+      "plan": {
+        "publisher": "[parameters('publisher')]",
+        "product": "[parameters('offer')]",
+        "name": "[parameters('license')]"
+      },
+      "sku": {
+        "name": "[parameters('vmSize')]",
+        "tier": "Standard",
+        "capacity": "[parameters('serverNodeCount')]"
+      },
+      "properties": {
+        "overprovision": false,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "[parameters('publisher')]",
+              "offer": "[parameters('offer')]",
+              "sku": "[parameters('license')]",
+              "version": "[parameters('image_version')]"
+            },
+            "dataDisks": [
+              {
+                "lun": 0,
+                "createOption": "Empty",
+                "managedDisk": {
+                  "storageAccountType": "Premium_LRS"
+                },
+                "caching": "None",
+                "diskSizeGB": "[parameters('serverDiskSize')]"
+              }
+            ]
+          },
+          "osProfile": {
+            "computerNamePrefix": "[couchbase.generateResourceName('server')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "[couchbase.generateResourceName('server-nic')]",
+                "properties": {
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "[couchbase.generateResourceName('server-ipconfig')]",
+                      "properties": {
+                        "subnet": {
+                          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name ,parameters('vnet').subnets.subnet1.name)]"
+                        },
+                        "publicipaddressconfiguration": {
+                          "name": "[couchbase.generateResourceName('server-public-ip')]",
+                          "properties": {
+                            "idleTimeoutInMinutes": 30,
+                            "dnsSettings": {
+                              "domainNameLabel": "[concat('server-', variables('uniqueString'))]"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "extensionProfile": {
+            "extensions": [
+              {
+                "name": "[couchbase.generateResourceName('server-extension')]",
+                "properties": {
+                  "publisher": "Microsoft.Azure.Extensions",
+                  "type": "CustomScript",
+                  "typeHandlerVersion": "2.0",
+                  "autoUpgradeMinorVersion": true,
+                  "settings": {
+                    "fileUris": [
+                      "[uri(parameters('_artifactsLocation'), concat('couchbase_installer.sh', parameters('_artifactsLocationSasToken')))]"
+                    ]
+                  },
+                  "protectedSettings": {
+                      "commandToExecute": "[
+                                             concat(
+                                              'bash couchbase_installer.sh -v ',
+                                              parameters('serverVersion'),
+                                              ' -u ',
+                                              parameters('adminUsername'),
+                                              ' -p ',
+                                              parameters('adminPassword'),
+                                              ' -ch ',
+                                              concat(
+                                                couchbase.generateResourceName('server'),
+                                                '000000'
+                                              ),
+                                              ' -os UBUNTU -c -e AZURE -d'
+                                            )
+                                          ]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "serverAdminURL": {
+      "type": "string",
+      "value": "[concat('http://', reference(variables('serverPubIP'), '2017-03-30').dnsSettings.fqdn, ':8091')]"
+    }
+  }
+}
