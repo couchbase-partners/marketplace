@@ -38,36 +38,36 @@ if [[ ! -e "/setup/couchbase_installer.sh" ]]; then
 fi
 
 bash /setup/couchbase_installer.sh -ch "http://localhost:8091" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -c -d -g
-echo "
+cat << _EOF > /home/sync_gateway.json
 {
-  \"interface\":\"0.0.0.0:4984\",
-  \"adminInterface\":\"0.0.0.0:4985\",
-  \"metricsInterface\":\"0.0.0.0:4986\",
-  \"logging\": {
-    \"console\": {
-      \"log_keys\": [\"*\"]
+  "interface":"0.0.0.0:4984",
+  "adminInterface":"0.0.0.0:4985",
+  "metricsInterface":"0.0.0.0:4986",
+  "logging": {
+    "console": {
+      "log_keys": ["*"]
     }
   },
-  \"databases\": {
-    \"$DATABASE\": {
-      \"server\": \"$CLUSTER_HOST\",
-      \"username\": \"$USERNAME\",
-      \"password\": \"$PASSWORD\",
-      \"bucket\": \"$BUCKET\",
-      \"users\": {
-        \"GUEST\": {
-          \"disabled\": false,
-          \"admin_channels\": [\"*\"]
+  "databases": {
+    "$DATABASE": {
+      "server": "$CLUSTER_HOST",
+      "username": "$USERNAME",
+      "password": "$PASSWORD",
+      "bucket": "$BUCKET",
+      "users": {
+        "GUEST": {
+          "disabled": false,
+          "admin_channels": ["*"]
         }
       },
-      \"allow_conflicts\": false,
-      \"revs_limit\": 20,
-      \"import_docs\": true,
-      \"enable_shared_bucket_access\":true,
-      \"num_index_replicas\":0
+      "allow_conflicts": false,
+      "revs_limit": 20,
+      "import_docs": true,
+      "enable_shared_bucket_access":true,
+      "num_index_replicas":0
     }
   }
-}      
-   " > /home/sync_gateway/sync_gateway.json
+} 
+_EOF
 
 service sync_gateway restart
