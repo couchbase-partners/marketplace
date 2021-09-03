@@ -1,0 +1,65 @@
+{
+    "syncGatewayNodeCount": {
+      "value": 2
+    },
+    "syncGatewayVersion": {
+      "value": "2.8.2"
+    },
+    "couchbaseServerUrl": {
+      "value": ""
+    },
+    "couchbaseUser": {
+      "value": ""
+    },
+    "couchbasePassword": {
+      "value": ""
+    },
+    "couchbaseDatabaseName": {
+      "value": "default"
+    },
+    "couchbaseBucket": {
+      "value": "default"
+    },
+    "vmSize": {
+      "value": "Standard_DS3_v2"
+    },
+    "adminUsername": {
+      "value": "couchbase"
+    },
+    "adminPassword": {
+      "value": "Foo123!"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "vnet": {
+      "value": {
+        "name": "Couchbase-Vnet",
+        "resourceGroup": "ja-test-1",
+        "addressPrefixes": [
+          "10.32.0.0/16"
+        ],
+        "addressPrefix": "10.32.0.0/16",
+        "newOrExisting": "new",
+        "subnets": {
+          "subnet1": {
+            "name": "CouchbaseSubnet",
+            "addressPrefix": "10.32.0.0/24",
+            "startAddress": "10.32.0.4"
+          }
+        }
+      }
+    },
+    "publisher": {
+      "value": "couchbase"
+    },
+    "sync_gateway_offer": {
+      "value": "couchbase-sync-gateway-enterprise"
+    },
+    "sync_gateway_image_version": {
+      "value": "18.4.0"
+    },    
+    "sync_gateway_sku": {
+      "value": "byol_2019"
+    }
+  }

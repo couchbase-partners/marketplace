@@ -1,0 +1,40 @@
+name: Azure - CouchbaseSyncGateway
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'azure/CouchbaseSyncGateway-Application/**'
+  workflow_dispatch:
+jobs:
+  AzureLaunch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Azure Login
+        uses: azure/login@v1
+        with: 
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Echo $GITHUB_WORKSPACE
+        run: echo "$GITHUB_WORKSPACE"
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '15'
+      - run: mkdir -p "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway" && node "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/compiler.js" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/mainTemplate.json" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/embedded_gateway.sh" "${GITHUB_WORKSPACE}/script_url.txt" > "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway/azure-sg-template.json"
+      - name: Deploy To Azure
+        timeout-minutes: 30
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            COUCHBASESERVER=$(${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/createServer.sh -g cb-mkt-sg-test -l eastus)
+            SERVER="couchbase://$(echo $COUCHBASESERVER | jq -r '.ip')"
+            USER=$(echo $COUCHBASESERVER | jq -r '.couchbaseUser')
+            PASS=$(echo $COUCHBASESERVER | jq -r '.couchbasePassword')
+            echo $COUCHBASESERVER
+            bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/parameters.json -g cb-mkt-sg-test -n cb-mkt-test-sg -s $SERVER -b default -d default -u $USER -q $PASS -v 2.8.2
+      - name: Teardown From Azure
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-sg-test -s

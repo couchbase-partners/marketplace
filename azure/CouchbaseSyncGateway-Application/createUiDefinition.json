@@ -1,0 +1,302 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "adminUsername",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "Admin Username",
+        "toolTip": "Admin username on all VMs",
+        "osPlatform": "Linux"
+      },
+      {
+        "name": "adminPassword",
+        "type": "Microsoft.Common.PasswordBox",
+        "label": {
+          "password": "Admin Password",
+          "confirmPassword": "Confirm password"
+        },
+        "toolTip": "Admin password on all VMs",
+        "constraints": {
+          "required": true,
+          "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{12,72}$",
+          "validationMessage": "The password must be between 12 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+        },
+        "options": {
+          "hideConfirmation": false
+        }
+      },
+	  {
+		"name": "virtualNetwork",
+		"type": "Microsoft.Network.VirtualNetworkCombo",
+		"label": {
+			"virtualNetwork": "Virtual network",
+			"subnets": "Subnets"
+		},
+		"toolTip": {
+			"virtualNetwork": "",
+			"subnets": ""
+		},
+		"defaultValue": {
+			"name": "Couchbase-Vnet",
+			"addressPrefixSize": "/16"
+		},
+		"constraints": {
+			"minAddressPrefixSize": "/24"
+		},
+		"options": {
+			"hideExisting": false
+		},
+		"subnets": {
+			"subnet1": {
+				"label": "CouchbaseSubnet",
+				"defaultValue": {
+					"name": "CouchbaseSubnet",
+					"addressPrefixSize": "/24"
+				},
+				"constraints": {
+					"minAddressPrefixSize": "/24",
+					"minAddressCount": 3,
+					"requireContiguousAddresses": false
+				}
+			}
+		},
+		"visible": true
+		}
+    ],
+    "steps": [
+      {
+        "name": "couchbaseConfig",
+        "label": "Couchbase Sync Gateway Config",
+        "subLabel": {
+          "preValidation": "Configure Sync Gateway",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Couchbase Sync Gateway Settings",
+        "elements": [
+          {
+            "name": "syncGatewayNodeCount",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Sync Gateway Node Count",
+            "defaultValue": "1",
+            "toolTip": "Number of virtual machines to provision for Sync Gateway cluster",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "1",
+                  "value": 1
+                },
+                {
+                  "label": "2",
+                  "value": 2
+                },
+                {
+                  "label": "3",
+                  "value": 3
+                },
+                {
+                  "label": "4",
+                  "value": 4
+                },
+                {
+                  "label": "5",
+                  "value": 5
+                },
+                {
+                  "label": "6",
+                  "value": 6
+                },
+                {
+                  "label": "7",
+                  "value": 7
+                },
+                {
+                  "label": "8",
+                  "value": 8
+                },
+                {
+                  "label": "9",
+                  "value": 9
+                },
+                {
+                  "label": "10",
+                  "value": 10
+                },
+                {
+                  "label": "11",
+                  "value": 11
+                },
+                {
+                  "label": "12",
+                  "value": 12
+                },
+                {
+                  "label": "13",
+                  "value": 13
+                },
+                {
+                  "label": "14",
+                  "value": 14
+                },
+                {
+                  "label": "15",
+                  "value": 15
+                },
+                {
+                  "label": "16",
+                  "value": 16
+                },
+                {
+                  "label": "17",
+                  "value": 17
+                },
+                {
+                  "label": "17",
+                  "value": 17
+                },
+                {
+                  "label": "18",
+                  "value": 18
+                },
+                {
+                  "label": "19",
+                  "value": 19
+                },
+                {
+                  "label": "20",
+                  "value": 20
+                },
+                {
+                  "label": "21",
+                  "value": 21
+                },
+                {
+                  "label": "22",
+                  "value": 22
+                },
+                {
+                  "label": "23",
+                  "value": 23
+                },
+                {
+                  "label": "24",
+                  "value": 24
+                },
+                {
+                  "label": "25",
+                  "value": 25
+                },
+                {
+                  "label": "26",
+                  "value": 26
+                },
+                {
+                  "label": "27",
+                  "value": 27
+                },
+                {
+                  "label": "28",
+                  "value": 28
+                },
+                {
+                  "label": "29",
+                  "value": 29
+                },
+                {
+                  "label": "30",
+                  "value": 30
+                }
+              ]
+            }
+          },
+          {
+            "name": "syncGatewayVersion",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Sync Gateway Version",
+            "defaultValue": "2.8.2",
+            "toolTip": "Sync Gateway Version",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "2.8.2",
+                  "value": "2.8.2"
+                },
+                {
+                  "label": "2.8.0",
+                  "value": "2.8.0"
+                },
+                {
+                  "label": "2.7.3",
+                  "value": "2.7.3"
+                },
+                {
+                  "label": "2.7.2",
+                  "value": "2.7.2"
+                },
+                {
+                  "label": "2.7.1",
+                  "value": "2.7.1"
+                },
+                {
+                  "label": "2.7.0",
+                  "value": "2.7.0"
+                },
+                {
+                  "label": "2.6.0",
+                  "value": "2.6.0"
+                },
+                {
+                  "label": "2.5.0",
+                  "value": "2.5.0"
+                },
+                {
+                  "label": "2.1.3",
+                  "value": "2.1.3"
+                },
+                {
+                  "label": "2.1.2",
+                  "value": "2.1.2"
+                },
+                {
+                  "label": "2.1.1",
+                  "value": "2.1.1"
+                },
+                {
+                  "label": "2.1.0",
+                  "value": "2.1.0"
+                },
+                {
+                  "label": "2.0.3",
+                  "value": "2.0.3"
+                },
+                {
+                  "label": "2.0.2",
+                  "value": "2.0.2"
+                },
+                {
+                  "label": "2.0.0",
+                  "value": "2.0.0"
+                },
+                {
+                  "label": "1.5.2",
+                  "value": "1.5.2"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "adminUsername": "[basics('adminUsername')]",
+      "adminPassword": "[basics('adminPassword')]",
+      "syncGatewayNodeCount": "[steps('couchbaseConfig').syncGatewayNodeCount]",
+      "syncGatewayVersion": "[steps('couchbaseConfig').syncGatewayVersion]",
+      "vmSize": "[steps('couchbaseConfig').vmSize]",
+      "location": "[location()]",
+	    "vnet": "[basics('virtualNetwork')]"
+    }
+  }
+}
