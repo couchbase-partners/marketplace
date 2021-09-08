@@ -41,7 +41,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Deploy To AWS (Defaults)
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/CouchbaseServer/deploy.sh -n "cb-server-defaults-${GITHUB_SHA::6}" 
         env:
@@ -50,7 +50,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Teardown From AWS
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/backout.sh "cb-server-defaults-${GITHUB_SHA::6}"
         env:
@@ -59,7 +59,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Deploy To AWS
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/CouchbaseServer/deploy.sh -n "cb-server-non-defaults-${GITHUB_SHA::6}" -c 3 -v 6.6.0 -r "$AWS_REGION"
         env:
@@ -68,7 +68,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Teardown From AWS
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/backout.sh "cb-server-non-defaults-${GITHUB_SHA::6}"
         env:
