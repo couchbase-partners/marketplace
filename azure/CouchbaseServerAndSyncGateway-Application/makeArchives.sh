@@ -64,7 +64,7 @@ function makeArchive()
   curl -L "$SCRIPT_URL" -o "$dir../../build/tmp/couchbase_installer.sh"
 
   cd "$dir../../build/tmp" || exit
-  zip -r -j -X "$dir../../build/azure/CouchBaseServerAndSyncGateway/azure-cbs-archive-${license}.zip" *
+  zip -r -j -X "$dir../../build/azure/CouchBaseServerAndSyncGateway/azure-combined-archive-${license}.zip" *
   cd - || exit
   rm -rf "$dir../../build/tmp"
 }
