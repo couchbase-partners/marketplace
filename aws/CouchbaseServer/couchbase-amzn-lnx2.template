@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Couchbase Enterprise Edition Server on Amazon Linux 2",
+    "Description": "Couchbase Enterprise Edition Server on Amazon Linux 2 with Multi-Dimensional Scaling",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -17,16 +17,37 @@
                 },
                 {
                     "Label": {
-                        "default": "Server Configuration"
+                        "default": "Core Server Configuration"
                     },
                     "Parameters": [
-                        "ServerInstanceCount",
-                        "ServerDiskSize",
-                        "ServerDiskType",
+                        "CoreInstanceCount",
+                        "CoreDiskSize",
+                        "CoreDiskType",
                         "ServerVersion",
-                        "InstanceType",
+                        "CoreInstanceType",
+                        "CoreServices",
                         "Username",
                         "Password"
+                    ]
+                },{
+                    "Label": {
+                        "default": "Multi-Dimension Scaling Configuration"
+                    },
+                    "Parameters":[
+                        "AnalyticsInstanceCount",
+                        "AnalyticsInstanceType",
+                        "SearchInstanceCount",
+                        "SearchInstanceType",
+                        "EventingInstanceCount",
+                        "EventingInstanceType",
+                        "BackupInstanceCount",
+                        "BackupInstanceType",
+                        "DataInstanceCount",
+                        "DataInstanceType",
+                        "QueryInstanceCount",
+                        "QueryInstanceType",
+                        "IndexInstanceCount",
+                        "IndexInstanceType"
                     ]
                 }
             ],
@@ -45,18 +66,18 @@
     },
     "Mappings": {},
     "Parameters": {
-        "ServerInstanceCount": {
-            "Description": "Number of Couchbase Server Nodes",
+        "CoreInstanceCount": {
+            "Description": "Number of core Couchbase Server Nodes",
             "Type": "Number",
             "Default": 3
         },
-        "ServerDiskSize": {
-            "Description": "Size in GB of the EBS gp2 volume on each Couchbase node",
+        "CoreDiskSize": {
+            "Description": "Size in GB of the EBS gp2 volume on each core Couchbase node",
             "Type": "Number",
             "Default": 100
         },
-        "ServerDiskType": {
-            "Description": "Type of disk to use for the data volume",
+        "CoreDiskType": {
+            "Description": "Type of disk to use for the core data volumes",
             "Type": "String",
             "Default": "gp3",
             "AllowedValues": [
@@ -70,7 +91,7 @@
         "ServerVersion": {
             "Description": "Couchbase Server Version",
             "Type": "String",
-            "Default": "7.0.0",
+            "Default": "7.0.2",
             "AllowedValues": [
                 "6.6.3",
                 "6.6.2",
@@ -83,10 +104,10 @@
                 "6.0.2",
                 "6.0.1",
                 "6.0.0",
-                "7.0.0"
+                "7.0.2"
             ]
         },
-        "InstanceType": {
+        "CoreInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
@@ -189,6 +210,11 @@
                 "r5ad.16xlarge"
             ]
         },
+        "CoreServices": {
+            "Description": "Comma delimited list of services, can include any combination of:  data, index, query, fts, analytics, eventing and backup",
+            "Type": "CommaDelimitedList",
+            "Default": "data,index,query"
+        },
         "Username": {
             "Description": "Username for Couchbase administrator",
             "Type": "String"
@@ -217,6 +243,762 @@
         "Subnets": {
             "Description": "Subnets List (Note:  If you select a private subnet without egress to the internet, the template will fail to deploy correctly)",
             "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "AnalyticsInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "AnalyticsInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "EventingInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "EventingInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "SearchInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "SearchInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "BackupInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "BackupInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "DataInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "DataInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "QueryInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "QueryInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
+        },
+        "IndexInstanceCount": {
+            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Type": "Number",
+            "Default": 1
+        },
+        "IndexInstanceType": {
+            "Description": "Instance type for Couchbase Nodes",
+            "Type": "String",
+            "Default": "m5.xlarge",
+            "AllowedValues": [
+                "c5n.xlarge",
+                "t3.medium",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "m4.16xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "m5.2xlarge",
+                "m5.4xlarge",
+                "m5.8xlarge",
+                "m5.12xlarge",
+                "m5.16xlarge",
+                "m5a.large",
+                "m5a.xlarge",
+                "m5a.2xlarge",
+                "m5a.4xlarge",
+                "m5a.12xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge",
+                "c5.9xlarge",
+                "c5d.large",
+                "c5d.xlarge",
+                "c5d.2xlarge",
+                "c5d.4xlarge",
+                "c5d.9xlarge",
+                "r4.large",
+                "r4.xlarge",
+                "r4.2xlarge",
+                "r4.4xlarge",
+                "r4.8xlarge",
+                "r4.16xlarge",
+                "r5.large",
+                "r5.xlarge",
+                "r5.2xlarge",
+                "r5.4xlarge",
+                "r5.8xlarge",
+                "r5.16xlarge",
+                "r5a.large",
+                "r5a.xlarge",
+                "r5a.2xlarge",
+                "r5a.4xlarge",
+                "r5a.8xlarge",
+                "r5a.12xlarge",
+                "r5a.16xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge",
+                "i3.large",
+                "i3.xlarge",
+                "i3.2xlarge",
+                "i3.4xlarge",
+                "i3.8xlarge",
+                "i3.16xlarge",
+                "c5.12xlarge",
+                "c5a.large",
+                "c5a.xlarge",
+                "c5a.2xlarge",
+                "c5a.4xlarge",
+                "c5a.8xlarge",
+                "c5a.12xlarge",
+                "c5ad.large",
+                "c5ad.xlarge",
+                "c5ad.2xlarge",
+                "c5ad.4xlarge",
+                "c5ad.8xlarge",
+                "c5ad.12xlarge",
+                "c5d.12xlarge",
+                "m5.8xlarge",
+                "c5n.2xlarge",
+                "c5n.4xlarge",
+                "c5n.9xlarge",
+                "m5.8xlarge",
+                "m5a.8xlarge",
+                "r5.8xlarge",
+                "r5a.8xlarge",
+                "r5ad.large",
+                "r5ad.xlarge",
+                "r5ad.2xlarge",
+                "r5ad.4xlarge",
+                "r5ad.8xlarge",
+                "r5ad.12xlarge",
+                "r5ad.16xlarge"
+            ]
         }
     },
     "Resources": {
@@ -253,16 +1035,25 @@
                 }
             }
         },
-        "ServerAutoScalingGroup": {
+        "CouchbaseRallyPoint": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Description": "The Rally point dns entry for new nodes to join the cluster with.",
+                "Name": "couchbase_server_rallyurl",
+                "Type": "String",
+                "Value": "None"
+            }
+        },
+        "CoreAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "LaunchTemplate": {
                     "LaunchTemplateId": {
-                        "Ref": "ServerLaunchTemplate"
+                        "Ref": "CoreLaunchTemplate"
                     },
                     "Version": {
                         "Fn::GetAtt": [
-                            "ServerLaunchTemplate",
+                            "CoreLaunchTemplate",
                             "LatestVersionNumber"
                         ]
                     }
@@ -270,7 +1061,7 @@
                 "MinSize": "1",
                 "MaxSize": "100",
                 "DesiredCapacity": {
-                    "Ref": "ServerInstanceCount"
+                    "Ref": "CoreInstanceCount"
                 },
                 "VPCZoneIdentifier": {
                     "Ref": "Subnets"
@@ -279,7 +1070,7 @@
             "CreationPolicy": {
                 "ResourceSignal": {
                     "Count": {
-                        "Ref": "ServerInstanceCount"
+                        "Ref": "CoreInstanceCount"
                     },
                     "Timeout": "PT15M"
                 }
@@ -288,7 +1079,7 @@
                 "CouchbaseSecret"
             ]
         },
-        "ServerLaunchTemplate": {
+        "CoreLaunchTemplate": {
             "Type": "AWS::EC2::LaunchTemplate",
             "Properties": {
                 "LaunchTemplateData": {
@@ -302,7 +1093,7 @@
                         ]
                     },
                     "InstanceType": {
-                        "Ref": "InstanceType"
+                        "Ref": "CoreInstanceType"
                     },
                     "SecurityGroupIds": [
                         {
@@ -328,7 +1119,9 @@
                         {
                             "DeviceName": "/dev/xvda",
                             "Ebs": {
-                                "VolumeType": { "Ref": "ServerDiskType" },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
                                 "DeleteOnTermination": true
                             }
                         },
@@ -336,28 +1129,950 @@
                             "DeviceName": "/dev/sdk",
                             "Ebs": {
                                 "VolumeSize": {
-                                    "Ref": "ServerDiskSize"
+                                    "Ref": "CoreDiskSize"
                                 },
-                                "VolumeType": { "Ref": "ServerDiskType" },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
                                 "Encrypted": true
                             }
                         }
                     ],
-                    "UserData": {}
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": {
+                                        "Fn::Join": [
+                                            ",",
+                                            {
+                                                "Ref": "CoreServices"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:make_cluster",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
                 }
             }
         },
-        "RallyUrlWaitCondition": {
-            "Type": "AWS::CloudFormation::WaitCondition",
+        "AnalyticsAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
-                "Handle": { "Ref": "RallyUrlWaitConditionHandler" },
-                "Timeout": "900"
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "AnalyticsLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "AnalyticsLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "AnalyticsInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "AnalyticsInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "AnalyticsLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "AnalyticsInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "analytics"
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
         },
-        "RallyUrlWaitConditionHandler": {
-            "Type": "AWS::CloudFormation::WaitConditionHandle",
-            "Properties": {}
+        "EventingAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "EventingLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "EventingLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "EventingInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "EventingInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
         },
+        "EventingLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "EventingInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "eventing"
+                                },
+                                {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "SearchAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "SearchLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "SearchLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "SearchInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "SearchInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "SearchLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "SearchInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "fts"
+                                }, {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "BackupAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "BackupLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "BackupLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "BackupInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "BackupInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "BackupLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "BackupInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "backup"
+                                }, {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "DataAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "DataLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "DataLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "DataInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "DataInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "DataLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "DataInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "data"
+                                }, {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref": "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "IndexAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "IndexLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "IndexLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "IndexInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "IndexInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "IndexLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "IndexInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "index"
+                                }, {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref":  "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "QueryAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "QueryLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "QueryLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "MinSize": "0",
+                "MaxSize": "100",
+                "DesiredCapacity": {
+                    "Ref": "QueryInstanceCount"
+                },
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnets"
+                }
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": {
+                        "Ref": "QueryInstanceCount"
+                    },
+                    "Timeout": "PT15M"
+                }
+            },
+            "DependsOn": [
+                "CouchbaseSecret",
+                "CoreAutoScalingGroup"
+            ]
+        },
+        "QueryLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateData": {
+                    "ImageId": {
+                        "Fn::FindInMap": [
+                            "CouchbaseServer",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "AMI"
+                        ]
+                    },
+                    "InstanceType": {
+                        "Ref": "QueryInstanceType"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::GetAtt": [
+                                "CouchbaseServerSecurityGroup",
+                                "GroupId"
+                            ]
+                        }
+                    ],
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "EbsOptimized": true,
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Fn::GetAtt": [
+                                "CouchbaseInstanceProfile",
+                                "Arn"
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "DeleteOnTermination": true
+                            }
+                        },
+                        {
+                            "DeviceName": "/dev/sdk",
+                            "Ebs": {
+                                "VolumeSize": {
+                                    "Ref": "CoreDiskSize"
+                                },
+                                "VolumeType": {
+                                    "Ref": "CoreDiskType"
+                                },
+                                "Encrypted": true
+                            }
+                        }
+                    ],
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:server:services",
+                                    "Value": "query"
+                                }, {
+                                    "Key": "couchbase:server:rally_parameter",
+                                    "Value": {
+                                        "Ref":  "CouchbaseRallyPoint"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:secret",
+                                    "Value": {
+                                        "Ref": "CouchbaseSecret"
+                                    }
+                                },
+                                {
+                                    "Key": "couchbase:server:version",
+                                    "Value": {
+                                        "Ref": "ServerVersion"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },        
         "CouchbaseInstanceProfile": {
             "Type": "AWS::IAM::InstanceProfile",
             "Properties": {
@@ -399,7 +2114,7 @@
                                         "ec2:CreateTags",
                                         "ec2:DescribeTags",
                                         "ec2:DescribeInstances",
-                                        "autoscaling:DescribeAutoScalingGroups"                                        
+                                        "autoscaling:DescribeAutoScalingGroups"
                                     ],
                                     "Resource": [
                                         "*"
@@ -422,6 +2137,25 @@
                                         {
                                             "Ref": "CouchbaseSecret"
                                         }
+                                    ]
+                                }
+                            ]
+                        }
+                    }, 
+                    {
+                        "PolicyName": "CouchbaseRallyParameterPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:PutParameter",
+                                        "ssm:GetParameter",
+                                        "ssm:AddTagsToResource"
+                                    ],
+                                    "Resource": [
+                                       "*"
                                     ]
                                 }
                             ]
@@ -551,28 +2285,6 @@
         }
     },
     "Outputs": {
-        "CouchbaseUrl": {
-            "Description": "The url to access the server for sdks and sync gateway",
-            "Value": { 
-                "Fn::Sub": [
-                    "couchbase://${signal}", 
-                    {
-                        "signal":  {
-                            "Fn::Select": [ "1", {
-                                "Fn::Split": [
-                                    "|", {
-                                        "Fn::GetAtt": [
-                                            "RallyUrlWaitCondition", 
-                                            "Data"
-                                        ]
-                                    }
-                                ]}
-                            ]
-                        }
-                    }
-                ]
-            }
-        }
         
     }
 }

@@ -40,16 +40,13 @@ USERNAME=${USERNAME:-"couchbase"}
 PASSWORD=${PASSWORD:-"foo123!"}
 
 
-${SCRIPT_DIR}/../makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
-                                 -s "${SCRIPT_DIR}/embedded_server.sh" \
+${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
                                  -o "${SCRIPT_DIR}/../../build/aws/CouchbaseServer/" \
                                  -n "aws-cb-server.template" \
-                                 -i "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" \
-                                 -t "server"
+                                 -i "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" 
 
-TEMPLATE_BODY="file://${SCRIPT_DIR}/../../build/aws/CouchbaseServer/aws-cb-server.template"
-echo "$TEMPLATE_BODY"
-#TEMPLATE_BODY="file://couchbase-$2.template"
+TEMPLATE_BODY_FILE="${SCRIPT_DIR}/../../build/aws/CouchbaseServer/aws-cb-server.template"
+
 
 SSHCIDR="0.0.0.0/0"
 
@@ -63,10 +60,16 @@ VPC_NAME=$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" | jq -r '
 SUBNET_ID=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VPC_NAME}" --max-items 1 --region "$REGION" | jq -r '.Subnets[].SubnetId')
 #SubnetId=subnet-08476a90d895839b4
 
+# Create Bucket
+BUCKET="mp-test-templates$(__generate_random_string)"
+aws s3api create-bucket --acl public-read --bucket "$BUCKET" --region "$REGION"
+KEY="aws-cb-server$(__generate_random_string).template"
+aws s3api put-object --bucket "$BUCKET" --key "$KEY" --body "$TEMPLATE_BODY_FILE"
+
 aws cloudformation create-stack \
 --disable-rollback \
 --capabilities CAPABILITY_IAM \
---template-body "${TEMPLATE_BODY}" \
+--template-url "https://${BUCKET}.s3.amazonaws.com/${KEY}" \
 --stack-name "${STACK_NAME}" \
 --region "${REGION}" \
 --parameters \
@@ -74,7 +77,7 @@ ParameterKey=Username,ParameterValue="${USERNAME}" \
 ParameterKey=Password,ParameterValue="${PASSWORD}" \
 ParameterKey=KeyName,ParameterValue="${KEY_NAME}" \
 ParameterKey=SSHCIDR,ParameterValue=${SSHCIDR} \
-ParameterKey=ServerInstanceCount,ParameterValue="${SERVER_INSTANCE_COUNT}" \
+ParameterKey=CoreInstanceCount,ParameterValue="${SERVER_INSTANCE_COUNT}" \
 ParameterKey=ServerVersion,ParameterValue="${SERVER_VERSION}" \
 ParameterKey=VpcName,ParameterValue="${VPC_NAME}" \
 ParameterKey=Subnets,ParameterValue="${SUBNET_ID}"
@@ -94,10 +97,14 @@ done
 
 if [[ $OUTPUT == '"CREATE_COMPLETE"' ]]; then
     printf "Complete!\n"
+    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"
+    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"
     exit 0
 fi
 
 if [[ $OUTPUT == '"ROLLBACK_COMPLETE"' || $COUNTER -ge 50 ]]; then
     printf "Failed!\n"
+    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"
+    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"
     exit 1
 fi
