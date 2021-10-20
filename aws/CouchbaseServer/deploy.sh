@@ -14,7 +14,7 @@ echo "$DEFAULT_REGION"
 if [ -z "$DEFAULT_REGION" ]; then
     REGION="us-east-1"
 fi
-SERVER_INSTANCE_COUNT_DEFAULT=$(jq '.Parameters.ServerInstanceCount.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
+SERVER_INSTANCE_COUNT_DEFAULT=$(jq '.Parameters.CoreInstanceCount.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
 SERVER_VERSION_DEFAULT=$(jq '.Parameters.ServerVersion.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
 
 while getopts n:c:v:k:r:u:p: flag
