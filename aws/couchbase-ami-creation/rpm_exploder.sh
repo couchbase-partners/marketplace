@@ -122,3 +122,30 @@ SED="${START},\$p"
 rpm -qp --scripts "$RPM" | sed -n "$SED" > /setup/posttransaction.sh
 
 rm -rf "$RPM"
+
+cp "/home/ec2-user/startup.sh" "/setup/couchbase-startup.sh"
+rm -rf "/home/ec2-user/startup.sh"
+
+chmod +x /setup/couchbase-startup.sh
+
+# https://serverfault.com/questions/871328/start-service-after-aws-user-data-has-run
+# seeing a reboot in the middle of run by cloud-init.  So this is an attempt to run
+# after cloud-init
+cat << _EOF > /etc/systemd/system/cb-server-startup.service
+[Unit]
+Description=Couchbase Server intialization script
+After=cloud-final.service
+
+[Service]
+ExecStart=/setup/couchbase-startup.sh
+Type=oneshot
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+_EOF
+
+chmod 664 /etc/systemd/system/cb-server-startup.service
+systemctl daemon-reload
+systemctl enable cb-server-startup.service
+systemctl start cb-server-startup.service

@@ -31,8 +31,9 @@ function __generate_random_string() {
 #Constants
 INSTANCE_TYPE=m4.xlarge
 SECURITY_GROUP=aws-ami-creation
-VERSION=6.6.2
+VERSION=7.0.2
 GATEWAY=0
+PACKAGE=""
 
 while getopts gr:n:v:p: flag
 do
@@ -92,6 +93,7 @@ done
 sleep 60 #We have to wait until SSH starts up.
 echo "Updating packages on instance"
 scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/rpm_exploder.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/rpm_exploder.sh"
+scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/startup.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/startup.sh"
 
 if [[ -n "$PACKAGE" ]]; then
     FILE=$(basename "$PACKAGE")
