@@ -77,7 +77,7 @@ ParameterKey=Username,ParameterValue="${USERNAME}" \
 ParameterKey=Password,ParameterValue="${PASSWORD}" \
 ParameterKey=KeyName,ParameterValue="${KEY_NAME}" \
 ParameterKey=SSHCIDR,ParameterValue=${SSHCIDR} \
-ParameterKey=CoreInstanceCount,ParameterValue="${SERVER_INSTANCE_COUNT}" \
+ParameterKey=CoreInstanceCount,ParameterValue=${SERVER_INSTANCE_COUNT} \
 ParameterKey=ServerVersion,ParameterValue="${SERVER_VERSION}" \
 ParameterKey=VpcName,ParameterValue="${VPC_NAME}" \
 ParameterKey=Subnets,ParameterValue="${SUBNET_ID}"
