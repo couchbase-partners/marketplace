@@ -148,4 +148,3 @@ _EOF
 chmod 664 /etc/systemd/system/cb-server-startup.service
 systemctl daemon-reload
 systemctl enable cb-server-startup.service
-systemctl start cb-server-startup.service

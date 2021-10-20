@@ -24,13 +24,17 @@ fi
 
 TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
 
-
+HASROLE=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/iam)
 # we may not be able to retrieve tags due to IAM permissions.  If not we just want to start the instance and go away
-if [[ -z "$TAGS" ]]; then 
+if [[ -z "$TAGS" ]] && [[ "$HASROLE" == "404" ]]; then 
       echo "Unable to retrieve tags, check IAM permissions, simply starting couchbase server service."
       bash /setup/postinstall.sh 0
       bash /setup/posttransaction.sh
       exit 0
+else
+   # Let's wait a sec and try again
+   sleep 10
+   TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
 fi
 
 VERSION=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:version").Value')
@@ -154,10 +158,16 @@ else
    NAME="couchbase-${SERVICES//,/$'-'}-server"
 fi
 
-aws ec2 create-tags \
-   --region "${region}" \
-   --resources "${instanceId}" \
-   --tags Key=Name,Value="$NAME"
+TAGGED_NAME=$(echo "$TAGS" | jq -r 'select(.Key == "Name").Value')
+
+# We should only name the instance if they haven't already
+# no need to overwrite their name
+if [[ -z "$TAGGED_NAME" ]]; then
+   aws ec2 create-tags \
+      --region "${region}" \
+      --resources "${instanceId}" \
+      --tags Key=Name,Value="$NAME"
+fi
 
 CLUSTER_HOST=$rallyPublicDNS
 SUCCESS=1
