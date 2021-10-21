@@ -52,7 +52,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Create AMI for Couchbase Server
-        if: github.event.inputs.name.syncgateway == "N"
+        if: github.event.inputs.name.syncgateway == 'N'
         env:
           NAME: ${{github.event.inputs.name}}
           REGION: ${{github.event.inputs.region}}
@@ -64,7 +64,7 @@ jobs:
                                                                 -n "$NAME" \
                                                                 -v "$VERSION" 
       - name: Create AMI for Couchbase Sync Gateway
-        if: github.event.inputs.name.syncgateway == "Y"
+        if: github.event.inputs.name.syncgateway == 'Y'
         env:
           NAME: ${{github.event.inputs.name}}
           REGION: ${{github.event.inputs.region}}
