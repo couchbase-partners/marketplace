@@ -247,7 +247,7 @@
         "AnalyticsInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "AnalyticsInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -355,7 +355,7 @@
         "EventingInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "EventingInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -463,7 +463,7 @@
         "SearchInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "SearchInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -571,7 +571,7 @@
         "BackupInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "BackupInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -679,7 +679,7 @@
         "DataInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "DataInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -787,7 +787,7 @@
         "QueryInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "QueryInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
@@ -895,7 +895,7 @@
         "IndexInstanceCount": {
             "Description": "Number of Analytics Couchbase Server Nodes",
             "Type": "Number",
-            "Default": 1
+            "Default": 0
         },
         "IndexInstanceType": {
             "Description": "Instance type for Couchbase Nodes",
