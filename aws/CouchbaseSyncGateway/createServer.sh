@@ -40,16 +40,13 @@ chmod 400 "$HOME/.ssh/aws-keypair.pem"
 
 SECURITY_GROUP=aws-ami-creation
 
-SERVER_STARTUP=$(sed -e "s~__USERNAME__~$USERNAME~g" "$SCRIPT_DIR/server_user_data.sh" | sed -e "s~__PASSWORD__~$PASSWORD~g" | base64)
-
 AWS_RESPONSE=$(aws ec2 run-instances \
     --image-id "$BASE_AMI_ID" \
     --instance-type "$INSTANCE_TYPE" \
     --security-groups "$SECURITY_GROUP" \
     --key-name "$KEY_NAME" \
     --region "$REGION" \
-    --user-data "$SERVER_STARTUP" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG}]" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG}, {Key=couchbase.server.username,Value=$USERNAME},{Key=couchbase.server.password,Value=$PASSWORD},{Key=couchbase.server.make_cluster,Value=true},]" \
     --block-device-mappings "DeviceName=/dev/sdk,Ebs={DeleteOnTermination=true,VolumeSize=100,VolumeType=gp3}" \
     --output json)
 
@@ -67,3 +64,5 @@ done
 until curl -q "http://$PUBLIC_IP:8091" &> /dev/null; do
     sleep 1
 done
+
+curl -X POST -u "$USERNAME:$PASSWORD" "http://$PUBLIC_IP:8091/sampleBuckets/install" -d '["travel-sample"]'
