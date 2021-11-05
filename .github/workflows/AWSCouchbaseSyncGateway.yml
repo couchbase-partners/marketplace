@@ -44,7 +44,7 @@ jobs:
         timeout-minutes: 15
         run: |
             PUBLIC=$(bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/createServer.sh -r $AWS_REGION -t cb-gateway-non-defaults-${GITHUB_SHA::6})
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/deploy.sh -n "cb-gateway-non-defaults-${GITHUB_SHA::6}" -c 2 -v 2.8.0 -l "couchbase://$PUBLIC:8091" -b default -d default
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/deploy.sh -n "cb-gateway-non-defaults-${GITHUB_SHA::6}" -c 2 -v 2.8.0 -l "couchbase://$PUBLIC:8091" -b default
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -64,7 +64,7 @@ jobs:
         timeout-minutes: 15
         run: |
             PUBLIC=$(bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/createServer.sh -r $AWS_REGION -t "cb-gateway-defaults-${GITHUB_SHA::6}")
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/deploy.sh -n "cb-gateway-defaults-${GITHUB_SHA::6}" -c 2 -v 2.8.2 -l "couchbase://$PUBLIC:8091" -b default -d default
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseSyncGateway/deploy.sh -n "cb-gateway-defaults-${GITHUB_SHA::6}" -c 2 -v 2.8.3 -l "couchbase://$PUBLIC:8091" -b default
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
