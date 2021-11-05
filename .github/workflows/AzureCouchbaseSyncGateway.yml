@@ -27,6 +27,7 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
+            az login
             COUCHBASESERVER=$(${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/createServer.sh -g cb-mkt-sg-test -l eastus)
             SERVER="couchbase://$(echo $COUCHBASESERVER | jq -r '.ip')"
             USER=$(echo $COUCHBASESERVER | jq -r '.couchbaseUser')
