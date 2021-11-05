@@ -15,8 +15,7 @@ echo "In make archives"
 mkdir -p "${output}"
 
 if [[ -d "$output" ]]; then
-    echo "Invalid Output Directory."
-    exit 1
+    mkdir -p "$output"
 fi
 
 if [[ ! "$output" = */ ]]; then
