@@ -24,6 +24,7 @@ jobs:
         timeout-minutes: 30
         uses: azure/CLI@v1
         with:
+          azcliversion: 2.29.2
           inlineScript: |
             COUCHBASESERVER=$(${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/createServer.sh -g cb-mkt-sg-test -l eastus)
             SERVER="couchbase://$(echo $COUCHBASESERVER | jq -r '.ip')"
