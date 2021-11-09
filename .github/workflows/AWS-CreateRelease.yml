@@ -68,11 +68,9 @@ jobs:
         run: |
           bash $GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/makeArchives.sh \
                                  -m "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/mappings.json" \
-                                 -s "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/embedded_gateway.sh" \
                                  -o "$GITHUB_WORKSPACE/build/aws/CouchbaseSyncGateway/" \
                                  -n "aws-cb-syncgateway.template" \
-                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/couchbase-amzn-lnx2.template" \
-                                 -t "sync_gateway"
+                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/couchbase-amzn-lnx2.template" 
       - name: Upload Gateway Template
         id: upload-gateway-asset
         uses: actions/upload-release-asset@v1
