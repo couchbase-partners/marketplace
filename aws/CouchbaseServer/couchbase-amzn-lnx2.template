@@ -2285,6 +2285,7 @@
         }
     },
     "Outputs": {
-        
+        "CouchbaseBootstrapParameter": { "Ref": "CouchbaseRallyPoint" },
+        "CouchbaseSecretArn": { "Ref": "CouchbaseSecret" }
     }
 }
