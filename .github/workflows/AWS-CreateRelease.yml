@@ -66,7 +66,7 @@ jobs:
           asset_content_type: application/json
       - name: Build Gateway Template
         run: |
-          bash $GITHUB_WORKSPACE/aws/makeArchives.sh \
+          bash $GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/makeArchives.sh \
                                  -m "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/mappings.json" \
                                  -s "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/embedded_gateway.sh" \
                                  -o "$GITHUB_WORKSPACE/build/aws/CouchbaseSyncGateway/" \
