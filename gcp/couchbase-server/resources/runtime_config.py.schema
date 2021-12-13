@@ -1,0 +1,21 @@
+required:
+  - nameSuffix
+  - username
+  - password
+
+properties:
+  nameSuffix:
+    type: string
+  description:
+    type: string
+    default: Couchbase Server Runtime Configuration.  Used to initialize nodes.  Password will be used for initial setup, however a secret will be created with username and password for future nodes.
+  username:
+    type: string
+    description: The username to use.
+  password:
+    type: string
+    description: The password to use.
+
+outputs:
+  runtimeConfigName:
+    type: string
