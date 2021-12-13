@@ -1,0 +1,16 @@
+required:
+  - nameSuffix
+
+properties:
+  nameSuffix:
+    type: string
+  network:
+    type: string
+    default: default
+  accessCIDR:
+    type: string
+    default: 0.0.0.0/0
+
+outputs:
+  ruleTag:
+    type: string

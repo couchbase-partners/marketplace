@@ -35,7 +35,12 @@ function __generate_random_string() {
     echo "${NEW_UUID}"
 }
 
-while getopts l:n:z:p:f:i: flag
+SCRIPT_SOURCE=${BASH_SOURCE[0]/%create.sh/}
+SCRIPT_URL=$(cat "${SCRIPT_SOURCE}/../../script_url.txt")
+gateway=0
+debug=0
+
+while getopts l:n:z:p:f:i:v:gd flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
@@ -44,6 +49,9 @@ do
         p) project=${OPTARG};;
         f) family=${OPTARG};;
         i) image_project=${OPTARG};;
+        v) version=${OPTARG};;
+        g) gateway=1;;
+        d) debug=1;;
         *) exit 1;;
     esac
 done
@@ -61,12 +69,40 @@ createInstanceResponse=$(gcloud compute instances create "$instance_name" \
                                                  --scopes "https://www.googleapis.com/auth/cloud-platform")
 
 echo "Create Instance Response: $createInstanceResponse"
+sleep 40
+echo "Adding deb_exploder to the instance"
+gcloud compute scp "${SCRIPT_SOURCE}/deb_exploder.sh" "$instance_name:~/deb_exploder.sh" --zone="$zone"
+echo "Adding Appropriate Startup.sh to instance"
+
+if [[ "$gateway" == "1" ]]; then 
+    gcloud compute scp "${SCRIPT_SOURCE}/gateway-startup.sh" "$instance_name:~/startup.sh" --zone="$zone"
+else
+    gcloud compute scp "${SCRIPT_SOURCE}/server-startup.sh" "$instance_name:~/startup.sh" --zone="$zone"
+fi
+
+
+echo "Executing the deb_exploder"
+gcloud compute ssh "$instance_name" --command="sudo chmod +x ~/deb_exploder.sh && sudo ~/deb_exploder.sh $version $gateway $SCRIPT_URL" --zone="$zone"
 echo "Deleting Instance but preserving boot disk"
 gcloud compute instances delete "$instance_name" --zone="$zone" --project="$project" --keep-disks=boot -q
 echo "Creating Image from boot disk"
-createImageResponse=$(gcloud compute images create "$image_name" \
-                        --project "$project" \
-                        --source-disk "projects/$project/zones/$zone/disks/$instance_name" \
-                        --licenses "projects/$project/global/licenses/$license" \
-                        --family="$name")
+# don't add a license if we're in debug.
+description="Couchbase Server Enterprise Edition Marketplace Image - Preinstalled Version: $version"
+if [[ "$gateway" == "1" ]]; then
+    description="Couchbase Sync Gateway Marketplace Image - Preinstalled Version: $version"
+fi
+if [[ "$debug" == "0" ]]; then
+    createImageResponse=$(gcloud compute images create "$image_name" \
+                            --project "$project" \
+                            --source-disk "projects/$project/zones/$zone/disks/$instance_name" \
+                            --licenses "projects/$project/global/licenses/$license" \
+                            --family="$name" \
+                            --description="$description")
+else 
+    createImageResponse=$(gcloud compute images create "$image_name" \
+                            --project "$project" \
+                            --source-disk "projects/$project/zones/$zone/disks/$instance_name" \
+                            --family="$name" \
+                            --description="$description")
+fi
 echo "Create Image Response: $createImageResponse"                        

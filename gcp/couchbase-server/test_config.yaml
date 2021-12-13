@@ -1,0 +1,23 @@
+imports:
+  - path: couchbase.py
+    name: couchbase.py
+
+resources:
+  - name: test-couchbase-deployment
+    type: couchbase.py
+    properties: 
+      name: couchbase-server-test
+      serverNodeCount: 3
+      serverNodeType: n1-standard-4
+      serverDiskSize: 20
+      serverVersion: 7.0.2
+      username: couchbase
+      password: foo123!
+      accessCIDR: 76.108.209.113/32
+outputs:
+  - name: serviceAccount
+    value: $(ref.test-couchbase-deployment.serviceAccount)
+  - name: runtimeConfigName
+    value: $(ref.test-couchbase-deployment.runtimeConfigName)
+  - name: ruleTag
+    value: $(ref.test-couchbase-deployment.firewallRuleTag)

@@ -1,0 +1,83 @@
+metadata_version: v1
+
+description:
+  title: Couchbase Server Enterprise
+  version: Multiple Versions available
+  author:
+    title: Couchbase
+  tagline: 'Enterprise-class, multi-cloud-to-edge NoSQL database'
+  descriptionHtml: 'Couchbase Server is a NoSQL database that delivers unparalleled performance at scale, on premises and in any cloud. It features memory-first architecture, built-in cache, geo-distributed deployment, and workload isolation. Couchbase excels at supporting business-critical applications at scale while maintaining sub-millisecond latencies and 99.999% availability.'
+  eulaUrl: 'https://www.couchbase.com/ESLA08042020'
+  documentations:
+    - title: Getting Started on the GCP Marketplace
+      url: https://github.com/couchbase-partners/marketplace/blob/main/gcp/shared/README.md
+      destinations:
+        - DESTINATION_SOLUTION_DETAILS
+        - DESTINATION_CONFIGURATION
+        - DESTINATION_POST_DEPLOY
+  softwareGroups:
+    - type: SOFTWARE_GROUP_OS
+      software:
+        - title: Ubuntu
+          version: 20.04 LTS
+    - software:
+        - title: Couchbase Server EE
+  support:
+    - title: Support
+      descriptionHtml: 'With Couchbase customers all around the world, our support team provides global coverage. So wherever you’re located, we’ve got you covered. For customers requiring round-the-clock support, 24x7x365 service level agreements are available.'
+      url: 'http://support.couchbase.com/'
+
+input:
+  sections:
+    - name: networking
+      title: Networking Configuration
+    - name: server
+      title: Couchbase Server
+
+  properties:
+    - name: region
+      title: Deployment region
+      section: networking
+    - name: network
+      title: Cluster Network
+      section: networking
+    - name: subnetwork
+      title: Cluster Sub-Network
+      section: networking
+    - name: accessCIDR
+      title: External Access CIDR
+      tooltip: 'Traffic is only allowed from sources within these IP address ranges. Use CIDR notation when entering ranges. <a href="https://cloud.google.com/compute/docs/networking#firewalls">Learn more</a>'
+      placeholder: '0.0.0.0/0, 192.169.0.2/24'
+      section: networking
+    - name: serverNodeCount
+      title: Couchbase Server Node Count
+      section: server
+    - name: serverNodeType
+      title: Couchbase Server Node Type
+      section: server
+    - name: serverDiskSize
+      title: Couchbase Server pd-ssd disk size in GB
+      section: server
+    - name: serverVersion
+      title: Couchbase Server Version
+      section: server
+    - name: username
+      title: Couchbase Admin Username
+      section: server
+    - name: password
+      title: Couchbase Admin Password
+      section: server
+
+runtime:
+  deployingMessage: Deployment can take several minutes to complete.
+  applicationTable:
+     rows:
+     - label: Couchbase Username
+       value: '{{ outputs().couchbaseUsername }}'
+     - label: Couchbase Password
+       value: '{{ outputs().couchbasePassword }}'
+  suggestedActions:
+    - heading: Couchbase Server
+      description: The admin interface will be available on port 8091 of any Couchbase Server node.  You can login with the username and password provided at deploy time.
+       - heading: Instance Groups
+      description: Nodes are deployed using Instance Groups.  You can view your instance groups <a href="https://console.cloud.google.com/compute/instanceGroups/list">here</a>.

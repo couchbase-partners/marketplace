@@ -1,0 +1,56 @@
+required:
+  - nameSuffix
+
+properties:
+  nameSuffix:
+    type: string
+  network:
+    type: string
+    default: default
+  serverVersion:
+    type: string
+    default: 7.0.2
+    enum:
+      - 7.0.2
+      - 6.6.3
+      - 6.6.2
+      - 6.6.1
+      - 6.6.0
+      - 6.5.2
+      - 6.5.1
+      - 6.5.0
+      - 6.0.4
+      - 6.0.3
+      - 6.0.2
+      - 6.0.1
+      - 6.0.0
+  serverDiskSize:
+    type: integer
+    default: 500
+    minimum: 10
+  serverInstanceType:
+    type: string
+    default: n1-standard-4
+    description: GCP instance type name
+  runtimeConfigName:
+    type: string
+    description: The name of the runtime config to use to initalize the Couchbase Server instance
+  networkTag:
+    type: string
+    description: Network Tag too apply to the instances for intercluster communications
+  bootImage:
+    type: string
+    description: The boot disk image
+  couchbaseServices:
+    type: string
+    description: The services to use for couchbase server in comma delimited string
+    default: data,index,query
+  serviceAccount:
+    type: string
+    description: The service account the instance template should use.
+
+outputs:
+  templateName:
+    type: string
+  selfLink:
+    type: string
