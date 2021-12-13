@@ -98,6 +98,72 @@ Description: The password for the couchbase user to use when initializing a node
 
 Example Value: "Foo123!
 
+### **couchbase:gateway:connectionstring**
+Type: String
+
+Description: The Couchbase Connection string for the Couchbase Cluster to connect Sync Gateway to
+
+Example Value: "couchbase://ec2-3-222-200-75.compute-1.amazonaws.com"
+
+### **couchbase:gateway:bucket**
+Type: String
+
+Description: The Couchbase Bucket that you want to use with the Sync Gateway
+
+Example Value: "travel-sample"
+
+### **couchbase:gateway:username**
+Type: String
+
+Description: The couchbase cluster username you want to use to connect sync gateway to the Couchbase Cluster
+
+Example Value: "couchbase"
+
+### **couchbase:gateway:password**
+Type: String
+
+Description: The Couchbase cluster user password to use to connect sync gateway to the Couchbase Cluster
+
+Example Value: "Foo123!"
+
+### **couchbase:gateway:secret**
+Type: String
+
+Description: The ARN of an AWS Secrets Manager secret that contains a json structurct with a username and password properties.
+
+Example Value: "arn:aws:secretsmanager:us-east-1:516524556673:secret:ja-test-mds-server-CouchbaseSecret-GoQj7J"
+
+Example Secret:
+
+```
+{
+    "username": "couchbase",
+    "password": "Foo123!"
+}
+```
+
+### **couchbase:gateway:connection_param**
+Type: String
+
+Description: A Systems manager parameter that contains the connection string value for access to the Couchbase Cluster
+
+Example Value: "couchbase_server_rallyurl"
+
+### **couchbase:gateway:config**
+Type: String
+
+Description: A S3 URI for the sync gateway configuration.  If specified the image will download the config at startup and overwrite the existing config.
+
+Example Value: "s3://ja-bucket-cft-test/config.json"
+
+### **couchbase:gateway:version**
+Type: String
+
+Description: The version of Couchbase Sync Gateway to install/execute.
+
+Example Value: "2.8.3"
+
+
 ## Future Supported Tags
 
 * Service Memory - Currently only allows default allocations

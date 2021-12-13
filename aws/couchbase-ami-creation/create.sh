@@ -62,7 +62,7 @@ KEY_NAME="ami-creation-$(__generate_random_string)"
 echo "Key Name to be created: $KEY_NAME"
 mkdir -p "$HOME/.ssh" 2>&1
 rm -rf "$HOME/.ssh/aws-keypair.pem" 2>&1
-aws ec2 create-key-pair --key-name "$KEY_NAME" --query 'KeyMaterial' --output text > "$HOME/.ssh/aws-keypair.pem"
+aws ec2 create-key-pair --key-name "$KEY_NAME" --query 'KeyMaterial' --region "$REGION" --output text > "$HOME/.ssh/aws-keypair.pem"
 chmod 400 "$HOME/.ssh/aws-keypair.pem"
 echo "$KEY_NAME Created."
 
@@ -74,33 +74,44 @@ AWS_RESPONSE=$(aws ec2 run-instances \
     --security-groups "$SECURITY_GROUP" \
     --key-name "$KEY_NAME" \
     --region "$REGION" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${KEY_NAME}}]" \
     --output json)
 
 INSTANCE_ID=$(echo "$AWS_RESPONSE" | jq -r '.Instances[] | .InstanceId')
 echo "Instance Id: $INSTANCE_ID"
-PUBLIC_IP=$(aws ec2 describe-instances --instance-id "$INSTANCE_ID" | jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicIp')
+PUBLIC_IP=$(aws ec2 describe-instances --instance-id "$INSTANCE_ID" --region "$REGION" | jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicIp')
+
+until [[ -n "$PUBLIC_IP" ]]; do
+    PUBLIC_IP=$(aws ec2 describe-instances --instance-id "$INSTANCE_ID" --region "$REGION" | jq -r '.Reservations[] | .Instances[] | .NetworkInterfaces[] | .Association.PublicIp')
+done
+
 echo "Instance Public IP: $PUBLIC_IP"
 
 # If we decide to do more than just an empty OS. We need to do it before we run this command, as you won't be able to log into the VM once we're done
 # This ssh's into the instance updates the packages and removes ec2-user and root ssh details
 echo "Waiting on instance to intialize"
-instanceState=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --output json | jq -r '.Reservations[] | .Instances[] | .State.Name')
+instanceState=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --region "$REGION" --output json | jq -r '.Reservations[] | .Instances[] | .State.Name')
 
 until [[ "$instanceState" == "running" ]]; do
     sleep 5
-    instanceState=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --output json | jq -r '.Reservations[] | .Instances[] | .State.Name')
+    instanceState=$(aws ec2 describe-instances --instance-ids "$INSTANCE_ID" --region "$REGION" --output json | jq -r '.Reservations[] | .Instances[] | .State.Name')
 done
 sleep 60 #We have to wait until SSH starts up.
 echo "Updating packages on instance"
 scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/rpm_exploder.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/rpm_exploder.sh"
-scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/startup.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/startup.sh"
+
+if [[ "$GATEWAY" == "1" ]]; then
+    scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/gateway-startup.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/startup.sh"
+else
+    scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "${SCRIPT_SOURCE}/server-startup.sh" "ec2-user@$PUBLIC_IP:/home/ec2-user/startup.sh"
+fi
 
 if [[ -n "$PACKAGE" ]]; then
     FILE=$(basename "$PACKAGE")
     scp -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "$PACKAGE" "ec2-user@$PUBLIC_IP:/home/ec2-user/$FILE"
 fi
 
-ssh -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "ec2-user@$PUBLIC_IP" "sudo yum update -y && sudo /usr/bin/bash ~/rpm_exploder.sh ${VERSION} ${GATEWAY} ${SCRIPT_URL} && rm -rf ~/rpm_exploder.sh && echo 'Removing Ec2-User Authorized Keys' && sudo rm -rf /home/ec2-user/.ssh/ && echo 'Removing root Authorized Keys' && sudo rm -rf /root/.ssh/ && exit"
+ssh -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "ec2-user@$PUBLIC_IP" "sudo yum update -y && sudo /usr/bin/bash ~/rpm_exploder.sh ${VERSION} ${GATEWAY} ${SCRIPT_URL} && echo 'Removing Exploder' && rm -rf ~/rpm_exploder.sh && echo 'Removing Ec2-User Authorized Keys' && sudo rm -rf /home/ec2-user/.ssh/ && echo 'Removing root Authorized Keys' && sudo rm -rf /root/.ssh/ && exit"
 
 #Create AMI
 echo "Creating AMI:  $AMI_NAME"
@@ -113,16 +124,17 @@ imageResponse=$(aws ec2 create-image \
   --instance-id "$INSTANCE_ID" \
   --name "$AMI_NAME" \
   --description "$DESCRIPTION" \
+  --region "$REGION" \
   --output json)
 
 AMI_ID=$(echo "$imageResponse" | jq -r '.ImageId')
 
 #AMI is in pending.. so we cannot clean up until it is "available", then we can terminate the instance
-STATUS=$(aws ec2 describe-images --image-id "$AMI_ID" | jq -r '.Images[] | .State')
+STATUS=$(aws ec2 describe-images --image-id "$AMI_ID" --region "$REGION" | jq -r '.Images[] | .State')
 echo -n "$AMI_ID created, waiting on available..."
 until [[ "$STATUS" == "available" ]]; do
     sleep 10
-    STATUS=$(aws ec2 describe-images --image-id "$AMI_ID" | jq -r '.Images[] | .State')
+    STATUS=$(aws ec2 describe-images --image-id "$AMI_ID" --region "$REGION" | jq -r '.Images[] | .State')
     echo -n "."
 done
 echo "Available!"
@@ -132,7 +144,7 @@ jq -n --arg id "$AMI_ID" --arg name "$AMI_NAME" '{"id":$id, "name":$name}' > "$S
 #CLEANUP!
 echo "Cleaning up created resources"
 echo "Deleting $KEY_NAME"
-aws ec2 delete-key-pair --key-name "$KEY_NAME"
+aws ec2 delete-key-pair --key-name "$KEY_NAME" --region "$REGION"
 rm -rf "$HOME/.ssh/aws-keypair.pem"
 echo "Deleting instance: $INSTANCE_ID"
-aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"
+aws ec2 terminate-instances --instance-ids "$INSTANCE_ID" --region "$REGION"

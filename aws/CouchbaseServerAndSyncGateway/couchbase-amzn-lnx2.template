@@ -63,8 +63,9 @@
         "SyncGatewayVersion": {
             "Description": "Couchbase Sync Gateway Version",
             "Type": "String",
-            "Default": "2.8.2",
+            "Default": "2.8.3",
             "AllowedValues": [
+                "2.8.3",
                 "2.8.2",
                 "2.8.0",
                 "2.7.3",
