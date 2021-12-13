@@ -1,5 +1,11 @@
 from hashlib import sha1
 
+def get_services(version):
+    if version.startswith('7'):
+        return 'data,index,query,fts,analytics,eventing,backup'
+    else:
+        return 'data,index,query,fts,analytics,eventing'
+
 def generate_config(context):
     """ Entry Point for deployment Resources for Couchbase Server """
     resources = []
@@ -32,6 +38,7 @@ def generate_config(context):
         }
     }
     resources.append(firewallRule)
+    bootDiskImage = 'projects/couchbase-public/global/images/family/couchbase-server-enterprise-edition'
     instanceTemplate = {
         'name': 'cb-server-instance-template-{}'.format(suffix),
         'type': './resources/instance_template.py',
@@ -41,8 +48,8 @@ def generate_config(context):
             'serverVersion': context.properties['serverVersion'],
             'runtimeConfigName': '$(ref.{}.runtimeConfigName)'.format(config['name']),
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
-            'bootImage': 'global/images/couchbase-server-test-v20211210',
-            'couchbaseServices': 'data,index,query,fts,analytics,eventing',
+            'bootImage': bootDiskImage,
+            'couchbaseServices': get_services(context.properties['serverVersion']),
             'serviceAccount': '$(ref.{}.serviceAccount)'.format(serviceAccount['name'])
         },
         'metadata': {

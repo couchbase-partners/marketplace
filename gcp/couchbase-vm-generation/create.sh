@@ -40,7 +40,7 @@ SCRIPT_URL=$(cat "${SCRIPT_SOURCE}/../../script_url.txt")
 gateway=0
 debug=0
 
-while getopts l:n:z:p:f:i:v:gd flag
+while getopts l:n:z:p:f:i:v:c:gd flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
@@ -52,6 +52,7 @@ do
         v) version=${OPTARG};;
         g) gateway=1;;
         d) debug=1;;
+        c) image_family=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -96,13 +97,13 @@ if [[ "$debug" == "0" ]]; then
                             --project "$project" \
                             --source-disk "projects/$project/zones/$zone/disks/$instance_name" \
                             --licenses "projects/$project/global/licenses/$license" \
-                            --family="$name" \
+                            --family="$image_family" \
                             --description="$description")
 else 
     createImageResponse=$(gcloud compute images create "$image_name" \
                             --project "$project" \
                             --source-disk "projects/$project/zones/$zone/disks/$instance_name" \
-                            --family="$name" \
+                            --family="$image_family" \
                             --description="$description")
 fi
 echo "Create Image Response: $createImageResponse"                        
