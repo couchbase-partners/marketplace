@@ -181,12 +181,42 @@ def GenerateStartupScript(context, runtimeconfigName):
     sg = '-g' if 'syncGateway' in services else ''
     script = '''
 #!/usr/bin/env bash
+until apt-get update > /dev/null; do
+    sleep 0.5
+done
 
+until apt-get install --assume-yes jq -qq; do
+    sleep 0.5
+done
+
+function __get_gcp_metadata_value() {{ 
+    wget -O - --header="Metadata-Flavor:Google" -q --retry-connrefused --waitretry=1 --read-timeout=10 --timeout=10 -t 5 "http://metadata/computeMetadata/v1/$1" 
+}}
+
+function __get_gcp_attribute_value() {{
+    __get_gcp_metadata_value "instance/attributes/$1"
+}}
+
+ACCESS_TOKEN=$(__get_gcp_metadata_value "instance/service-accounts/default/token" | jq -r '.access_token')
+PROJECT_ID=$(__get_gcp_metadata_value "project/project-id")
+EXTERNAL_IP=$(__get_gcp_metadata_value "instance/network-interfaces/0/access-configs/0/external-ip")
+CONFIG=$(__get_gcp_attribute_value "runtime-config-name")
+EXTERNAL_IP_VAR_PATH=$(__get_gcp_attribute_value "external-ip-variable-path")
+SUCCESS_STATUS_PATH="$(__get_gcp_attribute_value "status-success-base-path")/$(hostname)"
+FAILURE_STATUS_PATH="$(__get_gcp_attribute_value "status-failure-base-path")/$(hostname)"
+NODE_PRIVATE_DNS=$(__get_gcp_metadata_value "instance/hostname")
+EXTERNAL_IP_PAYLOAD="$(printf '{{"name": "%s", "text": "%s"}}' "projects/$PROJECT_ID/configs/$CONFIG/variables/$EXTERNAL_IP_VAR_PATH" "$EXTERNAL_IP")"
+wget -O - -q --retry-connrefused --waitretry=1 --read-timeout=10 --timeout=10 -t 5 --header="Authorization: Bearer $ACCESS_TOKEN" --header "Content-Type: application/json" --header "X-GFE-SSL: yes" --method=PUT --body-data="$EXTERNAL_IP_PAYLOAD" "https://runtimeconfig.googleapis.com/v1beta1/projects/$PROJECT_ID/configs/variables/$EXTERNAL_IP_VAR_PATH"
+echo "Getting Cluster Host"
 if [[ $(hostname) != *"syncgateway"* ]]; then
     gcp_hostname=$(curl -H "Metadata-Flavor: Google" -s http://metadata/computeMetadata/v1/instance/hostname)
 
     if ! gcloud beta runtime-config configs variables set {cluster}/{dnsconfig} $gcp_hostname --config-name={config} --fail-if-present; then
         CLUSTER_HOST=$(gcloud beta runtime-config configs variables get-value {cluster}/{dnsconfig} --config-name={config})
+        until [[ -n "$CLUSTER_HOST" ]]; do
+            sleep 0.5
+            CLUSTER_HOST=$(gcloud beta runtime-config configs variables get-value {cluster}/{dnsconfig} --config-name={config})
+        done
     else
         CLUSTER_HOST=$gcp_hostname
     fi
@@ -202,10 +232,24 @@ else
         CLUSTER_HOST=$(curl -H "Metadata-Flavor: Google" -s http://metadata/computeMetadata/v1/instance/hostname)
     fi
 fi
+echo "Cluster Host is $CLUSTER_HOST"
+echo "Installing version: {version}"
 VERSION={version}
+echo "Getting Username/Passwords"
 USERNAME=$(gcloud beta runtime-config configs variables get-value {username} --config-name={config})
+until [[ -n "$USERNAME" ]]; do
+    sleep 0.5
+    USERNAME=$(gcloud beta runtime-config configs variables get-value {username} --config-name={config})
+done
 PASSWORD=$(gcloud beta runtime-config configs variables get-value {password} --config-name={config})
+until [[ -n "$PASSWORD" ]]; do
+    sleep 0.5
+    PASSWORD=$(gcloud beta runtime-config configs variables get-value {password} --config-name={config})
+done
+echo "Username: $USERNAME"
+echo "Password: $PASSWORD"
 NODE_COUNT={node_count}
+echo "RETRIEVED USERNAME/PASSWORD"
 
 # Before we install.  we need to specify the cluster host dns to the deployment
 gcp_hostname=$(curl -H "Metadata-Flavor: Google" -s http://metadata/computeMetadata/v1/instance/hostname)
@@ -214,11 +258,31 @@ if [[ "$CLUSTER_HOST" == "$gcp_hostname" ]]; then
     gcloud beta runtime-config configs variables set external-ip/clusters/{cluster}/groups/server  "$external_ip" --config-name={config}
 fi
 
+echo "Downloading Install Script"
 if [[ ! -e "couchbase_installer.sh" ]]; then
     curl -L --output "couchbase_installer.sh" "__SCRIPT_URL__"
 fi
-
+echo "Executing Install Script"
 bash ./couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e GCP -s -c -d -w $NODE_COUNT {sg}
+echo "Performing Post Install Configuration"
+host=$(hostname)
+SUCCESS_PAYLOAD="$(printf '{{"name": "%s", "text": "%s"}}' \
+"projects/$PROJECT_ID/configs/$CONFIG/variables/$SUCCESS_STATUS_PATH/$host" \\
+"success")"
+
+# Notify waiter
+wget -O - \\
+    --retry-connrefused \\
+    --waitretry=1 \\
+    --read-timeout=10 \\
+    --timeout=10 \\
+    -t 5 \\
+    --body-data="$SUCCESS_PAYLOAD" \\
+    --header="Authorization: Bearer $ACCESS_TOKEN" \\
+    --header "Content-Type: application/json" \\
+    --header "X-GFE-SSL: yes" \\
+    --method=POST \\
+    "https://runtimeconfig.googleapis.com/v1beta1/projects/$PROJECT_ID/configs/$CONFIG/variables"
     '''.format(cluster=context.properties['cluster'], 
                username='cb-username', 
                password='cb-password', 
