@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
+yum install jq aws-cfn-bootstrap -y -q
+
 VERSION=$1
 SYNC_GATEWAY=$2
 SCRIPT_URL=$3
 mkdir /setup
 
+echo "Setting Swappiness"
 # Setting swappiness to 0
 SWAPPINESS=0
 echo "
@@ -16,7 +19,7 @@ vm.swappiness = ${SWAPPINESS}
 sysctl vm.swappiness=${SWAPPINESS} -q
 
 # Disable Transparent Huge Pages
-
+echo "Disabling Transparent Hugepages"
 echo "#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          disable-thp
@@ -62,10 +65,11 @@ chmod 755 /etc/init.d/disable-thp
 chkconfig --add disable-thp
 service disable-thp start
 
-
+echo "Downloading install script"
 # Grab installer in case we need it and the user doesn't use the pre-installed
 wget -O /setup/couchbase_installer.sh "$SCRIPT_URL"
 
+echo "Retrieving Binaries"
 if [[ "$SYNC_GATEWAY" -gt 0 ]]; then
     echo "Preinstalling Gateway"
     echo "#!/usr/bin/env sh
@@ -90,9 +94,11 @@ else
     RPM="/setup/couchbase-server-enterprise-$VERSION-amzn2.x86_64.rpm"
 fi
 
+echo "Installing prerequisites"
 # Install prerequistites
 sudo yum deplist "$RPM" | awk '/provider:/ {print $2}' | sort -u | xargs sudo yum -y install
 
+echo "Extracting Preinstall scripts"
 # Extract Pre-Install
 START=$(rpm -qp --scripts "$RPM" | grep -n 'preinstall scriptlet (using /bin/sh):' | cut -d ":" -f 1)
 START=$((START + 1))
@@ -101,13 +107,16 @@ STOP=$((STOP - 1))
 SED="${START},${STOP}p"
 rpm -qp --scripts "$RPM" | sed -n "$SED" > /setup/preinstall.sh
 
+echo "Execute Preinstall"
 # execute pre-install
 /usr/bin/env sh /setup/preinstall.sh
 
+echo "Extract without executing scripts"
 # extract and maneuver files without scripts
 rpm -i --noscripts "$RPM"
 
 # Extract POST-Install
+echo "Extracting Postinstall scripts"
 START=$(rpm -qp --scripts $RPM | grep -n 'postinstall scriptlet (using /bin/sh):' | cut -d ":" -f 1)
 START=$((START + 1))
 STOP=$(rpm -qp --scripts "$RPM" | grep -n 'preuninstall scriptlet (using /bin/sh):' | cut -d ":" -f 1)
@@ -116,6 +125,7 @@ SED="${START},${STOP}p"
 rpm -qp --scripts "$RPM" | sed -n "$SED" > /setup/postinstall.sh
 
 # Extract POST-Transaction Script
+echo "Extracting Post Transaction Script"
 START=$(rpm -qp --scripts "$RPM" | grep -n 'posttrans scriptlet (using /bin/sh):' | cut -d ":" -f 1)
 START=$((START + 1))
 SED="${START},\$p"
@@ -123,17 +133,17 @@ rpm -qp --scripts "$RPM" | sed -n "$SED" > /setup/posttransaction.sh
 
 rm -rf "$RPM"
 
+echo "Beginning setup of Startup Service"
+
 cp "/home/ec2-user/startup.sh" "/setup/couchbase-startup.sh"
 rm -rf "/home/ec2-user/startup.sh"
 
+echo "Copied startup file.  Created Systemctl unit"
 chmod +x /setup/couchbase-startup.sh
-
-# https://serverfault.com/questions/871328/start-service-after-aws-user-data-has-run
-# seeing a reboot in the middle of run by cloud-init.  So this is an attempt to run
-# after cloud-init
-cat << _EOF > /etc/systemd/system/cb-server-startup.service
+echo "Modified Permissions"
+cat << _EOF > /etc/systemd/system/cb-startup.service
 [Unit]
-Description=Couchbase Server intialization script
+Description=Couchbase intialization script
 After=cloud-final.service
 
 [Service]
@@ -144,7 +154,9 @@ TimeoutStartSec=0
 [Install]
 WantedBy=multi-user.target
 _EOF
-
-chmod 664 /etc/systemd/system/cb-server-startup.service
+echo "Created Service File"
+chmod 664 /etc/systemd/system/cb-startup.service
+echo "Changed permissions on service"
 systemctl daemon-reload
-systemctl enable cb-server-startup.service
+systemctl enable cb-startup.service
+echo "RPM Exploder complete"

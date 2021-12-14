@@ -76,8 +76,9 @@
         "SyncGatewayVersion": {
             "Description": "Couchbase Sync Gateway Version",
             "Type": "String",
-            "Default": "2.8.2",
+            "Default": "2.8.3",
             "AllowedValues": [
+                "2.8.3",
                 "2.8.2",
                 "2.8.0",
                 "2.7.3",
@@ -157,11 +158,6 @@
             "Type": "String",
             "Default": "default"
         },
-        "DatabaseName": {
-            "Description": "The name of the database in Sync Gateway Configuration",
-            "Type": "String",
-            "Default": "default"
-        },
         "KeyName": {
             "Description": "Name of an existing EC2 KeyPair",
             "Type": "AWS::EC2::KeyPair::KeyName"
@@ -217,6 +213,15 @@
                 }
             }
         },
+        "CouchbaseClusterConnectionString": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Description": "The Rally point dns entry for new nodes to join the cluster with.",
+                "Name": "couchbase_server_connection",
+                "Type": "String",
+                "Value": { "Ref": "CouchbaseClusterUrl" }
+            }
+        },
         "SyncGatewayAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
@@ -257,7 +262,8 @@
                 }
             },
             "DependsOn": [
-                "CouchbaseSecret"
+                "CouchbaseSecret",
+                "CouchbaseClusterConnectionString"
             ]
         },
         "SyncGatewayLaunchTemplate": {
@@ -307,7 +313,30 @@
                             }
                         }
                     ],
-                    "UserData": {}
+                    "UserData": "",
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "couchbase:gateway:connection_param",
+                                    "Value": {"Ref": "CouchbaseClusterConnectionString" }
+                                },
+                                {
+                                    "Key": "couchbase:gateway:secret",
+                                    "Value": { "Ref": "CouchbaseSecret" }
+                                },
+                                {
+                                    "Key": "couchbase:gateway:version",
+                                    "Value": { "Ref": "SyncGatewayVersion"}
+                                },
+                                {
+                                    "Key": "couchbase:gateway:bucket",
+                                    "Value": { "Ref": "Bucket" }
+                                }
+                            ]
+                        }
+                    ]
                 }
             }
         },
@@ -453,7 +482,8 @@
                                         "ec2:CreateTags",
                                         "ec2:DescribeTags",
                                         "ec2:DescribeInstances",
-                                        "autoscaling:DescribeAutoScalingGroups"
+                                        "autoscaling:DescribeAutoScalingGroups",
+                                        "ssm:GetParameter"
                                     ],
                                     "Resource": [
                                         "*"

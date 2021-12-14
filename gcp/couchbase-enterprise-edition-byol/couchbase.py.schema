@@ -146,8 +146,9 @@ properties:
     default: 20
   syncGatewayVersion:
     type: string
-    default: 2.8.2
+    default: 2.8.3
     enum:
+      - 2.8.3
       - 2.8.2
       - 2.8.0
       - 2.7.3

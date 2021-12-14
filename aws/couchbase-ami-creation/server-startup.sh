@@ -10,8 +10,6 @@ if [[ -r /etc/profile.d/couchbaseserver.sh ]]; then
    source /etc/profile.d/couchbaseserver.sh
 fi
 
-yum install jq aws-cfn-bootstrap -y -q
-
 # Retrieve metadata per AWS's documentation
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
 region=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')

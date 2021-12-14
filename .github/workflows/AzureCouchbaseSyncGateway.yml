@@ -11,21 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Azure Login
-        uses: azure/login@v1
-        with: 
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Echo $GITHUB_WORKSPACE
-        run: echo "$GITHUB_WORKSPACE"
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
           node-version: '15'
       - run: mkdir -p "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway" && node "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/compiler.js" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/mainTemplate.json" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/embedded_gateway.sh" "${GITHUB_WORKSPACE}/script_url.txt" > "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway/azure-sg-template.json"
+      - name: Azure Login
+        uses: azure/login@v1
+        with: 
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Deploy To Azure
         timeout-minutes: 30
         uses: azure/CLI@v1
         with:
+          azcliversion: 2.29.2
           inlineScript: |
             COUCHBASESERVER=$(${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/createServer.sh -g cb-mkt-sg-test -l eastus)
             SERVER="couchbase://$(echo $COUCHBASESERVER | jq -r '.ip')"
