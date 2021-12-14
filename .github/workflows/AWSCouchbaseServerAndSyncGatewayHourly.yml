@@ -41,7 +41,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Deploy To AWS
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly hourly-pricing 3 7.0.3 2 2.8.3
         env:
@@ -83,7 +83,7 @@ jobs:
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
       - name: Deploy To AWS
-        timeout-minutes: 15
+        timeout-minutes: 20
         run: |
             bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly-no-sg hourly-pricing 3 7.0.3 0 2.8.3
         env:
