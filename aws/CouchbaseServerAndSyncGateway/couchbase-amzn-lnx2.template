@@ -674,7 +674,7 @@
                         "IpProtocol": "tcp",
                         "Description": "Couchbase Server Inbound",
                         "FromPort": 9110,
-                        "ToPort": 9122,
+                        "ToPort": 9124,
                         "CidrIp": {
                             "Ref": "SSHCIDR"
                         }
