@@ -16,8 +16,8 @@ if [ -z "$REGION" ]; then
 fi
 Username="couchbase"
 Password="foo123!"
-KeyName="couchbase-${REGION}"
-#KeyName="ja-test-kp"
+#KeyName="couchbase-${REGION}"
+KeyName="ja-test-kp"
 SSHCIDR="0.0.0.0/0"
 ServerInstanceCount=$3
 ServerVersion=$4
