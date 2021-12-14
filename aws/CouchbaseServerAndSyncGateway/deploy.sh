@@ -30,6 +30,7 @@ SubnetId=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VpcName}" --m
 
 
 aws cloudformation create-stack \
+--disable-rollback \
 --capabilities CAPABILITY_IAM \
 --template-body "${TEMPLATE_BODY}" \
 --stack-name "${STACK_NAME}" \
@@ -50,7 +51,7 @@ Output=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" |
 Counter=0
 
 printf "Waiting on Stack Creation to Complete ..."
-while [[ $Output != '"CREATE_COMPLETE"' && $Output != '"ROLLBACK_COMPLETE"' && $Counter -le 50 ]]
+while [[ $Output != '"CREATE_COMPLETE"' && $Output != '"ROLLBACK_COMPLETE"' && $Counter -le 75 ]]
 do
     printf "."
     Output=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
@@ -63,7 +64,7 @@ if [[ $Output == '"CREATE_COMPLETE"' ]]; then
     exit 0
 fi
 
-if [[ $Output == '"ROLLBACK_COMPLETE"' || $Counter -ge 50 ]]; then
+if [[ $Output == '"ROLLBACK_COMPLETE"' || $Counter -ge 75 ]]; then
     printf "Failed!\n"
     exit 1
 fi

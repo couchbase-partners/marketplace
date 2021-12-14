@@ -4,3 +4,5 @@ imports:
 resources:
 - name: couchbase
   type: couchbase.py
+  properties: 
+    serverVersion: 7.0.3
