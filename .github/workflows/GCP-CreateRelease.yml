@@ -34,7 +34,7 @@ jobs:
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway-hourly-pricing/makeArchives.sh
       - name: Build Couchbae Server Enterprise Edition
         run: |
-          WDIR=$(pwd) && cd ${GITHUB_WORKSPACE}/gcp/couchbase-server/ && zip -r -X  ../../build/gcp/couchbase-server/gcp-cbs-archive.zip ./* && cd "$WDIR"
+          WDIR=$(pwd) && mkdir -p ${GITHUB_WORKSPACE}/build/gcp/couchbase-server/ && cd ${GITHUB_WORKSPACE}/gcp/couchbase-server/ && zip -r -X  ../../build/gcp/couchbase-server/gcp-cbs-archive.zip ./* && cd "$WDIR"
       - name: Upload CBS Package
         id: upload-cbs-asset
         uses: actions/upload-release-asset@v1
