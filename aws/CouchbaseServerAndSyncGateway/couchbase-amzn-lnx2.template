@@ -700,8 +700,17 @@
                     {
                         "IpProtocol": "tcp",
                         "Description": "Couchbase Server Inbound",
-                        "FromPort": 11207,
+                        "FromPort": 11206,
                         "ToPort": 11215,
+                        "CidrIp": {
+                            "Ref": "SSHCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "Description": "Couchbase Server Inbound",
+                        "FromPort": 19102,
+                        "ToPort": 19130,
                         "CidrIp": {
                             "Ref": "SSHCIDR"
                         }
