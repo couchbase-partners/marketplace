@@ -360,7 +360,7 @@
                     "Count": {
                         "Ref": "ServerInstanceCount"
                     },
-                    "Timeout": "PT15M"
+                    "Timeout": "PT20M"
                 }
             },
             "DependsOn": [
