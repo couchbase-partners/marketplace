@@ -16,8 +16,8 @@ if [ -z "$REGION" ]; then
 fi
 Username="couchbase"
 Password="foo123!"
-KeyName="couchbase-${REGION}"
-#KeyName="ja-test-kp"
+#KeyName="couchbase-${REGION}"
+KeyName="ja-test-kp"
 SSHCIDR="0.0.0.0/0"
 ServerInstanceCount=$3
 ServerVersion=$4
@@ -51,7 +51,7 @@ Output=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" |
 Counter=0
 
 printf "Waiting on Stack Creation to Complete ..."
-while [[ $Output != '"CREATE_COMPLETE"' && $Output != '"ROLLBACK_COMPLETE"' && $Counter -le 75 ]]
+while [[ $Output != '"CREATE_COMPLETE"' && $Output != '"ROLLBACK_COMPLETE"' && $Counter -le 100 ]]
 do
     printf "."
     Output=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
@@ -64,7 +64,7 @@ if [[ $Output == '"CREATE_COMPLETE"' ]]; then
     exit 0
 fi
 
-if [[ $Output == '"ROLLBACK_COMPLETE"' || $Counter -ge 75 ]]; then
+if [[ $Output == '"ROLLBACK_COMPLETE"' || $Counter -ge 100 ]]; then
     printf "Failed!\n"
     exit 1
 fi
