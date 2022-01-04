@@ -26,6 +26,11 @@ properties:
     default: us-central1
     x-googleProperty:
       type: GCE_REGION
+  defaultZone:
+    type: string
+    default: us-central1-f
+    x-googleProperty:
+      type: GCE_ZONE
   network:
     type: array
     default: [default]
@@ -84,6 +89,9 @@ properties:
   accessCIDR:
     type: string
     pattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
+  imageFamily:
+    type: string
+    default: couchbase-server-hourly-pricing
 
 outputs:
   runtimeConfigName:

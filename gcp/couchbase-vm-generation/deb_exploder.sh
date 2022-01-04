@@ -86,6 +86,14 @@ echo "Downloading install script"
 # Grab installer in case we need it and the user doesn't use the pre-installed
 wget -O /setup/couchbase_installer.sh "$SCRIPT_URL"
 
+
+mkdir -p /third_party/
+
+if [[ "$SYNC_GATEWAY" == "0" ]]; then
+    wget -O /third_party/notices.txt "https://raw.githubusercontent.com/couchbase/product-metadata/master/couchbase-server/blackduck/${VERSION}/notices.txt"
+else 
+    wget -o /third_party/notices.txt "https://github.com/couchbase/product-metadata/blob/master/sync_gateway/blackduck/${VERSION}/notices.txt"
+fi
 # Getting Binaries
 echo "Retrieving Binaries"
 if [[ "$SYNC_GATEWAY" -gt 0 ]]; then

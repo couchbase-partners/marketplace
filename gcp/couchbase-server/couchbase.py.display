@@ -79,5 +79,5 @@ runtime:
   suggestedActions:
     - heading: Couchbase Server
       description: The admin interface will be available on port 8091 of any Couchbase Server node.  You can login with the username and password provided at deploy time.
-       - heading: Instance Groups
+    - heading: Instance Groups
       description: Nodes are deployed using Instance Groups.  You can view your instance groups <a href="https://console.cloud.google.com/compute/instanceGroups/list">here</a>.

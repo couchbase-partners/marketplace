@@ -70,20 +70,20 @@ createInstanceResponse=$(gcloud compute instances create "$instance_name" \
                                                  --scopes "https://www.googleapis.com/auth/cloud-platform")
 
 echo "Create Instance Response: $createInstanceResponse"
-sleep 40
+sleep 60
 echo "Adding deb_exploder to the instance"
-gcloud compute scp "${SCRIPT_SOURCE}/deb_exploder.sh" "$instance_name:~/deb_exploder.sh" --zone="$zone"
+gcloud compute scp "${SCRIPT_SOURCE}/deb_exploder.sh" "$instance_name:~/deb_exploder.sh" --zone="$zone" --project="$project"
 echo "Adding Appropriate Startup.sh to instance"
 
 if [[ "$gateway" == "1" ]]; then 
-    gcloud compute scp "${SCRIPT_SOURCE}/gateway-startup.sh" "$instance_name:~/startup.sh" --zone="$zone"
+    gcloud compute scp "${SCRIPT_SOURCE}/gateway-startup.sh" "$instance_name:~/startup.sh" --zone="$zone" --project="$project"
 else
-    gcloud compute scp "${SCRIPT_SOURCE}/server-startup.sh" "$instance_name:~/startup.sh" --zone="$zone"
+    gcloud compute scp "${SCRIPT_SOURCE}/server-startup.sh" "$instance_name:~/startup.sh" --zone="$zone" --project="$project"
 fi
 
 
 echo "Executing the deb_exploder"
-gcloud compute ssh "$instance_name" --command="sudo chmod +x ~/deb_exploder.sh && sudo ~/deb_exploder.sh $version $gateway $SCRIPT_URL" --zone="$zone"
+gcloud compute ssh "$instance_name" --command="sudo chmod +x ~/deb_exploder.sh && sudo ~/deb_exploder.sh $version $gateway $SCRIPT_URL" --zone="$zone" --project="$project"
 echo "Deleting Instance but preserving boot disk"
 gcloud compute instances delete "$instance_name" --zone="$zone" --project="$project" --keep-disks=boot -q
 echo "Creating Image from boot disk"
