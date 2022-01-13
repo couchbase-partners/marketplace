@@ -1,16 +1,16 @@
 metadata_version: v1
 
 description:
-  title: Couchbase Server Enterprise
+  title: Couchbase Sync Gateway
   version: Multiple Versions available
   author:
     title: Couchbase
   tagline: 'Enterprise-class, multi-cloud-to-edge NoSQL database'
-  descriptionHtml: 'Couchbase Server is a NoSQL database that delivers unparalleled performance at scale, on premises and in any cloud. It features memory-first architecture, built-in cache, geo-distributed deployment, and workload isolation. Couchbase excels at supporting business-critical applications at scale while maintaining sub-millisecond latencies and 99.999% availability.'
+  descriptionHtml: 'Sync Gateway is the synchronization server in a Couchbase for Mobile and Edge deployment. It is designed to provide data synchronization for large-scale interactive web, mobile, and IoT applications'
   eulaUrl: 'https://www.couchbase.com/ESLA08042020'
   documentations:
-    - title: Getting Started on the GCP Marketplace
-      url: https://github.com/couchbase-partners/marketplace/blob/main/gcp/shared/README.md
+    - title: Getting Started With Sync Gateway
+      url: https://docs.couchbase.com/sync-gateway/current/introduction.html
       destinations:
         - DESTINATION_SOLUTION_DETAILS
         - DESTINATION_CONFIGURATION
@@ -21,7 +21,7 @@ description:
         - title: Ubuntu
           version: 20.04 LTS
     - software:
-        - title: Couchbase Server EE
+        - title: Couchbase Sync Gateway EE
   support:
     - title: Support
       descriptionHtml: 'With Couchbase customers all around the world, our support team provides global coverage. So wherever you’re located, we’ve got you covered. For customers requiring round-the-clock support, 24x7x365 service level agreements are available.'
@@ -33,34 +33,8 @@ input:
       title: Networking Configuration
     - name: server
       title: Couchbase Server
-  
-  booleanGroups:
-    - name: services
-      title: Couchbase Server services
-      subtext: "Select services you would like running within your Couchbase Server Cluster."
 
   properties:
-    - name: data
-      title: Data
-      booleanGroup: services
-    - name: index
-      title: Index
-      booleanGroup: services
-    - name: query
-      title: Query
-      booleanGroup: services
-    - name: eventing
-      title: Eventing
-      booleanGroup: services
-    - name: analytics
-      title: Analytics
-      booleanGroup: services
-    - name: search
-      title: Full-Text Search
-      booleanGroup: services
-    - name: backup
-      title: Backup (version 7.0+)
-      booleanGroup: services
     - name: region
       title: Deployment region
       section: networking
@@ -76,16 +50,22 @@ input:
       placeholder: '0.0.0.0/0, 192.169.0.2/24'
       section: networking
     - name: serverNodeCount
-      title: Couchbase Server Node Count
+      title: Couchbase Gateway Node Count
       section: server
     - name: serverNodeType
-      title: Couchbase Server Node Type
+      title: Couchbase Gateway Node Type
       section: server
     - name: serverDiskSize
-      title: Couchbase Server pd-ssd disk size in GB
+      title: Couchbase Gateway pd-ssd disk size in GB
       section: server
     - name: serverVersion
-      title: Couchbase Server Version
+      title: Couchbase Gateway Version
+      section: server
+    - name: couchbaseConnectionString
+      title: Couchbase Server Connection string
+      section: server
+    - name: bucket
+      title: Couchbase Server Bucket Name
       section: server
     - name: username
       title: Couchbase Admin Username
@@ -103,7 +83,7 @@ runtime:
      - label: Couchbase Password
        value: '{{ outputs().couchbasePassword }}'
   suggestedActions:
-    - heading: Couchbase Server
-      description: The admin interface will be available on port 8091 of any Couchbase Server node.  You can login with the username and password provided at deploy time.
+    - heading: Couchbase Gateway
+      description: The admin interface will be available on port 4985 of any Couchbase Gateway node.
     - heading: Instance Groups
       description: Nodes are deployed using Instance Groups.  You can view your instance groups <a href="https://console.cloud.google.com/compute/instanceGroups/list">here</a>.

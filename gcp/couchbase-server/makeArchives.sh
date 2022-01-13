@@ -45,7 +45,7 @@ fi
 # remove existing archive
 rm -f "$SCRIPT_SOURCE../../build/gcp/couchbase-server/$ARCHIVE_NAME"
 # zip up the contents of the package into the archive
-#WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/" && zip -r -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
+WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/" && zip -r -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
 
 # remove package folder
-#rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
+rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
