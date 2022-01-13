@@ -38,7 +38,7 @@ def generate_config(context):
         }
     }
     resources.append(firewallRule)
-    bootDiskImage = 'projects/couchbase-public/global/images/family/couchbase-server-enterprise-edition'
+    bootDiskImage = 'projects/couchbase-public/global/images/family/' + context.properties['imageFamily']
     instanceTemplate = {
         'name': 'cb-server-instance-template-{}'.format(suffix),
         'type': './resources/instance_template.py',

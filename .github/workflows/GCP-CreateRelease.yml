@@ -32,10 +32,11 @@ jobs:
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway-byol/makeArchives.sh
       - name: Build SG Hourly Package
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway-hourly-pricing/makeArchives.sh
-      - name: Build Couchbae Server Enterprise Edition
-        run: |
-          WDIR=$(pwd) && mkdir -p ${GITHUB_WORKSPACE}/build/gcp/couchbase-server/ && cd ${GITHUB_WORKSPACE}/gcp/couchbase-server/ && zip -r -X  ../../build/gcp/couchbase-server/gcp-cbs-archive.zip ./* && cd "$WDIR"
-      - name: Upload CBS Package
+      - name: Build Couchbae Server Enterprise Edition - Hourly Package
+        run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/makeArchives.sh
+      - name: Build Couchbae Server Enterprise Edition - BYOL Package
+        run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/makeArchives.sh -b
+      - name: Upload CBS Package - Hourly 
         id: upload-cbs-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -45,6 +46,16 @@ jobs:
           asset_path: ./build/gcp/couchbase-server/gcp-cbs-archive.zip
           asset_name: gcp-cbs-archive.zip
           asset_content_type: application/zip
+      - name: Upload CBS Package - BYOL
+        id: upload-cbs-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/gcp/couchbase-server/gcp-cbs-byol-archive.zip
+          asset_name: gcp-cbs-byol-archive.zip
+          asset_content_type: application/zip          
       - name: Upload CBS BYOL Package
         id: upload-cbs-byol-asset
         uses: actions/upload-release-asset@v1
@@ -52,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/gcp/couchbase-enterprise-edition-byol/gcp-cbs-archive-byol.zip
+          asset_path: ./build/gcp/couchbase-enterprise-edition-byol/gcp-cbs-archive-byol-deprecated.zip
           asset_name: gcp-cbs-archive-byol.zip
           asset_content_type: application/zip
       - name: Upload CBS Hourly Package
@@ -62,7 +73,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/gcp/couchbase-enterprise-edition-hourly-pricing/gcp-cbs-archive-hourly-pricing.zip
+          asset_path: ./build/gcp/couchbase-enterprise-edition-hourly-pricing/gcp-cbs-archive-hourly-pricing-deprecated.zip
           asset_name: gcp-cbs-archive-hourly-pricing.zip
           asset_content_type: application/zip
       - name: Upload SG BYOL Package
