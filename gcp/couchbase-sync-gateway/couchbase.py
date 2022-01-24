@@ -1,47 +1,24 @@
 from hashlib import sha1
 
-def get_services(context):
-    version = context.properties['serverVersion']
-    services = ''
-    if context.properties['data']:
-        services += 'data,'
-    if context.properties['index']:
-        services += 'index,'
-    if context.properties['query']:
-        services += 'query,'
-    if context.properties['search']:
-        services += 'fts,'
-    if context.properties['eventing']:
-        services += 'eventing,'
-    major = int(version[0])
-    if major >= 7 and context.properties['backup']:
-        services += "backup,"
-
-    if (len(services) > 0):
-        # trim last comma and return
-        services = services[:-1]
-    else:
-        services = "data,index,query"
-    
-    return services
-
 def generate_config(context):
-    """ Entry Point for deployment Resources for Couchbase Server """
+    """ Entry Point for deployment Resources for Couchbase Gateway """
     resources = []
     
     suffix = sha1(context.env['name'].encode('utf-8')).hexdigest()[:10]
     config = {
-        'name': 'cb-server-runtime-config-{}'.format(suffix),
+        'name': 'cb-gateway-runtime-config-{}'.format(suffix),
         'type': './resources/runtime_config.py',
         'properties': {
             'username': context.properties['username'],
             'password': context.properties['password'],
-            'nameSuffix': suffix
+            'nameSuffix': suffix,
+            'connectionString': context.properties['couchbaseConnectionString'],
+            'bucket': context.properties['bucket']
         }
     }
     resources.append(config)
     serviceAccount = {
-        'name': 'cb-server-service-account-{}'.format(suffix),
+        'name': 'cb-gateway-service-account-{}'.format(suffix),
         'type': './resources/iam_service_account.py',
         'properties': {
             'nameSuffix': suffix
@@ -49,7 +26,7 @@ def generate_config(context):
     }
     resources.append(serviceAccount)
     firewallRule = {
-        'name': 'cb-server-firewall-rule-{}'.format(suffix),
+        'name': 'cb-gateway-firewall-rule-{}'.format(suffix),
         'type': './resources/firewall_rule.py',
         'properties': {
             'nameSuffix': suffix,
@@ -59,7 +36,7 @@ def generate_config(context):
     resources.append(firewallRule)
     bootDiskImage = 'projects/couchbase-public/global/images/family/' + context.properties['imageFamily']
     instanceTemplate = {
-        'name': 'cb-server-instance-template-{}'.format(suffix),
+        'name': 'cb-gateway-instance-template-{}'.format(suffix),
         'type': './resources/instance_template.py',
         'properties': {
             'nameSuffix': suffix,
@@ -68,7 +45,6 @@ def generate_config(context):
             'runtimeConfigName': '$(ref.{}.runtimeConfigName)'.format(config['name']),
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
             'bootImage': bootDiskImage,
-            'couchbaseServices': get_services(context),
             'serviceAccount': '$(ref.{}.serviceAccount)'.format(serviceAccount['name'])
         },
         'metadata': {
@@ -77,7 +53,7 @@ def generate_config(context):
     }
     resources.append(instanceTemplate)
     managedInstanceGroup = {
-        'name': 'cb-server-instance-group-{}'.format(suffix),
+        'name': 'cb-gateway-instance-group-{}'.format(suffix),
         'type': './resources/managed_instance_group.py',
         'properties': {
             'nameSuffix': suffix,
@@ -92,7 +68,7 @@ def generate_config(context):
     }
     resources.append(managedInstanceGroup)
     waiter = {
-        'name': 'cb-server-waiter-{}'.format(suffix),
+        'name': 'cb-gateway-waiter-{}'.format(suffix),
         'type': './resources/waiter.py',
         'properties': {
             'nameSuffix': suffix,

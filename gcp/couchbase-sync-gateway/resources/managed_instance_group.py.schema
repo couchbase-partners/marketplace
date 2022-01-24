@@ -1,0 +1,13 @@
+required:
+  - nameSuffix
+
+properties:
+  nameSuffix:
+    type: string
+  region:
+    type: string
+  instanceTemplate:
+    type: string
+  size:
+    type: integer
+  

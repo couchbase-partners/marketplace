@@ -39,7 +39,14 @@ CONFIG=$(__get_gcp_attribute_value "couchbase-gateway-config")
 BUCKET=$(__get_gcp_attribute_value "couchbase-gateway-bucket")
 TAGGED_USERNAME=$(__get_gcp_attribute_value "couchbase-gateway-username")
 TAGGED_PASSWORD=$(__get_gcp_attribute_value "couchbase-gateway-password")
-
+RUNTIME_CONFIG=$(__get_gcp_attribute_value "couchbase-server-runtime-config")
+echo "GCP Runtime Config: $RUNTIME_CONFIG"
+EXTERNAL_IP_VAR_PATH=$(__get_gcp_attribute_value "external-ip-variable-path")
+echo "GCP External Ip Var Path: $EXTERNAL_IP_VAR_PATH"
+SUCCESS_STATUS_PATH="$(__get_gcp_attribute_value "status-success-base-path")/$(hostname)"
+echo "GCP Success Status Path: $SUCCESS_STATUS_PATH"
+FAILURE_STATUS_PATH="$(__get_gcp_attribute_value "status-failure-base-path")/$(hostname)"
+echo "GCP Failure Status Path: $FAILURE_STATUS_PATH"
 
 
 # if no version, use built in version
@@ -52,6 +59,10 @@ if [[ -n "$CONNECTION_PARAM" ]]; then
     CONNECTION_STRING=$(gcloud secrets versions access latest --secret="$CONNECTION_PARAM")
 fi
 
+if [[ -n "$RUNTIME_CONFIG" ]]; then
+    CONNECTION_STRING=$(gcloud beta runtime-config configs variables get-value ConnectionString --config-name="$RUNTIME_CONFIG")
+    BUCKET=$(gcloud beta runtime-config configs variables get-value Bucket --config-name="$RUNTIME_CONFIG")
+fi
 
 # if we don't have a connection string we need some default.. so we'll default to localhost
 if [[ -z "$CONNECTION_STRING" ]]; then
@@ -75,6 +86,9 @@ if [[ -n "$SECRET" ]]; then
 elif [[ -n "$TAGGED_USERNAME" ]] && [[ -n "$TAGGED_PASSWORD" ]]; then
    USERNAME="$TAGGED_USERNAME"
    PASSWORD="$TAGGED_PASSWORD"
+elif [[ -n "$RUNTIME_CONFIG" ]]; then
+    USERNAME=$(gcloud beta runtime-config configs variables get-value Username --config-name="$RUNTIME_CONFIG")
+    PASSWORD=$(gcloud beta runtime-config configs variables get-value Password --config-name="$RUNTIME_CONFIG")
 else
    USERNAME="NO-USER"
    PASSWORD="NO-PASSWORD"
@@ -146,25 +160,10 @@ fi
 
 service sync_gateway restart
 
-if [[ "$SUCCESS" == 0 && -n "$CONFIG" ]]; then
-
-        SUCCESS_PAYLOAD=""
-
-       echo "Sending success notification for startup waiter on GCP"
-
-        # Notify waiter
-        wget -O - \
-            --retry-connrefused \
-            --waitretry=1 \
-            --read-timeout=10 \
-            --timeout=10 \
-            -t 5 \
-            --body-data="${SUCCESS_PAYLOAD}" \
-            --header="Authorization: Bearer ${ACCESS_TOKEN}" \
-            --header "Content-Type: application/json" \
-            --header "X-GFE-SSL: yes" \
-            --method=POST \
-            "https://runtimeconfig.googleapis.com/v1beta1/projects/${PROJECT_ID}/configs/${CONFIG}/variables"
+if [[ "$SUCCESS" == 0 && -n "$RUNTIME_CONFIG" ]]; then
+    gcloud beta runtime-config configs variables set "$SUCCESS_STATUS_PATH" success --config-name="$RUNTIME_CONFIG"
+elif [[ -n "$CONFIG" ]]; then
+    gcloud beta runtime-config configs variables set "$FAILURE_STATUS_PATH" failure --config-name="$RUNTIME_CONFIG"
 fi
 
 # We should be running by here. if not, RESTART!

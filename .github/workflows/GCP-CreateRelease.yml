@@ -36,6 +36,10 @@ jobs:
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/makeArchives.sh
       - name: Build Couchbae Server Enterprise Edition - BYOL Package
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/makeArchives.sh -b
+      - name: Build Couchbae Sync Gateway - Hourly Package
+        run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway/makeArchives.sh
+      - name: Build Couchbae Sync Gateway - BYOL Package
+        run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway/makeArchives.sh -b        
       - name: Upload CBS Package - Hourly 
         id: upload-cbs-asset
         uses: actions/upload-release-asset@v1
@@ -84,7 +88,7 @@ jobs:
         with: 
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./build/gcp/couchbase-sync-gateway-byol/gcp-sg-archive-byol.zip
-          asset_name: gcp-sg-archive-byol.zip
+          asset_name: gcp-sg-archive-byol-deprecated.zip
           asset_content_type: application/zip
       - name: Upload SG Hourly Package
         id: upload-sg-hourly-asset
@@ -94,6 +98,25 @@ jobs:
         with: 
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./build/gcp/couchbase-sync-gateway-hourly-pricing/gcp-sg-archive-hourly-pricing.zip
-          asset_name: gcp-sg-archive-hourly-pricing.zip
+          asset_name: gcp-sg-archive-hourly-pricing-deprecated.zip
           asset_content_type: application/zip
-        
+      - name: Upload Gateway Package - Hourly 
+        id: upload-cbs-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/gcp/couchbase-sync-gateway/gcp-sg-archive.zip
+          asset_name: gcp-sg-archive.zip
+          asset_content_type: application/zip
+      - name: Upload Gateway Package - BYOL
+        id: upload-cbs-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/gcp/couchbase-sync-gateway/gcp-sg-byol-archive.zip
+          asset_name: gcp-sg-byol-archive.zip
+          asset_content_type: application/zip  
