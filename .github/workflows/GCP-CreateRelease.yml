@@ -41,7 +41,7 @@ jobs:
       - name: Build Couchbae Sync Gateway - BYOL Package
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-sync-gateway/makeArchives.sh -b        
       - name: Upload CBS Package - Hourly 
-        id: upload-cbs-asset
+        id: upload-cbs-asset-hourly
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
           asset_name: gcp-cbs-archive.zip
           asset_content_type: application/zip
       - name: Upload CBS Package - BYOL
-        id: upload-cbs-asset
+        id: upload-cbs-asset-byol
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
           asset_name: gcp-sg-archive-hourly-pricing-deprecated.zip
           asset_content_type: application/zip
       - name: Upload Gateway Package - Hourly 
-        id: upload-cbs-asset
+        id: upload-sg-asset-hourly
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -111,7 +111,7 @@ jobs:
           asset_name: gcp-sg-archive.zip
           asset_content_type: application/zip
       - name: Upload Gateway Package - BYOL
-        id: upload-cbs-asset
+        id: upload-sg-asset-byol
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
