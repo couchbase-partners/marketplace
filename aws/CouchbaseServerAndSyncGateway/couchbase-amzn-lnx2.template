@@ -39,7 +39,7 @@
         "ServerVersion": {
             "Description": "Couchbase Server Version",
             "Type": "String",
-            "Default": "7.0.3",
+            "Default": "6.6.5",
             "AllowedValues": [
                 "7.0.3",
                 "6.6.5",
