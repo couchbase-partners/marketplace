@@ -238,7 +238,7 @@
                                     0,
                                     { "Fn::Split": ["-", {
                                         "Fn::Select": [
-                                            2, { "Fn:Split": [
+                                            2, { "Fn::Split": [
                                                 "/", { "Ref": "AWS::StackId" }
                                             ]}
                                         ]
