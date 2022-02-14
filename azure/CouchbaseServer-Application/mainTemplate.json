@@ -8,6 +8,15 @@
     "serverDiskSize": {
       "type": "int"
     },
+    "authenticationType": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "securestring"
+    },
+    "sshPublicKey": {
+      "type": "securestring"
+    },
     "serverVersion": {
       "type": "string",
       "defaultValue": "7.0.2"
@@ -16,14 +25,35 @@
       "type": "string"
     },
     "adminUsername": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "azureuser"
     },
-    "adminPassword": {
+    "serverUsername": {
+      "type": "string",
+      "defaultValue": "couchbase"
+    },
+    "serverPassword": {
       "type": "securestring"
     },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]"
+    },
+    "enableMDS": {
+      "type": "bool",
+      "defaultValue": "false"
+    },
+    "mdsConfig": {
+      "type": "array",
+      "maxLength": 10
+    },
+    "services": {
+      "type": "array",
+      "defaultValue": [
+        "data",
+        "index",
+        "query"
+      ]
     },
     "vnet": {
       "type": "object",
@@ -62,20 +92,10 @@
       "type": "string",
       "defaultValue": "<<IMAGE_VERSION>>"
     },
-    "_artifactsLocation": {
+    "_now": {
       "type": "string",
-      "metadata": {
-        "description": "The base URI where artifacts required by this template are located including a trailing '/'"
-      },
-      "defaultValue": "[deployment().properties.templateLink.uri]"
-    },
-    "_artifactsLocationSasToken": {
-      "type": "securestring",
-      "metadata": {
-          "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
-      },
-      "defaultValue": ""
-   }
+      "defaultValue": "[utcNow()]"
+    }
   },
   "functions":[
       {
@@ -97,6 +117,34 @@
                                     )
                             ]"
                 }
+          },
+          "arrayToCSV": {
+            "parameters": [
+              {
+                "name": "stringArray",
+                "type": "array"
+              }
+            ],
+            "output":{
+              "type": "string",
+              "value": "[replace(replace(replace(string(parameters('stringArray')), '[', ''), ']', ''), '\"', '')]"
+            }
+          },
+          "getProfileWithPrefix": {
+            "parameters": [
+              {
+                "name": "profile",
+                "type": "object"
+              },
+              {
+                "name": "prefix",
+                "type": "string"
+              }
+            ],
+            "output": {
+              "type": "object",
+              "value": "[union(parameters('profile'), json(concat('{\"computerNamePrefix\":\"', parameters('prefix'), '\"}')))]"
+            }
           }
         }
     }
@@ -107,7 +155,7 @@
                       concat(
                         resourceGroup().id, 
                         '/providers/Microsoft.Compute/virtualMachineScaleSets/',
-                        couchbase.generateResourceName('server'), 
+                        couchbase.generateResourceName('server-main'), 
                         '/virtualMachines/0/networkInterfaces/',
                         couchbase.generateResourceName('server-nic'),
                         '/ipConfigurations/',
@@ -115,7 +163,30 @@
                         '/publicIPAddresses/',
                         couchbase.generateResourceName('server-public-ip')
                       )
-                    ]"
+                    ]",
+    "password_osProfile": {
+      "adminUsername": "[parameters('adminUsername')]",
+      "adminPassword": "[parameters('adminPassword')]"
+    },
+    "sshPublicKey_osProfile": {
+      "adminUsername": "[parameters('adminUsername')]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [{
+            "path": "/home/azureuser/.ssh/authorized_keys",
+            "keyData": "[parameters('sshPublicKey')]"
+          }]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('authenticationType'), '_osProfile'))]",
+    "secretValue": {
+      "username": "[parameters('serverUsername')]",
+      "password": "[parameters('serverPassword')]"
+    },
+    "subscriptionReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+    "assignmentReaderGuid": "[guid(subscription().subscriptionId, parameters('_now'))]"
   },
   "resources": [
     {
@@ -295,18 +366,129 @@
       }
     },
     {
-      "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[couchbase.generateResourceName('server')]",
-      "location": "[parameters('location')]",
-      "apiVersion": "2019-03-01",
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[couchbase.generateResourceName('identity')]",
+      "apiVersion": "2018-11-30",
+      "location": "[resourceGroup().location]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2018-09-01-preview",
+      "name": "[variables('assignmentReaderGuid')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]"
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]"
       ],
-      "plan": {
-        "publisher": "[parameters('publisher')]",
-        "product": "[parameters('offer')]",
-        "name": "[parameters('license')]"
+      "properties": {
+          "roleDefinitionId": "[variables('subscriptionReader')]",
+          "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+          "principalType": "ServicePrincipal"
+      }
+    },      
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "[couchbase.generateResourceName('vault')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
+      ],
+      "tags": {},
+      "properties": {
+        "enabledForDeployment": true,
+        "enabledForTemplateDeployment": true,
+        "enabledForDiskEncryption": false,
+        "enableRbacAuthorization": false,
+        "accessPolicies": [
+          {
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+            "permissions": {
+              "secrets": [
+                "Get",
+                "List",
+                "Set",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+              ]
+            },
+            "tenantId": "[subscription().tenantId]"
+          }
+        ],
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "Standard",
+          "family": "A"
+        },
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-secret')]",
+      "dependsOn": ["[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]"],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "application/json",
+        "value": "[string(variables('secretValue'))]"
+      }
+    },
+        {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-rally')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main'))]"
+      ],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "application/json",
+        "value": "[reference(variables('serverPubIP'), '2017-03-30').dnsSettings.fqdn]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[couchbase.generateResourceName('server-main')]",
+      "location": "[parameters('location')]",
+      "apiVersion": "2021-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
+      ],
+      "tags": {
+        "couchbase-server-version": "[parameters('serverVersion')]",
+        "couchbase-server-make-cluster": "true",
+        "couchbase-server-services": "[couchbase.arrayToCSV(parameters('services'))]",
+        "key-vault": "[couchbase.generateResourceName('vault')]",
+        "couchbase-server-disk": "0",
+        "couchbase-server-secret": "cb-secret"
       },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
+        }
+      },
+      // "plan": {
+      //   "publisher": "[parameters('publisher')]",
+      //   "product": "[parameters('offer')]",
+      //   "name": "[parameters('license')]"
+      // },
       "sku": {
         "name": "[parameters('vmSize')]",
         "tier": "Standard",
@@ -320,13 +502,21 @@
         "virtualMachineProfile": {
           "storageProfile": {
             "osDisk": {
-              "createOption": "FromImage"
+              "createOption": "FromImage",
+              // This is for local testing.  Once images are posted use "imageReference"
+              //"image": { "uri": "https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd" },
+              "osType": "Linux",
+              "diskSizeGB": 30,
+              "managedDisk": {
+                "storageAccountType": "Premium_LRS"
+              }
             },
-            "imageReference": {
-              "publisher": "[parameters('publisher')]",
-              "offer": "[parameters('offer')]",
-              "sku": "[parameters('license')]",
-              "version": "[parameters('image_version')]"
+             "imageReference": {
+              "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
+            //   "publisher": "[parameters('publisher')]",
+            //   "offer": "[parameters('offer')]",
+            //   "sku": "[parameters('license')]",
+            //   "version": "[parameters('image_version')]"
             },
             "dataDisks": [
               {
@@ -340,11 +530,7 @@
               }
             ]
           },
-          "osProfile": {
-            "computerNamePrefix": "[couchbase.generateResourceName('server')]",
-            "adminUsername": "[parameters('adminUsername')]",
-            "adminPassword": "[parameters('adminPassword')]"
-          },
+          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName('server-main'))]",
           "networkProfile": {
             "networkInterfaceConfigurations": [
               {
@@ -375,40 +561,121 @@
             ]
           },
           "extensionProfile": {
-            "extensions": [
+            "extensions": []
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "[couchbase.generateResourceName(concat('server-', copyIndex()))]",
+      "copy": {
+        "name": "mds-count-copy",
+        "count": "[length(parameters('mdsConfig'))]",
+        "mode": "Parallel"
+      },
+      "condition": "[parameters('enableMDS')]",
+      "location": "[parameters('location')]",
+      "apiVersion": "2021-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]",
+        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main'))]"
+      ],
+      "tags": {
+        "couchbase-server-version": "[parameters('serverVersion')]",
+        "couchbase-server-make-cluster": "false",
+        "couchbase-server-rally-parameter": "cb-rally",
+        "couchbase-server-services": "[couchbase.arrayToCSV(parameters('mdsConfig')[copyIndex()].colServices)]",
+        "key-vault": "[couchbase.generateResourceName('vault')]",
+        "couchbase-server-disk": "0",
+        "couchbase-server-secret": "cb-secret"
+      },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
+        }
+      },
+      // "plan": {
+      //   "publisher": "[parameters('publisher')]",
+      //   "product": "[parameters('offer')]",
+      //   "name": "[parameters('license')]"
+      // },
+      "sku": {
+        "name": "[parameters('mdsConfig')[copyIndex()].colSize]",
+        "tier": "Standard",
+        "capacity": "[parameters('mdsConfig')[copyIndex()].colCount]"
+      },
+      "properties": {
+        "overprovision": false,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "createOption": "FromImage",
+              // This is for local testing.  Once images are posted use "imageReference"
+              //"image": { "uri": "https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd" },
+              "osType": "Linux",
+              "diskSizeGB": 30,
+              "managedDisk": {
+                "storageAccountType": "Premium_LRS"
+              }
+            },
+             "imageReference": {
+              "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
+            //   "publisher": "[parameters('publisher')]",
+            //   "offer": "[parameters('offer')]",
+            //   "sku": "[parameters('license')]",
+            //   "version": "[parameters('image_version')]"
+            },
+            "dataDisks": [
               {
-                "name": "[couchbase.generateResourceName('server-extension')]",
+                "lun": 0,
+                "createOption": "Empty",
+                "managedDisk": {
+                  "storageAccountType": "Premium_LRS"
+                },
+                "caching": "None",
+                "diskSizeGB": "[parameters('mdsConfig')[copyIndex()].colDiskSize]"
+              }
+            ]
+          },
+          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName(concat('server-', copyIndex())))]",
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "[couchbase.generateResourceName(concat('server-nic-', copyIndex()))]",
                 "properties": {
-                  "publisher": "Microsoft.Azure.Extensions",
-                  "type": "CustomScript",
-                  "typeHandlerVersion": "2.0",
-                  "autoUpgradeMinorVersion": true,
-                  "settings": {
-                    "fileUris": [
-                      "[uri(parameters('_artifactsLocation'), concat('couchbase_installer.sh', parameters('_artifactsLocationSasToken')))]"
-                    ]
-                  },
-                  "protectedSettings": {
-                      "commandToExecute": "[
-                                             concat(
-                                              'bash couchbase_installer.sh -v ',
-                                              parameters('serverVersion'),
-                                              ' -u ',
-                                              parameters('adminUsername'),
-                                              ' -p ',
-                                              parameters('adminPassword'),
-                                              ' -ch ',
-                                              concat(
-                                                couchbase.generateResourceName('server'),
-                                                '000000'
-                                              ),
-                                              ' -os UBUNTU -c -e AZURE -d'
-                                            )
-                                          ]"
-                  }
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "[couchbase.generateResourceName(concat('server-ipconfig-', copyIndex()))]",
+                      "properties": {
+                        "subnet": {
+                          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name ,parameters('vnet').subnets.subnet1.name)]"
+                        },
+                        "publicipaddressconfiguration": {
+                          "name": "[couchbase.generateResourceName(concat('server-public-ip-', copyIndex()))]",
+                          "properties": {
+                            "idleTimeoutInMinutes": 30,
+                            "dnsSettings": {
+                              "domainNameLabel": "[concat('server-', copyIndex(), '-', variables('uniqueString'))]"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             ]
+          },
+          "extensionProfile": {
+            "extensions": []
           }
         }
       }

@@ -40,7 +40,7 @@ SCRIPT_URL=$(cat "${SCRIPT_SOURCE}/../../script_url.txt")
 gateway=0
 debug=0
 
-while getopts l:n:z:p:f:i:v:c:gd flag
+while getopts l:n:z:p:f:i:v:c:k:gd flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
@@ -53,6 +53,7 @@ do
         g) gateway=1;;
         d) debug=1;;
         c) image_family=${OPTARG};;
+        k) PACKAGE=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -74,6 +75,11 @@ sleep 60
 echo "Adding deb_exploder to the instance"
 gcloud compute scp "${SCRIPT_SOURCE}/deb_exploder.sh" "$instance_name:~/deb_exploder.sh" --zone="$zone" --project="$project"
 echo "Adding Appropriate Startup.sh to instance"
+
+if [[ -n "$PACKAGE" ]]; then
+    FILE=$(basename "$PACKAGE")
+    gcloud compute scp "$PACKAGE" "$instance_name:~/$FILE" --zone="$zone" --project="$project"
+fi
 
 if [[ "$gateway" == "1" ]]; then 
     gcloud compute scp "${SCRIPT_SOURCE}/gateway-startup.sh" "$instance_name:~/startup.sh" --zone="$zone" --project="$project"
