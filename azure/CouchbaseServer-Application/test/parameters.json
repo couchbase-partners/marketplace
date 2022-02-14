@@ -1,59 +1,69 @@
 {
-    "serverNodeCount": {
-      "value": 3
-    },
-    "serverDiskSize": {
-      "value": 30
-    },
-    "serverVersion": {
-      "value": "7.0.2"
-    },
-    "vmSize": {
-      "value": "Standard_DS3_v2"
-    },
-    "adminUsername": {
-      "value": "couchbase"
-    },
-    "adminPassword": {
-      "value": "Foo123!"
-    },
-    "location": {
-      "value": "eastus"
-    },
-    "vnet": {
-      "value": {
-        "name": "Couchbase-Vnet",
-        "resourceGroup": "ja-test-1",
-        "addressPrefixes": [
-          "10.32.0.0/16"
-        ],
-        "addressPrefix": "10.32.0.0/16",
-        "newOrExisting": "new",
-        "subnets": {
-          "subnet1": {
-            "name": "CouchbaseSubnet",
-            "addressPrefix": "10.32.0.0/24",
-            "startAddress": "10.32.0.4"
-          }
+  "authenticationType": {
+    "value": "password"
+  },
+  "adminPassword": {
+    "value": "FooBarBaz123"
+  },
+  "sshPublicKey": {
+    "value": ""
+  },
+  "serverUsername": {
+    "value": "couchbase"
+  },
+  "serverPassword": {
+    "value": "Foo1234!"
+  },
+  "serverNodeCount": {
+    "value": 3
+  },
+  "serverDiskSize": {
+    "value": 32
+  },
+  "serverVersion": {
+    "value": "7.0.3"
+  },
+  "vmSize": {
+    "value": "Standard_DS12_v2"
+  },
+  "location": {
+    "value": "eastus"
+  },
+  "vnet": {
+    "value": {
+      "name": "Couchbase-Vnet",
+      "resourceGroup": "ja-test-one",
+      "addressPrefixes": [
+        "172.16.0.0/16"
+      ],
+      "addressPrefix": "172.16.0.0/16",
+      "newOrExisting": "new",
+      "subnets": {
+        "subnet1": {
+          "name": "CouchbaseSubnet",
+          "addressPrefix": "172.16.0.0/24",
+          "startAddress": "172.16.0.4"
         }
       }
-    },
-    "license": {
-      "value": "byol_2019"
-    },
-    "publisher": {
-      "value": "couchbase"
-    },
-    "offer": {
-      "value": "couchbase-server-enterprise"
-    },
-    "image_version": {
-      "value": "18.4.0"
-    },
-    "_artifactsLocation": {
-      "value": "https://github.com/couchbase-partners/marketplace-scripts/releases/latest/download/"
-    },
-    "_artifactsLocationSasToken": {
-      "value": ""
     }
+  },
+  "services": {
+    "value": [
+      "data",
+      "index",
+      "query"
+    ]
+  },
+  "license": {
+    "value": "byol_2019"
+  },
+  "publisher": {
+    "value": "couchbase"
+  },
+  "offer": {
+    "value": "couchbase-server-enterprise"
+  },
+  "image_version": {
+    "value": "18.4.0"
   }
+}

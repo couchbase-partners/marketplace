@@ -248,12 +248,12 @@
             "Type": "List<AWS::EC2::Subnet::Id>"
         },
         "AnalyticsInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Analytics Nodes",
             "Type": "Number",
             "Default": 0
         },
         "AnalyticsInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Analytics Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -356,12 +356,12 @@
             ]
         },
         "EventingInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Eventing Nodes",
             "Type": "Number",
             "Default": 0
         },
         "EventingInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Eventing Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -464,12 +464,12 @@
             ]
         },
         "SearchInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Full Text Search Nodes",
             "Type": "Number",
             "Default": 0
         },
         "SearchInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Full Text Search Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -572,12 +572,12 @@
             ]
         },
         "BackupInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Backup Nodes",
             "Type": "Number",
             "Default": 0
         },
         "BackupInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Backup Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -680,12 +680,12 @@
             ]
         },
         "DataInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Data Nodes",
             "Type": "Number",
             "Default": 0
         },
         "DataInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Data Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -788,12 +788,12 @@
             ]
         },
         "QueryInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Query Nodes",
             "Type": "Number",
             "Default": 0
         },
         "QueryInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Query Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [
@@ -896,12 +896,12 @@
             ]
         },
         "IndexInstanceCount": {
-            "Description": "Number of Analytics Couchbase Server Nodes",
+            "Description": "Number of Couchbase Index Nodes",
             "Type": "Number",
             "Default": 0
         },
         "IndexInstanceType": {
-            "Description": "Instance type for Couchbase Nodes",
+            "Description": "Instance type for Couchbase Index Nodes",
             "Type": "String",
             "Default": "m5.xlarge",
             "AllowedValues": [

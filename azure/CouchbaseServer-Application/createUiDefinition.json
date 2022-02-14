@@ -5,66 +5,68 @@
   "parameters": {
     "basics": [
       {
-        "name": "adminUsername",
-        "type": "Microsoft.Compute.UserNameTextBox",
-        "label": "Admin Username",
-        "toolTip": "Admin username on all VMs",
-        "osPlatform": "Linux"
-      },
-      {
-        "name": "adminPassword",
-        "type": "Microsoft.Common.PasswordBox",
+        "name": "vmCredentials",
+        "type": "Microsoft.Compute.CredentialsCombo",
         "label": {
-          "password": "Admin Password",
-          "confirmPassword": "Confirm password"
+          "authenticationType": "Authentication type",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "sshPublicKey": "SSH public key"
         },
-        "toolTip": "Admin password on all VMs",
+        "toolTip": {
+          "authenticationType": "",
+          "password": "",
+          "sshPublicKey": ""
+        },
         "constraints": {
           "required": true,
-          "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{12,72}$",
-          "validationMessage": "The password must be between 12 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+          "customPasswordRegex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{12,}$",
+          "customValidationMessage": "The password must be alphanumeric, contain at least 12 characters, and have at least 1 letter and 1 number."
         },
         "options": {
-          "hideConfirmation": false
-        }
-      },
-	  {
-		"name": "virtualNetwork",
-		"type": "Microsoft.Network.VirtualNetworkCombo",
-		"label": {
-			"virtualNetwork": "Virtual network",
-			"subnets": "Subnets"
-		},
-		"toolTip": {
-			"virtualNetwork": "",
-			"subnets": ""
-		},
-		"defaultValue": {
-			"name": "Couchbase-Vnet",
-			"addressPrefixSize": "/16"
-		},
-		"constraints": {
-			"minAddressPrefixSize": "/24"
-		},
-		"options": {
-			"hideExisting": false
-		},
-		"subnets": {
-			"subnet1": {
-				"label": "CouchbaseSubnet",
-				"defaultValue": {
-					"name": "CouchbaseSubnet",
-					"addressPrefixSize": "/24"
-				},
-				"constraints": {
-					"minAddressPrefixSize": "/24",
-					"minAddressCount": 3,
-					"requireContiguousAddresses": false
-				}
-			}
-		},
-		"visible": true
-		}
+          "hideConfirmation": false,
+          "hidePassword": false
+        },
+        "osPlatform": "Linux",
+        "visible": true
+      }, 
+      {
+        "name": "virtualNetwork",
+        "type": "Microsoft.Network.VirtualNetworkCombo",
+        "label": {
+          "virtualNetwork": "Virtual network",
+          "subnets": "Subnets"
+        },
+        "toolTip": {
+          "virtualNetwork": "",
+          "subnets": ""
+        },
+        "defaultValue": {
+          "name": "Couchbase-Vnet",
+          "addressPrefixSize": "/16"
+        },
+        "constraints": {
+          "minAddressPrefixSize": "/24"
+        },
+        "options": {
+          "hideExisting": false
+        },
+        "subnets": {
+          "subnet1": {
+            "label": "CouchbaseSubnet",
+            "defaultValue": {
+              "name": "CouchbaseSubnet",
+              "addressPrefixSize": "/24"
+            },
+            "constraints": {
+              "minAddressPrefixSize": "/24",
+              "minAddressCount": 3,
+              "requireContiguousAddresses": false
+            }
+          }
+        },
+        "visible": true
+      }
     ],
     "steps": [
       {
@@ -122,8 +124,7 @@
             "imageReference": {
               "publisher": "Canonical",
               "offer": "UbuntuServer",
-              "sku": "18.04-LTS",
-              "version": "latest"
+              "sku": "18.04-LTS"
             }
           },
           {
@@ -301,11 +302,43 @@
             }
           },
           {
+            "name": "couchbaseUsername",
+            "type": "Microsoft.Compute.UserNameTextBox",
+            "label": "Couchbase Admin Username",
+            "defaultValue": "",
+            "toolTip": "",
+            "constraints": {
+              "required": true,
+              "regex": "^[a-z0-9A-Z]{1,30}$",
+              "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+            },
+            "osPlatform": "Linux",
+            "visible": true
+          },
+          {
+            "name": "couchbasePassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "Couchbase Admin Password",
+              "confirmPassword": "Confirm password"
+            },
+            "toolTip": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character",
+            "constraints": {
+              "required": true,
+              "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+              "validationMessage": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
+            },
+            "options": {
+              "hideConfirmation": false
+            },
+            "visible": true
+          },
+          {
             "name": "serverVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Server Version",
             "defaultValue": "7.0.3",
-            "toolTip": "Server Version",
+            "toolTip": "What version of Couchbase Server is to be installed",
             "constraints": {
               "allowedValues": [
                 {
@@ -343,50 +376,511 @@
                 {
                   "label": "6.5.2",
                   "value": "6.5.2"
-                },    
+                },
                 {
                   "label": "6.5.1",
                   "value": "6.5.1"
-                },                
+                },
                 {
                   "label": "6.5.0",
                   "value": "6.5.0"
-                },                
+                },
                 {
                   "label": "6.0.4",
                   "value": "6.0.4"
-                },                
+                },
                 {
                   "label": "6.0.3",
                   "value": "6.0.3"
-                },                
+                },
                 {
                   "label": "6.0.2",
                   "value": "6.0.2"
-                },                
+                },
                 {
                   "label": "6.0.1",
                   "value": "6.0.1"
-                },                
+                },
                 {
                   "label": "6.0.0",
                   "value": "6.0.0"
-                }               
+                }
               ]
             }
+          },
+          {
+            "name": "services",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Couchbase Services",
+            "placeholder": "data,index,query",
+            "defaultValue": "data,index,query",
+            "multiselect": true,
+            "selectAll": true,
+            "toolTip": "The services that the primary cluster will utilize",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Data",
+                  "description": "The data(kv) service",
+                  "value": "data"
+                },
+                {
+                  "label": "Index",
+                  "description": "The index service",
+                  "value": "index"
+                },
+                {
+                  "label": "Query",
+                  "description": "The query service",
+                  "value": "query"
+                },
+                {
+                  "label": "Search",
+                  "description": "The full-text search service",
+                  "value": "fts"
+                },
+                {
+                  "label": "Eventing",
+                  "description": "The eventing service",
+                  "value": "eventing"
+                },
+                {
+                  "label": "Analytics",
+                  "description": "The analytics service",
+                  "value": "analytics"
+                },
+                {
+                  "label": "Backup",
+                  "description": "The backup service, only available on 7.0.0+",
+                  "value": "backup"
+                }
+              ]
+            },
+            "visible": true
+          }
+        ]
+      },
+      {
+        "name": "mdsConfig",
+        "label": "Multi-Dimension Scaling Config",
+        "subLabel": {
+          "preValidation": "Configure Additional Clusters",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Couchbase Multi-Dimension Scaling Settings",
+        "elements": [
+          {
+            "name": "enableMDS",
+            "type": "Microsoft.Common.CheckBox",
+            "label": "Enable Multi-Dimension Scaling"
+          },
+          {
+            "name": "mdsSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Additional Nodes",
+            "elements": [
+              {
+                "name": "nodes",
+                "type": "Microsoft.Common.EditableGrid",
+                "ariaLabel": "Enter additional nodes you would like as part of your cluster",
+                "label": "Additional Nodes",
+                "visible":  "[steps('mdsConfig').enableMDS]",
+                "constraints": {
+                  "width": "Full",
+                  "rows": {
+                    "count": {
+                      "min": 0,
+                      "max": 10
+                    }
+                  },
+                  "columns": [
+                    {
+                      "id": "colServices",
+                      "header": "Services",
+                      "width": "1fr",
+                      "element": {
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Couchbase Services",
+                        "placeholder": "data,index,query",
+                        "defaultValue": "data,index,query",
+                        "multiselect": true,
+                        "selectAll": true,
+                        "toolTip": "The services that the primary cluster will utilize",
+                        "constraints": {
+                          "required": true,
+                          "allowedValues": [
+                            {
+                              "label": "Data",
+                              "description": "The data(kv) service",
+                              "value": "data"
+                            },
+                            {
+                              "label": "Index",
+                              "description": "The index service",
+                              "value": "index"
+                            },
+                            {
+                              "label": "Query",
+                              "description": "The query service",
+                              "value": "query"
+                            },
+                            {
+                              "label": "Search",
+                              "description": "The full-text search service",
+                              "value": "fts"
+                            },
+                            {
+                              "label": "Eventing",
+                              "description": "The eventing service",
+                              "value": "eventing"
+                            },
+                            {
+                              "label": "Analytics",
+                              "description": "The analytics service",
+                              "value": "analytics"
+                            },
+                            {
+                              "label": "Backup",
+                              "description": "The backup service, only available on 7.0.0+",
+                              "value": "backup"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "id": "colCount",
+                      "header": "Instance Count",
+                      "width": "1fr",
+                      "element": {
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Instance Count",
+                        "defaultValue": "1",
+                        "toolTip": "Number of virtual machines to provision",
+                        "constraints": {
+                          "allowedValues": [
+                            {
+                              "label": "1",
+                              "value": 1
+                            },
+                            {
+                              "label": "2",
+                              "value": 2
+                            },
+                            {
+                              "label": "3",
+                              "value": 3
+                            },
+                            {
+                              "label": "4",
+                              "value": 4
+                            },
+                            {
+                              "label": "5",
+                              "value": 5
+                            },
+                            {
+                              "label": "6",
+                              "value": 6
+                            },
+                            {
+                              "label": "7",
+                              "value": 7
+                            },
+                            {
+                              "label": "8",
+                              "value": 8
+                            },
+                            {
+                              "label": "9",
+                              "value": 9
+                            },
+                            {
+                              "label": "10",
+                              "value": 10
+                            },
+                            {
+                              "label": "11",
+                              "value": 11
+                            },
+                            {
+                              "label": "12",
+                              "value": 12
+                            },
+                            {
+                              "label": "13",
+                              "value": 13
+                            },
+                            {
+                              "label": "14",
+                              "value": 14
+                            },
+                            {
+                              "label": "15",
+                              "value": 15
+                            },
+                            {
+                              "label": "16",
+                              "value": 16
+                            },
+                            {
+                              "label": "17",
+                              "value": 17
+                            },
+                            {
+                              "label": "17",
+                              "value": 17
+                            },
+                            {
+                              "label": "18",
+                              "value": 18
+                            },
+                            {
+                              "label": "19",
+                              "value": 19
+                            },
+                            {
+                              "label": "20",
+                              "value": 20
+                            },
+                            {
+                              "label": "21",
+                              "value": 21
+                            },
+                            {
+                              "label": "22",
+                              "value": 22
+                            },
+                            {
+                              "label": "23",
+                              "value": 23
+                            },
+                            {
+                              "label": "24",
+                              "value": 24
+                            },
+                            {
+                              "label": "25",
+                              "value": 25
+                            },
+                            {
+                              "label": "26",
+                              "value": 26
+                            },
+                            {
+                              "label": "27",
+                              "value": 27
+                            },
+                            {
+                              "label": "28",
+                              "value": 28
+                            },
+                            {
+                              "label": "29",
+                              "value": 29
+                            },
+                            {
+                              "label": "30",
+                              "value": 30
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "id": "colSize",
+                      "header": "Instance Size",
+                      "width": "1fr",
+                      "element": {
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Virtual Machine Size",
+                        "toolTip": "Size of VMs for this service set",
+                        "defaultValue": "[steps('couchbaseConfig').vmSize]",
+                        "constraints": {
+                          "allowedValues": [
+                            {
+                              "label": "Standard_DS1_v2",
+                              "value": "Standard_DS1_v2"
+                            },
+                            {
+                              "label": "Standard_DS2_v2",
+                              "value": "Standard_DS2_v2"
+                            },
+                            {
+                              "label": "Standard_DS3_v2",
+                              "value": "Standard_DS3_v2"
+                            },
+                            {
+                              "label": "Standard_DS4_v2",
+                              "value": "Standard_DS4_v2"
+                            },
+                            {
+                              "label": "Standard_DS5_v2",
+                              "value": "Standard_DS5_v2"
+                            },
+                            {
+                              "label": "Standard_DS1",
+                              "value": "Standard_DS1"
+                            },
+                            {
+                              "label": "Standard_DS2",
+                              "value": "Standard_DS2"
+                            },
+                            {
+                              "label": "Standard_DS3",
+                              "value": "Standard_DS3"
+                            },
+                            {
+                              "label": "Standard_DS4",
+                              "value": "Standard_DS4"
+                            },
+                            {
+                              "label": "Standard_FS1",
+                              "value": "Standard_FS1"
+                            },
+                            {
+                              "label": "Standard_FS2",
+                              "value": "Standard_FS2"
+                            },
+                            {
+                              "label": "Standard_FS4",
+                              "value": "Standard_FS4"
+                            },
+                            {
+                              "label": "Standard_FS8",
+                              "value": "Standard_FS8"
+                            },
+                            {
+                              "label": "Standard_FS16",
+                              "value": "Standard_FS16"
+                            },
+                            {
+                              "label": "Standard_DS11_v2",
+                              "value": "Standard_DS11_v2"
+                            },
+                            {
+                              "label": "Standard_DS12_v2",
+                              "value": "Standard_DS12_v2"
+                            },
+                            {
+                              "label": "Standard_DS13_v2",
+                              "value": "Standard_DS13_v2"
+                            },
+                            {
+                              "label": "Standard_DS14_v2",
+                              "value": "Standard_DS14_v2"
+                            },
+                            {
+                              "label": "Standard_DS15_v2",
+                              "value": "Standard_DS15_v2"
+                            },
+                            {
+                              "label": "Standard_DS11",
+                              "value": "Standard_DS11"
+                            },
+                            {
+                              "label": "Standard_DS12",
+                              "value": "Standard_DS12"
+                            },
+                            {
+                              "label": "Standard_DS13",
+                              "value": "Standard_DS13"
+                            },
+                            {
+                              "label": "Standard_DS14",
+                              "value": "Standard_DS14"
+                            },
+                            {
+                              "label": "Standard_GS1",
+                              "value": "Standard_GS1"
+                            },
+                            {
+                              "label": "Standard_GS2",
+                              "value": "Standard_GS2"
+                            },
+                            {
+                              "label": "Standard_GS3",
+                              "value": "Standard_GS3"
+                            },
+                            {
+                              "label": "Standard_GS4",
+                              "value": "Standard_GS4"
+                            },
+                            {
+                              "label": "Standard_GS5",
+                              "value": "Standard_GS5"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "id": "colDiskSize",
+                      "header": "Disk Size",
+                      "width": "1fr",
+                      "element": {
+                        "type": "Microsoft.Common.DropDown",
+                        "label": "Server Disk Size",
+                        "defaultValue": "32 GB",
+                        "toolTip": "Size of disk on each Server node in the cluster",
+                        "constraints": {
+                          "allowedValues": [
+                            {
+                              "label": "32 GB",
+                              "value": 32
+                            },
+                            {
+                              "label": "64 GB",
+                              "value": 64
+                            },
+                            {
+                              "label": "128 GB",
+                              "value": 128
+                            },
+                            {
+                              "label": "512 GB",
+                              "value": 512
+                            },
+                            {
+                              "label": "1 TB",
+                              "value": 1024
+                            },
+                            {
+                              "label": "2 TB",
+                              "value": 2048
+                            },
+                            {
+                              "label": "4 TB",
+                              "value": 4095
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "visible": "[steps('mdsConfig').enableMDS]"
           }
         ]
       }
     ],
     "outputs": {
-      "adminUsername": "[basics('adminUsername')]",
-      "adminPassword": "[basics('adminPassword')]",
+      "authenticationType": "[basics('vmCredentials').authenticationType]",
+      "adminPassword": "[basics('vmCredentials').password]",
+      "sshPublicKey": "[basics('vmCredentials').sshPublicKey]",
+      "serverUsername": "[steps('couchbaseConfig').couchbaseUsername]",
+      "serverPassword": "[steps('couchbaseConfig').couchbasePassword]",
       "serverNodeCount": "[steps('couchbaseConfig').serverNodeCount]",
       "serverDiskSize": "[steps('couchbaseConfig').serverDiskSize]",
       "serverVersion": "[steps('couchbaseConfig').serverVersion]",
       "vmSize": "[steps('couchbaseConfig').vmSize]",
       "location": "[location()]",
-	  "vnet": "[basics('virtualNetwork')]"
+      "vnet": "[basics('virtualNetwork')]",
+      "services": "[steps('couchbaseConfig').services]",
+      "mdsConfig": "[steps('mdsConfig').mdsSection.nodes]",
+      "enableMDS": "[steps('mdsConfig').enableMDS]"
     }
   }
 }

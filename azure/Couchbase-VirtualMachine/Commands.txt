@@ -1,0 +1,48 @@
+az vm create \
+    --name ja-test-server \
+    --resource-group ja-test-one \
+    --image https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd \
+    --public-ip-sku Standard \
+    --admin-username couchbase \
+    --admin-password FooBarBaz123! \
+    --os-disk-size 30 \
+    --os-type linux \
+    --use-unmanaged-disk \
+    --nsg couchbase-server \
+    --assign-identity "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourcegroups/ja-test-one/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ja-test-identity" \
+    --tags couchbase-server-make-cluster=true couchbase-server-version=7.0.3 couchbase-server-services=data,index,query key-vault=ja-test-vault couchbase-server-secret=couchbase-secret
+
+az network nsg rule create --name "AdminPortal" --nsg-name couchbase-server-nsg --resource-group ja-test-one --priority 100 --destination-port-ranges 8091 --destination-address-prefixes "*" --protocol Tcp
+
+az vmss create \
+    --name ja-test-server \
+    --resource-group ja-test-one \
+    --image https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd \
+    --public-ip-per-vm \
+    --admin-username couchbase \
+    --admin-password FooBarBaz123! \
+    --computer-name-prefix ja-cb-test-server \
+    --os-disk-size-gb 30 \
+    --os-type linux \
+    --use-unmanaged-disk \
+    --nsg couchbase-server \
+    --instance-count 3 \
+    --assign-identity "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourcegroups/ja-test-one/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ja-test-identity" \
+    --tags couchbase-server-make-cluster=true couchbase-server-version=7.0.3 couchbase-server-services=data,index,query key-vault=ja-test-vault couchbase-server-secret=couchbase-secret
+
+
+{ "username": "couchbase", "password": "Foo123!" }
+
+az vm create \
+    --name ja-test-gateway \
+    --resource-group ja-test-one \
+    --image https://jatestnewvm1.blob.core.windows.net/vhds/cb-gateway-01262022.vhd \
+    --public-ip-sku Standard \
+    --admin-username couchbase \
+    --admin-password FooBarBaz123! \
+    --os-disk-size 30 \
+    --os-type linux \
+    --use-unmanaged-disk \
+    --nsg couchbase-server \
+    --assign-identity "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourcegroups/ja-test-one/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ja-test-identity" \
+    --tags couchbase-gateway-connection-string=couchbase://52.226.41.199 couchbase-gateway-bucket=travel-sample couchbase-gateway-version=2.8.3 key-vault=ja-test-vault couchbase-gateway-secret=couchbase-secret

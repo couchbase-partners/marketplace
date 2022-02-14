@@ -1,0 +1,79 @@
+{
+    "authenticationType": {
+      "value": "password"
+    },
+    "adminPassword": {
+      "value": "FooBarBaz123"
+    },
+    "serverUsername": {
+      "value": "couchbase"
+    },
+    "serverPassword": {
+      "value": "Foo1234!"
+    },
+    "serverNodeCount": {
+      "value": 3
+    },
+    "serverDiskSize": {
+      "value": 32
+    },
+    "serverVersion": {
+      "value": "7.0.3"
+    },
+    "vmSize": {
+      "value": "Standard_DS12_v2"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "vnet": {
+      "value": {
+        "name": "Couchbase-Vnet",
+        "resourceGroup": "ja-test-two",
+        "addressPrefixes": [
+          "172.16.0.0/16"
+        ],
+        "addressPrefix": "172.16.0.0/16",
+        "newOrExisting": "new",
+        "subnets": {
+          "subnet1": {
+            "name": "CouchbaseSubnet",
+            "addressPrefix": "172.16.0.0/24",
+            "startAddress": "172.16.0.4"
+          }
+        }
+      }
+    },
+    "services": {
+      "value": [
+        "data",
+        "index",
+        "query"
+      ]
+    },
+    "mdsConfig": {
+      "value": [
+        {
+          "colServices": [
+            "fts"
+          ],
+          "colCount": 1,
+          "colSize": "Standard_DS1_v2",
+          "colDiskSize": 32
+        },
+        {
+          "colServices": [
+            "eventing",
+            "analytics",
+            "backup"
+          ],
+          "colCount": 3,
+          "colSize": "Standard_DS1_v2",
+          "colDiskSize": 32
+        }
+      ]
+    },
+    "enableMDS": {
+      "value": true
+    }
+  }
