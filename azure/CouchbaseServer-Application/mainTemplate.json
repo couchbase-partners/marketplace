@@ -41,7 +41,7 @@
     },
     "enableMDS": {
       "type": "bool",
-      "defaultValue": "false"
+      "defaultValue": false
     },
     "mdsConfig": {
       "type": "array",

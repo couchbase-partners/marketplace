@@ -186,12 +186,22 @@
             "Properties": {
                 "Name": {
                     "Fn::Join": [
-                        "",
+                        "-",
                         [
+                            "couchbase-secret",
                             {
-                                "Ref": "AWS::StackName"
-                            },
-                            "-CouchbaseSecret"
+                                "Fn::Select": [
+                                    0,
+                                    { "Fn::Split": ["-", {
+                                        "Fn::Select": [
+                                            2, { "Fn:Split": [
+                                                "/", { "Ref": "AWS::StackId" }
+                                            ]}
+                                        ]
+                                    }]}
+                                ]
+                            }
+                            
                         ]
                     ]
                 },
@@ -220,12 +230,22 @@
                 "Description": "The Rally point dns entry for new nodes to join the cluster with.",
                 "Name": {
                     "Fn::Join": [
-                        "",
+                        "-",
                         [
+                            "couchbase-server-connection",
                             {
-                                "Ref": "AWS::StackName"
-                            },
-                            "-couchbase-server-connection"
+                                "Fn::Select": [
+                                    0,
+                                    { "Fn::Split": ["-", {
+                                        "Fn::Select": [
+                                            2, { "Fn:Split": [
+                                                "/", { "Ref": "AWS::StackId" }
+                                            ]}
+                                        ]
+                                    }]}
+                                ]
+                            }
+                            
                         ]
                     ]
                 },
