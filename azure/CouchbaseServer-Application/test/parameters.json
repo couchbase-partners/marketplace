@@ -47,6 +47,10 @@
       }
     }
   },
+  "mdsConfig": {
+    "value": [
+    ]
+  },
   "services": {
     "value": [
       "data",

@@ -218,7 +218,17 @@
             "Type": "AWS::SSM::Parameter",
             "Properties": {
                 "Description": "The Rally point dns entry for new nodes to join the cluster with.",
-                "Name": "couchbase_server_connection",
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            "-couchbase-server-connection"
+                        ]
+                    ]
+                },
                 "Type": "String",
                 "Value": { "Ref": "CouchbaseClusterUrl" }
             }
