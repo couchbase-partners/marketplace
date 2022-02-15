@@ -216,6 +216,18 @@ export COUCHBASE_GATEWAY_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
    SUCCESS=$?
  
 fi
+# at this point we can notify, the rest will happen in time, and in older versions the service restart can just hang and prevent a callback
+if [[ -n "$RESOURCE" ]] && [[ -n "$STACK_NAME" ]]; then
+    echo "We need to notify $RESOURCE that $STACK_NAME is complete"
+    if [[ "$SUCCESS" == "0" ]]; then
+        # Calls back to AWS to signify that installation is complete
+        /opt/aws/bin/cfn-signal -e 0 --stack "$STACK_NAME" --resource "$RESOURCE" --region "$region"
+    else
+        /opt/aws/bin/cfn-signal -e 1 --stack "$STACK_NAME" --resource "$RESOURCE" --region "$region"
+        exit 1
+    fi
+fi
+
 sleep 10
 # We should be running by here. if not, RESTART!
 RUNNING=$(curl -s -o /dev/null -I -w "%{http_code}" http://localhost:4984)
@@ -246,17 +258,3 @@ if [[ "$SUCCESS" == "0" && "$VERSION" =~ ^3 ]]; then
     done
   fi
 fi
-
-
-
-if [[ -n "$RESOURCE" ]] && [[ -n "$STACK_NAME" ]]; then
-    echo "We need to notify $RESOURCE that $STACK_NAME is complete"
-    if [[ "$SUCCESS" == "0" ]]; then
-        # Calls back to AWS to signify that installation is complete
-        /opt/aws/bin/cfn-signal -e 0 --stack "$STACK_NAME" --resource "$RESOURCE" --region "$region"
-    else
-        /opt/aws/bin/cfn-signal -e 1 --stack "$STACK_NAME" --resource "$RESOURCE" --region "$region"
-        exit 1
-    fi
-fi
-
