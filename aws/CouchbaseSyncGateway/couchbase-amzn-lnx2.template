@@ -275,6 +275,9 @@
                     },
                     {
                         "Ref": "GatewayTarget4986Group"
+                    },
+                    {
+                        "Ref": "GatewayTarget4985Group"
                     }
                 ],
                 "DesiredCapacity": {
@@ -390,6 +393,25 @@
                 ]
             }
         },
+        "GatewayLb4985Listener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "LoadBalancerArn": {
+                    "Ref": "GatewayLoadBalancer"
+                },
+                "Port": 4985,
+                "Protocol": "HTTP",
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "GatewayTarget4985Group"
+                        },
+                        "Order": 1
+                    }
+                ]
+            }
+        },
         "GatewayLb4986Listener": {
             "Type": "AWS::ElasticLoadBalancingV2::Listener",
             "Properties": {
@@ -432,6 +454,29 @@
                 }
             }
         },
+        "GatewayTarget4985Group": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckEnabled": true,
+                "HealthCheckIntervalSeconds": 30,
+                "HealthCheckPath": "/",
+                "HealthCheckPort": "4984",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 3,
+                "Port": 4985,
+                "Protocol": "HTTP",
+                "TargetType": "instance",
+                "Targets": [],
+                "UnhealthyThresholdCount": 5,
+                "VpcId": {
+                    "Ref": "VpcName"
+                },
+                "Matcher": {
+                    "HttpCode": "200-299"
+                }
+            }
+        },        
         "GatewayTarget4986Group": {
             "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
             "Properties": {
@@ -576,6 +621,15 @@
                         "Description": "Couchbase Sync Gateway Port",
                         "FromPort": 4984,
                         "ToPort": 4984,
+                        "CidrIp": {
+                            "Ref": "SSHCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "Description": "Couchbase Sync Gateway Admin Port",
+                        "FromPort": 4985,
+                        "ToPort": 4985,
                         "CidrIp": {
                             "Ref": "SSHCIDR"
                         }
