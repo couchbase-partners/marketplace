@@ -230,14 +230,20 @@ if [[ "$SUCCESS" == "0" && "$VERSION" =~ ^3 ]]; then
   # here we need to hit the API and configure the database for sync gateway 3.0+
   CONFIGURED=$(curl -L -s -o /dev/null -I -w "%{http_code}"  http://127.0.0.1:4985/$BUCKET/_config -X GET --user $USERNAME:$PASSWORD)
   if [[ "$CONFIGURED" != "200" ]]; then
-    curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
+    RESPONSE=$(curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
         -H "accept: application/json" \
         -H "Content-Type: application/json" \
         -d "{\"bucket\": \"$BUCKET\",\"name\": \"$BUCKET\", \"num_index_replicas\":0}" \
-        --retry 5 \
-        --retry-all-errors \
-        --fail \
-        --user $USERNAME:$PASSWORD
+        --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
+    while [[ "$RESPONSE" != "412" ]];
+    do
+      sleep 1
+      RESPONSE=$(curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
+          -H "accept: application/json" \
+          -H "Content-Type: application/json" \
+          -d "{\"bucket\": \"$BUCKET\",\"name\": \"$BUCKET\", \"num_index_replicas\":0}" \
+          --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
+    done
   fi
 fi
 
