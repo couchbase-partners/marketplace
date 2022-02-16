@@ -121,39 +121,91 @@ export COUCHBASE_GATEWAY_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 fi
 
 if [[ -z "$CONFIG" ]]; then
-cat << _EOF > /home/sync_gateway/sync_gateway.json
-{
-  "interface":"0.0.0.0:4984",
-  "adminInterface":"0.0.0.0:4985",
-  "metricsInterface":"0.0.0.0:4986",
-  "logging": {
-    "console": {
-      "log_keys": ["*"]
-    }
-  },
-  "databases": {
-    "$BUCKET": {
-      "server": "$CONNECTION_STRING",
-      "username": "$USERNAME",
-      "password": "$PASSWORD",
-      "bucket": "$BUCKET",
-      "users": {
-        "GUEST": {
-          "disabled": false,
-          "admin_channels": ["*"]
+  if [[ !  "$VERSION" =~ ^3 ]]; then
+    mkdir -p /opt/sync_gateway/etc/
+    # Pre Version 3 config
+    cat << _EOF > /opt/sync_gateway/etc/sync_gateway.json
+    {
+      "interface":"0.0.0.0:4984",
+      "adminInterface":"0.0.0.0:4985",
+      "metricsInterface":"0.0.0.0:4986",
+      "logging": {
+        "console": {
+          "log_keys": ["*"]
         }
       },
-      "allow_conflicts": false,
-      "revs_limit": 20,
-      "import_docs": true,
-      "enable_shared_bucket_access":true,
-      "num_index_replicas":0
-    }
-  }
-} 
+      "databases": {
+        "$BUCKET": {
+          "server": "$CONNECTION_STRING",
+          "username": "$USERNAME",
+          "password": "$PASSWORD",
+          "bucket": "$BUCKET",
+          "users": {
+            "GUEST": {
+              "disabled": false,
+              "admin_channels": ["*"]
+            }
+          },
+          "allow_conflicts": false,
+          "revs_limit": 20,
+          "import_docs": true,
+          "enable_shared_bucket_access":true,
+          "num_index_replicas":0
+        }
+      }
+    } 
 _EOF
+  else
+  # Post version 3 config
+    mkdir -p /home/sync_gateway/
+
+    cat << _EOF > /home/sync_gateway/sync_gateway.json
+    {
+      "bootstrap": {
+        "server": "$CONNECTION_STRING",
+        "username":"$USERNAME",
+        "password":"$PASSWORD",
+        "use_tls_server":false
+      },
+      "api":{
+        "admin_interface":"0.0.0.0:4985",
+        "https":{},
+        "cors":{}
+      },
+      "logging":{
+        "console":{
+          "rotation":{}
+        },
+        "error":{
+          "rotation":{}
+        },
+        "warn":{
+          "rotation":{}
+        },
+        "info":{
+          "rotation":{}
+        },
+        "debug":{
+          "rotation":{}
+        },
+        "trace":{
+          "rotation":{}
+        },
+        "stats":{
+          "rotation":{}
+        }
+      },
+      "auth":{},
+      "replicator":{},
+      "unsupported":{
+        "http2":{}
+      }
+    }
+_EOF
+  fi
 else
     # get config from blob storage
+    mkdir -p /home/sync_gateway/
     gsutil cp "$CONFIG" /home/sync_gateway/sync_gateway.json
     echo "Retrieving configuration from blob storage"
 fi
@@ -172,5 +224,26 @@ if [[ "$RUNNING" != "200" ]]; then
     echo "Sync Gateway is not running.  We should restart."
     service sync_gateway stop &> /dev/null
     service sync_gateway start &> /dev/null
+    sleep 10
 fi
 
+if [[ "$SUCCESS" == "0" && "$VERSION" =~ ^3 ]]; then
+  # here we need to hit the API and configure the database for sync gateway 3.0+
+  CONFIGURED=$(curl -L -s -o /dev/null -I -w "%{http_code}"  http://127.0.0.1:4985/$BUCKET/_config -X GET --user $USERNAME:$PASSWORD)
+  if [[ "$CONFIGURED" != "200" ]]; then
+    RESPONSE=$(curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
+        -H "accept: application/json" \
+        -H "Content-Type: application/json" \
+        -d "{\"bucket\": \"$BUCKET\",\"name\": \"$BUCKET\", \"num_index_replicas\":0}" \
+        --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
+    while [[ "$RESPONSE" != "412" ]];
+    do
+      sleep 1
+      RESPONSE=$(curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
+          -H "accept: application/json" \
+          -H "Content-Type: application/json" \
+          -d "{\"bucket\": \"$BUCKET\",\"name\": \"$BUCKET\", \"num_index_replicas\":0}" \
+          --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
+    done
+  fi
+fi
