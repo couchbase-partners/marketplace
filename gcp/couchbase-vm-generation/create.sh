@@ -39,6 +39,7 @@ SCRIPT_SOURCE=${BASH_SOURCE[0]/%create.sh/}
 SCRIPT_URL=$(cat "${SCRIPT_SOURCE}/../../script_url.txt")
 gateway=0
 debug=0
+PACKAGE=""
 
 while getopts l:n:z:p:f:i:v:c:k:gd flag
 do

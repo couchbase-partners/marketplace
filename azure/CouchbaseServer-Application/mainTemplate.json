@@ -12,10 +12,12 @@
       "type": "string"
     },
     "adminPassword": {
-      "type": "securestring"
+      "type": "securestring",
+      "defaultValue": ""
     },
     "sshPublicKey": {
-      "type": "securestring"
+      "type": "securestring",
+      "defaultValue": ""
     },
     "serverVersion": {
       "type": "string",
@@ -60,7 +62,7 @@
       "defaultValue": {
         "value": {
           "name": "Couchbase-Vnet",
-          "resourceGroup": "",
+          "resourceGroup": "[resourceGroup().location]",
           "addressPrefixes": [
             "10.32.0.0/16"
           ],
@@ -369,7 +371,7 @@
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
       "name": "[couchbase.generateResourceName('identity')]",
       "apiVersion": "2018-11-30",
-      "location": "[resourceGroup().location]"
+      "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Authorization/roleAssignments",
@@ -393,7 +395,6 @@
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]",
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
       ],
-      "tags": {},
       "properties": {
         "enabledForDeployment": true,
         "enabledForTemplateDeployment": true,
@@ -425,9 +426,7 @@
         "softDeleteRetentionInDays": 90,
         "networkAcls": {
           "defaultAction": "Allow",
-          "bypass": "AzureServices",
-          "ipRules": [],
-          "virtualNetworkRules": []
+          "bypass": "AzureServices"
         }
       }
     },
@@ -444,7 +443,7 @@
         "value": "[string(variables('secretValue'))]"
       }
     },
-        {
+    {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2021-06-01-preview",
       "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-rally')]",
@@ -484,11 +483,11 @@
           "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
         }
       },
-      // "plan": {
-      //   "publisher": "[parameters('publisher')]",
-      //   "product": "[parameters('offer')]",
-      //   "name": "[parameters('license')]"
-      // },
+      "plan": {
+        "publisher": "[parameters('publisher')]",
+        "product": "[parameters('offer')]",
+        "name": "[parameters('license')]"
+      },
       "sku": {
         "name": "[parameters('vmSize')]",
         "tier": "Standard",
@@ -502,21 +501,21 @@
         "virtualMachineProfile": {
           "storageProfile": {
             "osDisk": {
-              "createOption": "FromImage",
+              "createOption": "FromImage"
               // This is for local testing.  Once images are posted use "imageReference"
               //"image": { "uri": "https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd" },
-              "osType": "Linux",
-              "diskSizeGB": 30,
-              "managedDisk": {
-                "storageAccountType": "Premium_LRS"
-              }
+              // "osType": "Linux",
+              // "diskSizeGB": 30,
+              // "managedDisk": {
+              //   "storageAccountType": "Premium_LRS"
+              // }
             },
              "imageReference": {
-              "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
-            //   "publisher": "[parameters('publisher')]",
-            //   "offer": "[parameters('offer')]",
-            //   "sku": "[parameters('license')]",
-            //   "version": "[parameters('image_version')]"
+            //  "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
+              "publisher": "[parameters('publisher')]",
+              "offer": "[parameters('offer')]",
+              "sku": "[parameters('license')]",
+              "version": "[parameters('image_version')]"
             },
             "dataDisks": [
               {
@@ -559,9 +558,6 @@
                 }
               }
             ]
-          },
-          "extensionProfile": {
-            "extensions": []
           }
         }
       }
@@ -598,11 +594,11 @@
           "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
         }
       },
-      // "plan": {
-      //   "publisher": "[parameters('publisher')]",
-      //   "product": "[parameters('offer')]",
-      //   "name": "[parameters('license')]"
-      // },
+      "plan": {
+        "publisher": "[parameters('publisher')]",
+        "product": "[parameters('offer')]",
+        "name": "[parameters('license')]"
+      },
       "sku": {
         "name": "[parameters('mdsConfig')[copyIndex()].colSize]",
         "tier": "Standard",
@@ -616,21 +612,21 @@
         "virtualMachineProfile": {
           "storageProfile": {
             "osDisk": {
-              "createOption": "FromImage",
+              "createOption": "FromImage"
               // This is for local testing.  Once images are posted use "imageReference"
               //"image": { "uri": "https://jatestnewvm1.blob.core.windows.net/vhds/cb-server-01242022.vhd" },
-              "osType": "Linux",
-              "diskSizeGB": 30,
-              "managedDisk": {
-                "storageAccountType": "Premium_LRS"
-              }
+              // "osType": "Linux",
+              // "diskSizeGB": 30,
+              // "managedDisk": {
+              //   "storageAccountType": "Premium_LRS"
+              // }
             },
              "imageReference": {
-              "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
-            //   "publisher": "[parameters('publisher')]",
-            //   "offer": "[parameters('offer')]",
-            //   "sku": "[parameters('license')]",
-            //   "version": "[parameters('image_version')]"
+              // "id": "/subscriptions/a384b1e1-47d0-4067-8d5e-8d9e16e650e4/resourceGroups/ja-test-one/providers/Microsoft.Compute/images/ja-test-image"
+              "publisher": "[parameters('publisher')]",
+              "offer": "[parameters('offer')]",
+              "sku": "[parameters('license')]",
+              "version": "[parameters('image_version')]"
             },
             "dataDisks": [
               {
@@ -673,9 +669,6 @@
                 }
               }
             ]
-          },
-          "extensionProfile": {
-            "extensions": []
           }
         }
       }

@@ -2,22 +2,26 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "authenticationType": {
+      "type": "string"
+    },
+    "sshPublicKey": {
+      "type": "string",
+      "defaultValue": ""
+    },
     "syncGatewayNodeCount": {
       "type": "int"
     },
     "syncGatewayVersion": {
       "type": "string"
     },
-    "couchbaseServerUrl": {
+    "couchbaseConnectionString": {
       "type": "string"
     },
-    "couchbaseUser": {
+    "couchbaseUsername": {
       "type": "string"
     },
     "couchbasePassword": {
-      "type": "string"
-    },
-    "couchbaseDatabaseName": {
       "type": "string"
     },
     "couchbaseBucket": {
@@ -27,10 +31,12 @@
       "type": "string"
     },
     "adminUsername": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "azureuser"
     },
     "adminPassword": {
-      "type": "securestring"
+      "type": "securestring",
+      "defaultValue": ""
     },
     "location": {
       "type": "string",
@@ -72,6 +78,10 @@
     "sync_gateway_sku": {
       "type": "string",
       "defaultValue": "<<SYNC_GATEWAY_SKU>>"
+    },
+    "_now": {
+      "type": "string",
+      "defaultValue": "[utcNow()]"
     }
   },
   "functions": [
@@ -89,12 +99,50 @@
             "type": "string",
             "value": "[concat('cb-', parameters('resource'), '-', uniquestring(resourceGroup().id, deployment().name))]"
           }
-        }
+        },
+        "getProfileWithPrefix": {
+            "parameters": [
+              {
+                "name": "profile",
+                "type": "object"
+              },
+              {
+                "name": "prefix",
+                "type": "string"
+              }
+            ],
+            "output": {
+              "type": "object",
+              "value": "[union(parameters('profile'), json(concat('{\"computerNamePrefix\":\"', parameters('prefix'), '\"}')))]"
+            }
+          }
       }
     }
   ],
   "variables": {
-    "scriptValue": ""
+    "password_osProfile": {
+      "adminUsername": "[parameters('adminUsername')]",
+      "adminPassword": "[parameters('adminPassword')]"
+    },
+    "sshPublicKey_osProfile": {
+      "adminUsername": "[parameters('adminUsername')]",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": "true",
+        "ssh": {
+          "publicKeys": [{
+            "path": "/home/azureuser/.ssh/authorized_keys",
+            "keyData": "[parameters('sshPublicKey')]"
+          }]
+        }
+      }
+    },
+    "osProfile": "[variables(concat(parameters('authenticationType'), '_osProfile'))]",
+    "secretValue": {
+      "username": "[parameters('couchbaseUsername')]",
+      "password": "[parameters('couchbasePassword')]"
+    },
+    "subscriptionReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+    "assignmentReaderGuid": "[guid(subscription().subscriptionId, parameters('_now'))]"
   },
   "resources": [
     {
@@ -362,14 +410,123 @@
       }
     },
     {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[couchbase.generateResourceName('identity')]",
+      "apiVersion": "2018-11-30",
+      "location": "[resourceGroup().location]"
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2018-09-01-preview",
+      "name": "[variables('assignmentReaderGuid')]",
+      "dependsOn": [
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]"
+      ],
+      "properties": {
+          "roleDefinitionId": "[variables('subscriptionReader')]",
+          "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+          "principalType": "ServicePrincipal"
+      }
+    },      
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "[couchbase.generateResourceName('vault')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
+      ],
+      "tags": {},
+      "properties": {
+        "enabledForDeployment": true,
+        "enabledForTemplateDeployment": true,
+        "enabledForDiskEncryption": false,
+        "enableRbacAuthorization": false,
+        "accessPolicies": [
+          {
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+            "permissions": {
+              "secrets": [
+                "Get",
+                "List",
+                "Set",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+              ]
+            },
+            "tenantId": "[subscription().tenantId]"
+          }
+        ],
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "name": "Standard",
+          "family": "A"
+        },
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-secret')]",
+      "dependsOn": ["[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]"],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "application/json",
+        "value": "[string(variables('secretValue'))]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-connection-string')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]"
+      ],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "application/json",
+        "value": "[parameters('couchbaseConnectionString')]"
+      }
+    },    
+    {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "[couchbase.generateResourceName('syncgateway')]",
       "location": "[parameters('location')]",
       "apiVersion": "2019-03-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
-        "[resourceId('Microsoft.Network/loadBalancers', couchbase.generateResourceName('sg-lb'))]"
+        "[resourceId('Microsoft.Network/loadBalancers', couchbase.generateResourceName('sg-lb'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
       ],
+      "tags": {
+        "key-vault": "[couchbase.generateResourceName('vault')]",
+        "couchbase-gateway-version": "[parameters('syncGatewayVersion')]",
+        "couchbase-gateway-secret": "cb-secret",
+        "couchbase-gateway-connection-parameter": "cb-connection-string",
+        "couchbase-gateway-bucket": "[parameters('couchbaseBucket')]"
+      },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
+        }
+      },
       "plan": {
         "publisher": "[parameters('publisher')]",
         "product": "[parameters('sync_gateway_offer')]",
@@ -397,11 +554,7 @@
               "version": "[parameters('sync_gateway_image_version')]"
             }
           },
-          "osProfile": {
-            "computerNamePrefix": "[couchbase.generateResourceName('syncgateway')]",
-            "adminUsername": "[parameters('adminUsername')]",
-            "adminPassword": "[parameters('adminPassword')]"
-          },
+          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName('gateway'))]",
           "networkProfile": {
             "networkInterfaceConfigurations": [
               {
@@ -428,22 +581,6 @@
                   ],
                   "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups'))]"
-                  }
-                }
-              }
-            ]
-          },
-          "extensionProfile": {
-            "extensions": [
-              {
-                "name": "[couchbase.generateResourceName('syncgateway-extension')]",
-                "properties": {
-                  "publisher": "Microsoft.Azure.Extensions",
-                  "type": "CustomScript",
-                  "typeHandlerVersion": "2.0",
-                  "autoUpgradeMinorVersion": true,
-                  "protectedSettings": {
-                    "script": "[base64(variables('scriptValue'))]"
                   }
                 }
               }

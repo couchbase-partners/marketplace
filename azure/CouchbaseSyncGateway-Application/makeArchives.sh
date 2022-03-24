@@ -48,9 +48,7 @@ function makeArchive()
     sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$dir../../build/tmp/mainTemplate.json"
   fi
 
-  node "$dir/compiler.js" "$dir/mainTemplate.json" "$dir/embedded_gateway.sh" "$dir/../../script_url.txt" > "$dir/../../build/tmp/mainTemplate.json"
   cp "$dir/createUiDefinition.json" "$dir../../build/tmp"
-
   cd "$dir../../build/tmp" || exit
   zip -r -j -X "$dir../../build/azure/CouchBaseSyncGateway/azure-sg-archive-${license}.zip" *
   cd - || exit

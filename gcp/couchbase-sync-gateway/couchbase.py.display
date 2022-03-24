@@ -73,6 +73,10 @@ input:
     - name: password
       title: Couchbase Admin Password
       section: server
+    - name: svcAccount
+      title: Service Account
+      subtext: Chose an existing or create a new service account for the Couchbase Cluster.
+      section networking
 
 runtime:
   deployingMessage: Deployment can take several minutes to complete.

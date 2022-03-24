@@ -1,10 +1,13 @@
 from hashlib import sha1
+from time import time
 
 def generate_config(context):
     """ Entry Point for deployment Resources for Couchbase Gateway """
     resources = []
     
-    suffix = sha1(context.env['name'].encode('utf-8')).hexdigest()[:10]
+    tm = str(time.time())
+    formattedSuffix = '{}-{}'.format(context.env['name'], tm)
+    suffix = sha1(formattedSuffix.encode('utf-8')).hexdigest()[:10]
     config = {
         'name': 'cb-gateway-runtime-config-{}'.format(suffix),
         'type': './resources/runtime_config.py',
@@ -17,14 +20,6 @@ def generate_config(context):
         }
     }
     resources.append(config)
-    serviceAccount = {
-        'name': 'cb-gateway-service-account-{}'.format(suffix),
-        'type': './resources/iam_service_account.py',
-        'properties': {
-            'nameSuffix': suffix
-        }
-    }
-    resources.append(serviceAccount)
     firewallRule = {
         'name': 'cb-gateway-firewall-rule-{}'.format(suffix),
         'type': './resources/firewall_rule.py',
@@ -34,7 +29,7 @@ def generate_config(context):
         }
     }
     resources.append(firewallRule)
-    bootDiskImage = 'projects/couchbase-public/global/images/family/' + context.properties['imageFamily']
+    bootDiskImage = 'projects/couchbase-public/global/images/' + context.properties['imageName']
     instanceTemplate = {
         'name': 'cb-gateway-instance-template-{}'.format(suffix),
         'type': './resources/instance_template.py',
@@ -45,10 +40,10 @@ def generate_config(context):
             'runtimeConfigName': '$(ref.{}.runtimeConfigName)'.format(config['name']),
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
             'bootImage': bootDiskImage,
-            'serviceAccount': '$(ref.{}.serviceAccount)'.format(serviceAccount['name'])
+            'serviceAccount': context.properties['svcAccount']
         },
         'metadata': {
-            "dependsOn": [ serviceAccount['name'], config['name'], firewallRule['name']]
+            "dependsOn": [config['name'], firewallRule['name']]
         }
     }
     resources.append(instanceTemplate)
@@ -82,9 +77,6 @@ def generate_config(context):
     }
     resources.append(waiter)
     outputs = [{
-        'name': 'serviceAccount',
-        'value': '$(ref.{}.serviceAccount)'.format(serviceAccount['name'])
-    }, {
         'name': 'runtimeConfigName',
         'value': '$(ref.{}.runtimeConfigName)'.format(config['name'])
     },{

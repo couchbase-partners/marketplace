@@ -75,5 +75,17 @@
     },
     "enableMDS": {
       "value": true
+    },
+    "license": {
+      "value": "cbs-2022-hourly-pre-installed"
+    },
+    "publisher": {
+      "value": "couchbase"
+    },
+    "offer": {
+      "value": "couchbase-server-enterprise"
+    },
+    "image_version": {
+      "value": "latest"
     }
   }

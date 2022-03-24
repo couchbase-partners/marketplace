@@ -14,9 +14,9 @@
           "sshPublicKey": "SSH public key"
         },
         "toolTip": {
-          "authenticationType": "",
-          "password": "",
-          "sshPublicKey": ""
+          "authenticationType": "Type of authentication to use",
+          "password": "The password the VM admin user will have",
+          "sshPublicKey": "The ssh key that will be added to the VM instances"
         },
         "constraints": {
           "required": true,
@@ -38,8 +38,8 @@
           "subnets": "Subnets"
         },
         "toolTip": {
-          "virtualNetwork": "",
-          "subnets": ""
+          "virtualNetwork": "The virtual network to place the Couchbase Cluster in",
+          "subnets": "The subnet to place the Couchbase Cluster in"
         },
         "defaultValue": {
           "name": "Couchbase-Vnet",
@@ -305,8 +305,8 @@
             "name": "couchbaseUsername",
             "type": "Microsoft.Compute.UserNameTextBox",
             "label": "Couchbase Admin Username",
-            "defaultValue": "",
-            "toolTip": "",
+            "defaultValue": "couchbase",
+            "toolTip": "Username for the Couchbase Admin user",
             "constraints": {
               "required": true,
               "regex": "^[a-z0-9A-Z]{1,30}$",
@@ -322,11 +322,11 @@
               "password": "Couchbase Admin Password",
               "confirmPassword": "Confirm password"
             },
-            "toolTip": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character",
+            "toolTip": "Password must be between 12 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character",
             "constraints": {
               "required": true,
-              "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-              "validationMessage": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
+              "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,}$",
+              "validationMessage": "Password must be between 12 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
             },
             "options": {
               "hideConfirmation": false
@@ -472,7 +472,8 @@
           {
             "name": "enableMDS",
             "type": "Microsoft.Common.CheckBox",
-            "label": "Enable Multi-Dimension Scaling"
+            "label": "Enable Multi-Dimension Scaling",
+            "toolTip": "Allows adding additional nodes for Multi-Dimentional Scaling"
           },
           {
             "name": "mdsSection",
@@ -484,6 +485,7 @@
                 "type": "Microsoft.Common.EditableGrid",
                 "ariaLabel": "Enter additional nodes you would like as part of your cluster",
                 "label": "Additional Nodes",
+                "tooltip": "Nodes to add to the cluster",
                 "visible":  "[steps('mdsConfig').enableMDS]",
                 "constraints": {
                   "width": "Full",

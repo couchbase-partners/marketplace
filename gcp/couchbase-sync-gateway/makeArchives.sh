@@ -2,6 +2,7 @@
 
 BYOL=0
 ARCHIVE_NAME="gcp-gateway-archive.zip"
+IMAGE_FAMILY="couchbase-sync-gateway-hourly-pricing"
 while getopts b flag
 do
     case "${flag}" in
@@ -29,23 +30,34 @@ cp -a "${SCRIPT_SOURCE}/." "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway
 
 # remove the archives creation tool
 rm "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/makeArchives.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/test_config.local.yaml"
 
 # Here is where we need to change the files for byol if byol is set
 if [[ "$BYOL" == "1" ]]; then
     echo "BYOL SET!"
     ARCHIVE_NAME="gcp-gateway-byol-archive.zip"
-    # modify couchbase.py.schema to change the default value
-    yq e -i '.properties.imageFamily.default = "couchbase-sync-gateway-byol"' "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema"
-    # update the c2d_deployment_configuration.json
-    config=$(jq '.imageName = "couchbase-sync-gateway-byol"' "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/c2d_deployment_configuration.json")
-    cat <<< "$config" > "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/c2d_deployment_configuration.json"
-    # update the test_config.yaml
-    yq e -i '.resources[0].properties.imageFamily = "couchbase-sync-gateway-byol"' "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/test_config.yaml"
+    IMAGE_FAMILY="couchbase-sync-gateway-byol"
 fi
+echo "IMAGE FAMILY IS: $IMAGE_FAMILY"
+IMAGE=$(gcloud compute images list --project couchbase-public --filter="family = $IMAGE_FAMILY" --format="value(NAME)" --sort-by="~creationTimestamp" --limit=1)
+echo "IMAGE IS: $IMAGE"
+expression=".resources[0].properties.imageName = \"$IMAGE\""
+yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/test_config.yaml"
+expression=".properties.imageName.default = \"$IMAGE\""
+yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema"
+expression=".imageName = \"$IMAGE\""
+config=$(jq "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/c2d_deployment_configuration.json")
+cat <<< "$config" > "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/c2d_deployment_configuration.json"
+
 # remove existing archive
 rm -f "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/$ARCHIVE_NAME"
+
+#Fix pathing for marketplace
+sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py > $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py
+sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema > $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema
+
 # zip up the contents of the package into the archive
-WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/" && zip -r -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
+WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/" && zip -r -j -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
 
 # remove package folder
-rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/"
+#rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/"
