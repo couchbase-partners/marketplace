@@ -23,6 +23,10 @@
 #  -v : Couchbase Server Image Version                                        #
 #     usage: -v 18.4.0                                                        #
 #     purposes: The image version specified in the cbs plan                   #
+#  -z : Zip Contents                                                          #
+#     usage: -z                                                               #
+#     purposes: The package will be created in a specific folder, however if  #
+#     zip is specified that folder will be zipped into an archive             #
 ###############################################################################
 
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%makeArchives.sh/}
@@ -35,26 +39,33 @@ function makeArchive()
   publisher=$4
   offer=$5
   image_version=$6
-  mkdir -p "$dir../../build/azure/CouchBaseServer/"
-  rm "$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}.zip"
-  mkdir -p "$dir../../build/tmp"
+  ZIP=$7
+  mkdir -p "$dir../../build/azure/CouchbaseServer/"
+  if [ -f "$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}.zip" ]; then
+    rm "$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}.zip"
+  fi
+  PACKAGE_DIR="$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}"
+  mkdir -p "$PACKAGE_DIR"
   SED_VALUE="s~<<LICENSE>>~${sku}~g;s~<<PUBLISHER>>~${publisher}~g;s~<<OFFER>>~${offer}~g;s~<<IMAGE_VERSION>>~${image_version}~g;"
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$dir../../build/tmp/mainTemplate.json"
+    sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$PACKAGE_DIR/mainTemplate.json"
   else
-    sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$dir../../build/tmp/mainTemplate.json"
+    sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$PACKAGE_DIR/mainTemplate.json"
   fi
 
   #cp "$dir/mainTemplate.json" "$dir../../build/tmp/mainTemplate.json"
-  cp "$dir/createUiDefinition.json" "$dir../../build/tmp"
+  cp "$dir/createUiDefinition.json" "$PACKAGE_DIR"
 
-  cd "$dir../../build/tmp" || exit
-  zip -r -j -X "$dir../../build/azure/CouchBaseServer/azure-cbs-archive-${license}.zip" *
-  cd - || exit
-  rm -rf "$dir../../build/tmp"
+  if [[ "$ZIP" == 1 ]]; then
+    cd "$PACKAGE_DIR" || exit
+    zip -r -j -X "../azure-cbs-archive-${license}.zip" *
+    cd - || exit
+    rm -rf "$PACKAGE_DIR"
+  fi
 }
 
-while getopts l:p:s:o:v: flag
+ZIP=0
+while getopts l:p:s:o:v:z flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
@@ -62,8 +73,9 @@ do
         s) sku=${OPTARG};;
         o) offer=${OPTARG};;
         v) image_version=${OPTARG};;
+        z) ZIP=1;;
         *) exit 1;;
     esac
 done
 
-makeArchive "$license" "$SCRIPT_SOURCE" "$sku" "$publisher" "$offer" "$image_version"
+makeArchive "$license" "$SCRIPT_SOURCE" "$sku" "$publisher" "$offer" "$image_version" "$ZIP"

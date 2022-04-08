@@ -2,6 +2,7 @@
 
 BYOL=0
 ARCHIVE_NAME="gcp-gateway-archive.zip"
+SERVICE_ACCOUNT="couchbase-gateway-hourly"
 IMAGE_FAMILY="couchbase-sync-gateway-hourly-pricing"
 while getopts b flag
 do
@@ -37,11 +38,14 @@ if [[ "$BYOL" == "1" ]]; then
     echo "BYOL SET!"
     ARCHIVE_NAME="gcp-gateway-byol-archive.zip"
     IMAGE_FAMILY="couchbase-sync-gateway-byol"
+    SERVICE_ACCOUNT="couchbase-gateway-byol"
 fi
 echo "IMAGE FAMILY IS: $IMAGE_FAMILY"
 IMAGE=$(gcloud compute images list --project couchbase-public --filter="family = $IMAGE_FAMILY" --format="value(NAME)" --sort-by="~creationTimestamp" --limit=1)
 echo "IMAGE IS: $IMAGE"
 expression=".resources[0].properties.imageName = \"$IMAGE\""
+yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/test_config.yaml"
+expression=".resources[0].properties.svcAccount = \"$SERVICE_ACCOUNT@cloud-launcher-verifier-prd.iam.gserviceaccount.com\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/test_config.yaml"
 expression=".properties.imageName.default = \"$IMAGE\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/couchbase.py.schema"
@@ -60,4 +64,4 @@ sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/
 WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/" && zip -r -j -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
 
 # remove package folder
-#rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/"
+rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-sync-gateway/package/"

@@ -7,16 +7,12 @@
       {
         "name": "vmCredentials",
         "type": "Microsoft.Compute.CredentialsCombo",
+        "toolTip": "The credentials to be used for ssh access to the Couchbase Server Cluster Instances",
         "label": {
           "authenticationType": "Authentication type",
           "password": "Password",
           "confirmPassword": "Confirm password",
           "sshPublicKey": "SSH public key"
-        },
-        "toolTip": {
-          "authenticationType": "",
-          "password": "",
-          "sshPublicKey": ""
         },
         "constraints": {
           "required": true,
@@ -32,14 +28,11 @@
       },
 	  {
 		"name": "virtualNetwork",
-		"type": "Microsoft.Network.VirtualNetworkCombo",
+    "type": "Microsoft.Network.VirtualNetworkCombo",
+    "toolTip": "The virtual network to deploy the Couchbase Cluster to.",
 		"label": {
 			"virtualNetwork": "Virtual network",
 			"subnets": "Subnets"
-		},
-		"toolTip": {
-			"virtualNetwork": "",
-			"subnets": ""
 		},
 		"defaultValue": {
 			"name": "Couchbase-Vnet",
@@ -356,7 +349,7 @@
               "required": true,
               "validations": [
               {
-                "regex": "^couchbase://*",
+                "regex": "^couchbase://.{1,250}",
                 "message": "Must start with couchbase://"
               }
               ]
@@ -367,8 +360,8 @@
             "name": "couchbaseUsername",
             "type": "Microsoft.Compute.UserNameTextBox",
             "label": "Couchbase Admin Username",
+            "toolTip": "The username to access the Couchbase Server Enterprise Cluster.",
             "defaultValue": "",
-            "toolTip": "",
             "constraints": {
               "required": true,
               "regex": "^[a-z0-9A-Z]{1,30}$",
@@ -402,8 +395,8 @@
             "multiLine": false,
             "constraints": {
               "required": true,
-              "validations": [
-              ]
+              "regex": "^[a-z0-9A-Z]{1,30}$",
+              "validationMessage": "The Couchbase Bucket should be alpha-numeric only"
             },
             "visible": true
           }
@@ -422,7 +415,9 @@
       "syncGatewayVersion": "[steps('couchbaseConfig').syncGatewayVersion]",
       "vmSize": "[steps('couchbaseConfig').vmSize]",
       "location": "[location()]",
-	    "vnet": "[basics('virtualNetwork')]"
+      "vnet": "[basics('virtualNetwork')]",
+      "resourceGroup": "[basics('virtualNetwork').resourceGroup",
+      "newOrExisting": "[basics('virtualNetwork').newOrExisting"
     }
   }
 }

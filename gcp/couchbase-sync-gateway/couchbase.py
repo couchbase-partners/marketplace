@@ -1,5 +1,5 @@
 from hashlib import sha1
-from time import time
+import time
 
 def generate_config(context):
     """ Entry Point for deployment Resources for Couchbase Gateway """

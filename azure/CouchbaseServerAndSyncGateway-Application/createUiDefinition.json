@@ -34,11 +34,11 @@
 		"label": {
 			"virtualNetwork": "Virtual network",
 			"subnets": "Subnets"
-		},
-		"toolTip": {
-			"virtualNetwork": "",
-			"subnets": ""
-		},
+    },
+    "toolTip": {
+      "virtualNetwork": "The vnet to place the Couchbase Server Cluster in",
+      "subnets": "You must create at least 1 subnet of a size larger than the number of couchbase instances you want to place within it."
+    },
 		"defaultValue": {
 			"name": "Couchbase-Vnet",
 			"addressPrefixSize": "/16"
@@ -610,7 +610,9 @@
       "syncGatewayVersion": "[steps('couchbaseConfig').syncGatewayVersion]",
       "vmSize": "[steps('couchbaseConfig').vmSize]",
       "location": "[location()]",
-	  "vnet": "[basics('virtualNetwork')]"
+      "vnet": "[basics('virtualNetwork')]",
+      "resourceGroup": "[basics('virtualNetwork').resourceGroup]",
+      "newOrExisting": "[basics('virtualNetwork').newOrExisting]"
     }
   }
 }

@@ -210,9 +210,11 @@ if [[ "$RUNNING" == "200" && "$VERSION" =~ ^3 ]]; then
         -H "Content-Type: application/json" \
         -d "{\"bucket\": \"$BUCKET\",\"name\": \"$BUCKET\", \"num_index_replicas\":0}" \
         --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
-    while [[ "$RESPONSE" != "412" ]];
+    COUNT=0
+    while [[ "$RESPONSE" != "412" && "$COUNT" -lt "15" ]];
     do
       sleep 1
+      COUNT=$((COUNT + 1))
       RESPONSE=$(curl -X PUT "http://127.0.0.1:4985/$BUCKET/" \
           -H "accept: application/json" \
           -H "Content-Type: application/json" \
@@ -220,4 +222,6 @@ if [[ "$RUNNING" == "200" && "$VERSION" =~ ^3 ]]; then
           --user $USERNAME:$PASSWORD -L -s -w '%{http_code}')
     done
   fi
+elif [[ "$RUNNING" != "200" ]]; then
+  echo "Sync Gateway is still not running.  Cannot complete configuration."
 fi

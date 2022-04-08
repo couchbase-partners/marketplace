@@ -3,6 +3,7 @@
 BYOL=0
 ARCHIVE_NAME="gcp-cbs-archive.zip"
 IMAGE_FAMILY="couchbase-server-hourly-pricing"
+SERVICE_ACCOUNT="couchbase-server-hourly"
 while getopts b flag
 do
     case "${flag}" in
@@ -40,10 +41,13 @@ if [[ "$BYOL" == "1" ]]; then
     # update the c2d_deployment_configuration.json
     # update the test_config.yaml
     IMAGE_FAMILY="couchbase-server-byol"
+    SERVICE_ACCOUNT="couchbase-server-byol"
 fi
 # We need to update the default for image name based on the latest from the family
 IMAGE=$(gcloud compute images list --project couchbase-public --filter="family = $IMAGE_FAMILY" --format="value(NAME)" --sort-by="~creationTimestamp" --limit=1)
 expression=".resources[0].properties.imageName = \"$IMAGE\""
+yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
+expression=".resources[0].properties.svcAccount = \"$SERVICE_ACCOUNT@cloud-launcher-verifier-prd.iam.gserviceaccount.com\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
 expression=".properties.imageName.default = \"$IMAGE\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema"
