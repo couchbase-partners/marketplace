@@ -16,8 +16,7 @@ resources:
       accessCIDR: 0.0.0.0/0
       couchbaseConnectionString: ''
       bucket: 'travel-sample'
-      # This svcAccount is for GCP Submit.  There are other test_configs for local testing
-      svcAccount: couchbase-server-hourly@cloud-launcher-verifier-prd.iam.gserviceaccount.com
+      svcAccount: 'couchbase-dev-test@couchbase-dev.iam.gserviceaccount.com'
 outputs:
   - name: runtimeConfigName
     value: $(ref.test-couchbase-deployment.runtimeConfigName)

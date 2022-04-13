@@ -14,10 +14,9 @@ resources:
       username: couchbase
       password: foo123!
       accessCIDR: 0.0.0.0/0
-      imageFamily: couchbase-server-hourly-pricing
+      # This svcAccount is for GCP Submit.  There are other test_configs for local testing
+      svcAccount: couchbase-server-hourly@cloud-launcher-verifier-prd.iam.gserviceaccount.com
 outputs:
-  - name: serviceAccount
-    value: $(ref.test-couchbase-deployment.serviceAccount)
   - name: runtimeConfigName
     value: $(ref.test-couchbase-deployment.runtimeConfigName)
   - name: ruleTag

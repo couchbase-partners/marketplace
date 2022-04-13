@@ -34,7 +34,8 @@ jobs:
                                           -v 18.4.0 \
                                           -g couchbase-sync-gateway-enterprise \
                                           -i 18.4.0 \
-                                          -u byol_2019
+                                          -u byol_2019 \
+                                          -z
       - name: Build Hourly Combined Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/makeArchives.sh \
@@ -45,39 +46,44 @@ jobs:
                                         -v 18.4.0 \
                                         -g couchbase-sync-gateway-enterprise \
                                         -i 18.4.0 \
-                                        -u hourly_pricing_mar19
+                                        -u hourly_pricing_mar19 \
+                                        -z
       - name: Build BYOL CBS Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
                                           -l byol \
-                                          -s byol_2019 \
+                                          -s cbs-2022-byol-pre-installed \
                                           -p couchbase \
                                           -o couchbase-server-enterprise \
-                                          -v 18.4.0
+                                          -v latest \
+                                          -z
       - name: Build Hourly CBS Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
                                         -l hourly-pricing \
-                                        -s hourly_pricing_mar19 \
+                                        -s cbs-2022-hourly-pre-installed \
                                         -p couchbase \
                                         -o couchbase-server-enterprise \
-                                        -v 18.4.0                                        
+                                        -v latest  \
+                                        -z                                      
       - name: Build BYOL Gateway Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
                                           -l byol \
                                           -p couchbase \
                                           -g couchbase-sync-gateway-enterprise \
-                                          -i 18.4.0 \
-                                          -u byol_2019
+                                          -i latest \
+                                          -u cb-gateway-2022-pre-installed-byol \
+                                          -z
       - name: Build Hourly Gateway Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
                                         -l hourly-pricing \
                                         -p couchbase \
                                         -g couchbase-sync-gateway-enterprise \
-                                        -i 18.4.0 \
-                                        -u hourly_pricing_mar19                                        
+                                        -i latest \
+                                        -u cb-gateway-2022-pre-installed-hourly \
+                                        -z                                        
       - name: Upload Combined BYOL Package
         id: upload-combined-byol-asset
         uses: actions/upload-release-asset@v1
@@ -85,7 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseServerAndSyncGateway/azure-combined-archive-byol.zip
+          asset_path: ./build/azure/CouchbaseServerAndSyncGateway/azure-combined-archive-byol.zip
           asset_name: azure-combined-archive-byol.zip
           asset_content_type: application/zip
       - name: Upload Combined Hourly Package
@@ -95,7 +101,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseServerAndSyncGateway/azure-combined-archive-hourly-pricing.zip
+          asset_path: ./build/azure/CouchbaseServerAndSyncGateway/azure-combined-archive-hourly-pricing.zip
           asset_name: azure-combined-archive-hourly-pricing.zip
           asset_content_type: application/zip
       - name: Upload CBS BYOL Package
@@ -105,7 +111,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseServer/azure-cbs-archive-byol.zip
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-byol.zip
           asset_name: azure-cbs-archive-byol.zip
           asset_content_type: application/zip
       - name: Upload CBS Hourly Package
@@ -115,7 +121,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseServer/azure-cbs-archive-hourly-pricing.zip
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing.zip
           asset_name: azure-cbs-archive-hourly-pricing.zip
           asset_content_type: application/zip
       - name: Upload Gateway BYOL Package
@@ -125,7 +131,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseSyncGateway/azure-sg-archive-byol.zip
+          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-byol.zip
           asset_name: azure-sg-archive-byol.zip
           asset_content_type: application/zip
       - name: Upload Gateway Hourly Package
@@ -135,6 +141,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchBaseSyncGateway/azure-sg-archive-hourly-pricing.zip
+          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-hourly-pricing.zip
           asset_name: azure-sg-archive-hourly-pricing.zip
           asset_content_type: application/zip                    

@@ -6,18 +6,17 @@ resources:
   - name: test-couchbase-deployment
     type: couchbase.py
     properties: 
-      name: couchbase-gateway-test
+      name: couchbase-server-test
       serverNodeCount: 3
       serverNodeType: n1-standard-4
       serverDiskSize: 20
-      serverVersion: 3.0.0
-      username: 'couchbase'
-      password: 'foo123!'
+      serverVersion: 7.0.3
+      username: couchbase
+      password: foo123!
       accessCIDR: 0.0.0.0/0
-      couchbaseConnectionString: ''
-      bucket: 'travel-sample'
-      # This svcAccount is for GCP Submit.  There are other test_configs for local testing
-      svcAccount: couchbase-server-hourly@cloud-launcher-verifier-prd.iam.gserviceaccount.com
+      imageFamily: couchbase-server-hourly-pricing
+      # This svcAccount is for Local Testing.  test_config.yaml should use the specified account for GCP's submittal process
+      svcAccount: couchbase-dev-test@couchbase-dev.iam.gserviceaccount.com
 outputs:
   - name: runtimeConfigName
     value: $(ref.test-couchbase-deployment.runtimeConfigName)

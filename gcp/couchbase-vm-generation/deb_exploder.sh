@@ -112,13 +112,13 @@ else
     echo "Preinstalling Server"
     echo "#!/usr/bin/env sh
     export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
-    if [[ ! -f "./couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb" ]]; then
-      wget -O "/setup/couchbase-server-enterprise-$VERSION-ubuntu20.04_amd64.deb"  \
+    if [[ ! -f "./couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb" ]]; then
+      wget -O "/setup/couchbase-server-enterprise_$VERSION-ubuntu20.04_amd64.deb"  \
           "http://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb"
     else
-      cp "./couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb" "/setup/couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb"
+      cp "./couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb" "/setup/couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb"
     fi
-    DEB="/setup/couchbase-server-enterprise-$VERSION-ubuntu20.04_amd64.deb"
+    DEB="/setup/couchbase-server-enterprise_$VERSION-ubuntu20.04_amd64.deb"
 fi
 
 mkdir -p /setup/couchbase

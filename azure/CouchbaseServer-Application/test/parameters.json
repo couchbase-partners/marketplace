@@ -59,7 +59,7 @@
     ]
   },
   "license": {
-    "value": "byol_2019"
+    "value": "cbs-2022-hourly-pre-installed"
   },
   "publisher": {
     "value": "couchbase"
@@ -68,6 +68,6 @@
     "value": "couchbase-server-enterprise"
   },
   "image_version": {
-    "value": "18.4.0"
+    "value": "latest"
   }
 }

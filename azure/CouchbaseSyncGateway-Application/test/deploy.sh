@@ -30,7 +30,7 @@ dir="${SCRIPT_SOURCE}../"
 #mkdir -p "${dir}../../build/azure/CouchBaseSyncGateway"
 #node "${dir}compiler.js" "${dir}mainTemplate.json" "${dir}embedded_gateway.sh" "${dir}../../script_url.txt" > "$dir../../build/azure/CouchBaseSyncGateway/azure-sg-template.json"
 ###
-TEMPLATE="${dir}../../build/azure/CouchBaseSyncGateway/azure-sg-template.json"
+TEMPLATE="${dir}/mainTemplate.json"
 
 while getopts l:p:g:n:s:b:d:u:v:q: flag
 do
@@ -41,7 +41,6 @@ do
         n) NAME=${OPTARG};;
         s) SERVER=${OPTARG};;
         b) BUCKET=${OPTARG};;
-        d) DATABASE=${OPTARG};;
         u) USERNAME=${OPTARG};;
         v) VERSION=${OPTARG};;
         q) PASSWORD=${OPTARG};;
@@ -72,7 +71,7 @@ if [ "$(az group exists --name ${RESOURCE_GROUP})" = "true" ]; then
 else
     az group create --name $RESOURCE_GROUP --location $LOCATION --output table
 fi
-JQVals=".couchbaseServerUrl.value = \"$SERVER\" | .couchbaseBucket.value = \"$BUCKET\" | .couchbaseDatabaseName.value = \"$DATABASE\" | .couchbaseUser.value = \"$USERNAME\" | .couchbasePassword.value = \"$PASSWORD\" | .syncGatewayVersion.value = \"$VERSION\""
+JQVals=".couchbaseConnectionString.value = \"$SERVER\" | .couchbaseBucket.value = \"$BUCKET\" | .couchbaseUsername.value = \"$USERNAME\" | .couchbasePassword.value = \"$PASSWORD\" | .syncGatewayVersion.value = \"$VERSION\""
 PARAMS=$(jq "$JQVals" "$PARAMETERS")
 
 az deployment group create --verbose --template-file "$TEMPLATE" --parameters "$PARAMS" --resource-group "$RESOURCE_GROUP" --name "$NAME" --output table

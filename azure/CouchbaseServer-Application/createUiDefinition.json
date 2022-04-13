@@ -14,9 +14,9 @@
           "sshPublicKey": "SSH public key"
         },
         "toolTip": {
-          "authenticationType": "",
-          "password": "",
-          "sshPublicKey": ""
+          "authenticationType": "Type of authentication to use",
+          "password": "The password the VM admin user will have",
+          "sshPublicKey": "The ssh key that will be added to the VM instances"
         },
         "constraints": {
           "required": true,
@@ -38,8 +38,8 @@
           "subnets": "Subnets"
         },
         "toolTip": {
-          "virtualNetwork": "",
-          "subnets": ""
+          "virtualNetwork": "The virtual network to place the Couchbase Cluster in",
+          "subnets": "The subnet to place the Couchbase Cluster in"
         },
         "defaultValue": {
           "name": "Couchbase-Vnet",
@@ -131,7 +131,6 @@
             "name": "serverNodeCount",
             "type": "Microsoft.Common.DropDown",
             "label": "Server Node Count",
-            "defaultValue": "3",
             "toolTip": "Number of virtual machines to provision for Server",
             "constraints": {
               "allowedValues": [
@@ -266,7 +265,6 @@
             "name": "serverDiskSize",
             "type": "Microsoft.Common.DropDown",
             "label": "Server Disk Size",
-            "defaultValue": "32 GB",
             "toolTip": "Size of disk on each Server node in the cluster",
             "constraints": {
               "allowedValues": [
@@ -296,7 +294,7 @@
                 },
                 {
                   "label": "4 TB",
-                  "value": 4095
+                  "value": 4096
                 }
               ]
             }
@@ -305,8 +303,7 @@
             "name": "couchbaseUsername",
             "type": "Microsoft.Compute.UserNameTextBox",
             "label": "Couchbase Admin Username",
-            "defaultValue": "",
-            "toolTip": "",
+            "toolTip": "Username for the Couchbase Admin user",
             "constraints": {
               "required": true,
               "regex": "^[a-z0-9A-Z]{1,30}$",
@@ -322,11 +319,11 @@
               "password": "Couchbase Admin Password",
               "confirmPassword": "Confirm password"
             },
-            "toolTip": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character",
+            "toolTip": "Password must be between 12 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character",
             "constraints": {
               "required": true,
-              "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-              "validationMessage": "Password must be between 8 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
+              "regex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,}$",
+              "validationMessage": "Password must be between 12 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
             },
             "options": {
               "hideConfirmation": false
@@ -337,7 +334,6 @@
             "name": "serverVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Server Version",
-            "defaultValue": "7.0.3",
             "toolTip": "What version of Couchbase Server is to be installed",
             "constraints": {
               "allowedValues": [
@@ -409,11 +405,9 @@
             }
           },
           {
-            "name": "services",
+            "name": "couchbaseServices",
             "type": "Microsoft.Common.DropDown",
             "label": "Couchbase Services",
-            "placeholder": "data,index,query",
-            "defaultValue": "data,index,query",
             "multiselect": true,
             "selectAll": true,
             "toolTip": "The services that the primary cluster will utilize",
@@ -421,37 +415,30 @@
               "allowedValues": [
                 {
                   "label": "Data",
-                  "description": "The data(kv) service",
                   "value": "data"
                 },
                 {
                   "label": "Index",
-                  "description": "The index service",
                   "value": "index"
                 },
                 {
                   "label": "Query",
-                  "description": "The query service",
                   "value": "query"
                 },
                 {
                   "label": "Search",
-                  "description": "The full-text search service",
                   "value": "fts"
                 },
                 {
                   "label": "Eventing",
-                  "description": "The eventing service",
                   "value": "eventing"
                 },
                 {
                   "label": "Analytics",
-                  "description": "The analytics service",
                   "value": "analytics"
                 },
                 {
                   "label": "Backup",
-                  "description": "The backup service, only available on 7.0.0+",
                   "value": "backup"
                 }
               ]
@@ -472,7 +459,8 @@
           {
             "name": "enableMDS",
             "type": "Microsoft.Common.CheckBox",
-            "label": "Enable Multi-Dimension Scaling"
+            "label": "Enable Multi-Dimension Scaling",
+            "toolTip": "Allows adding additional nodes for Multi-Dimentional Scaling"
           },
           {
             "name": "mdsSection",
@@ -484,6 +472,7 @@
                 "type": "Microsoft.Common.EditableGrid",
                 "ariaLabel": "Enter additional nodes you would like as part of your cluster",
                 "label": "Additional Nodes",
+                "tooltip": "Nodes to add to the cluster",
                 "visible":  "[steps('mdsConfig').enableMDS]",
                 "constraints": {
                   "width": "Full",
@@ -501,8 +490,6 @@
                       "element": {
                         "type": "Microsoft.Common.DropDown",
                         "label": "Couchbase Services",
-                        "placeholder": "data,index,query",
-                        "defaultValue": "data,index,query",
                         "multiselect": true,
                         "selectAll": true,
                         "toolTip": "The services that the primary cluster will utilize",
@@ -555,7 +542,6 @@
                       "element": {
                         "type": "Microsoft.Common.DropDown",
                         "label": "Instance Count",
-                        "defaultValue": "1",
                         "toolTip": "Number of virtual machines to provision",
                         "constraints": {
                           "allowedValues": [
@@ -695,7 +681,6 @@
                         "type": "Microsoft.Common.DropDown",
                         "label": "Virtual Machine Size",
                         "toolTip": "Size of VMs for this service set",
-                        "defaultValue": "[steps('couchbaseConfig').vmSize]",
                         "constraints": {
                           "allowedValues": [
                             {
@@ -821,7 +806,6 @@
                       "element": {
                         "type": "Microsoft.Common.DropDown",
                         "label": "Server Disk Size",
-                        "defaultValue": "32 GB",
                         "toolTip": "Size of disk on each Server node in the cluster",
                         "constraints": {
                           "allowedValues": [
@@ -872,15 +856,17 @@
       "sshPublicKey": "[basics('vmCredentials').sshPublicKey]",
       "serverUsername": "[steps('couchbaseConfig').couchbaseUsername]",
       "serverPassword": "[steps('couchbaseConfig').couchbasePassword]",
-      "serverNodeCount": "[steps('couchbaseConfig').serverNodeCount]",
-      "serverDiskSize": "[steps('couchbaseConfig').serverDiskSize]",
+      "serverNodeCount": "[int(steps('couchbaseConfig').serverNodeCount)]",
+      "serverDiskSize": "[int(steps('couchbaseConfig').serverDiskSize)]",
       "serverVersion": "[steps('couchbaseConfig').serverVersion]",
       "vmSize": "[steps('couchbaseConfig').vmSize]",
       "location": "[location()]",
       "vnet": "[basics('virtualNetwork')]",
-      "services": "[steps('couchbaseConfig').services]",
+      "services": "[steps('couchbaseConfig').couchbaseServices]",
       "mdsConfig": "[steps('mdsConfig').mdsSection.nodes]",
-      "enableMDS": "[steps('mdsConfig').enableMDS]"
+      "enableMDS": "[equals(bool(coalesce(steps('mdsConfig').enableMDS, 'false')), true)]",
+      "resourceGroup": "[basics('virtualNetwork').resourceGroup]",
+      "newOrExisting": "[basics('virtualNetwork').newOrExisting]"
     }
   }
 }

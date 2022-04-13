@@ -1,6 +1,5 @@
 imports:
   - path: ./resources/runtime_config.py
-  - path: ./resources/iam_service_account.py
   - path: ./resources/firewall_rule.py
   - path: ./resources/instance_template.py
   - path: ./resources/managed_instance_group.py
@@ -16,6 +15,7 @@ required:
   - accessCIDR
   - region
   - network
+  - svcAccount
 
 properties:
   name:
@@ -92,7 +92,7 @@ properties:
   accessCIDR:
     type: string
     pattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$
-  imageFamily:
+  imageName:
     type: string
     default: couchbase-server-hourly-pricing
   data:
@@ -116,11 +116,19 @@ properties:
   backup:
     type: boolean
     default: false
+  svcAccount:
+    type: string
+    pattern: "[a-z]([-a-z0-9]*[a-z0-9])"
+    default: couchbase-service-account
+    x-googleProperty:
+      type: IAM_SERVICE_ACCOUNT
+      iamServiceAccount:
+        roles:
+        - roles/secretmanager.secretAccessor
+        - roles/editor
 
 outputs:
   runtimeConfigName:
-    type: string
-  serviceAccount:
     type: string
   firewallRuleTag:
     type: string
