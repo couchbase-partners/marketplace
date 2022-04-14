@@ -310,7 +310,10 @@
       "type": "Microsoft.Network/virtualNetworks",
       "condition": "[equals(parameters('newOrExisting'), 'new')]",
       "apiVersion": "2021-12-01",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "usedBy": "[parameters('resourceGroup')]"
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
       ],
