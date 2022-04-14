@@ -40,6 +40,7 @@ jobs:
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/parameters.json -g cb-mkt-test-byol -n ga-cbs-sg-app-byol
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/backout.sh -g cb-mkt-test-byol -s
@@ -69,6 +70,7 @@ jobs:
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/test_parameters/NoSyncGateway.json -g cb-mkt-test-byol -n ga-cbs-no-sg-app-byol-two
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/backout.sh -g cb-mkt-test-byol -s
@@ -97,6 +99,7 @@ jobs:
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/test_parameters/HourlyPricing.json -g cb-mkt-test-byol -n ga-cbs-sg-app-hourly-two
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/backout.sh -g cb-mkt-test-byol -s
@@ -125,6 +128,7 @@ jobs:
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/test_parameters/NoSyncGateway.json -g cb-mkt-test-byol -n ga-cbs-sg-app-hourly-two
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServerAndSyncGateway-Application/test/backout.sh -g cb-mkt-test-byol -s            
