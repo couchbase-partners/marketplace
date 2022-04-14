@@ -7,15 +7,10 @@ on:
       - 'azure/CouchbaseSyncGateway-Application/**'
   workflow_dispatch:
 jobs:
-  AzureLaunch:
+  SyncGatewayLaunch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '15'
-      - run: mkdir -p "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway" && node "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/compiler.js" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/mainTemplate.json" "${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/embedded_gateway.sh" "${GITHUB_WORKSPACE}/script_url.txt" > "${GITHUB_WORKSPACE}/build/azure/CouchBaseSyncGateway/azure-sg-template.json"
       - name: Azure Login
         uses: azure/login@v1
         with: 
