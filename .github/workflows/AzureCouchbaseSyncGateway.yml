@@ -19,8 +19,12 @@ jobs:
         timeout-minutes: 30
         uses: azure/CLI@v1
         with:
-          azcliversion: 2.29.2
           inlineScript: |
+            clientId=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq '.clientId')
+            clientSecret=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq '.clientSecret')
+            tenantId=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq '.tenantId')
+            subscriptionId=$(echo ${{ secrets.AZURE_CREDENTIALS }} | jq '.subscriptionId')
+            az login -u $clientId --tenant $tenantId -p $clientSecret --subscription $subscriptionId
             COUCHBASESERVER=$(${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/createServer.sh -g cb-mkt-sg-test -l eastus)
             SERVER="couchbase://$(echo $COUCHBASESERVER | jq -r '.ip')"
             USER=$(echo $COUCHBASESERVER | jq -r '.couchbaseUser')
