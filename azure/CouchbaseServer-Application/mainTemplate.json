@@ -145,6 +145,10 @@
             {
               "name": "resource",
               "type": "string"
+            },
+            {
+              "name": "now",
+              "type": "string"
             }
           ],
           "output": {
@@ -154,7 +158,7 @@
                                       'cb-', 
                                       parameters('resource'),
                                       '-', 
-                                      uniquestring(resourceGroup().id, deployment().name)
+                                      uniquestring(resourceGroup().id, deployment().name, parameters('now'))
                                     )
                             ]"
           }
@@ -196,13 +200,13 @@
                       concat(
                         resourceGroup().id, 
                         '/providers/Microsoft.Compute/virtualMachineScaleSets/',
-                        couchbase.generateResourceName('server-main'), 
+                        couchbase.generateResourceName('server-main', parameters('_now')), 
                         '/virtualMachines/0/networkInterfaces/',
-                        couchbase.generateResourceName('server-nic'),
+                        couchbase.generateResourceName('server-nic', parameters('_now')),
                         '/ipConfigurations/',
-                        couchbase.generateResourceName('server-ipconfig'),
+                        couchbase.generateResourceName('server-ipconfig', parameters('_now')),
                         '/publicIPAddresses/',
-                        couchbase.generateResourceName('server-public-ip')
+                        couchbase.generateResourceName('server-public-ip', parameters('_now'))
                       )
                     ]",
     "password_osProfile": {
@@ -228,13 +232,13 @@
       "username": "[parameters('serverUsername')]",
       "password": "[parameters('serverPassword')]"
     },
-    "assignmentReaderGuid": "[guid(subscription().subscriptionId, parameters('_now'))]"
+    "assignmentReaderGuid": "[guid(subscription().subscriptionId, resourceGroup().id, parameters('_now'))]"
   },
   "resources": [
     {
       "apiVersion": "2021-12-01",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[couchbase.generateResourceName('networkSecurityGroups')]",
+      "name": "[couchbase.generateResourceName('networkSecurityGroups', parameters('_now'))]",
       "location": "[parameters('resourceGroup')]",
       "properties": {
         "securityRules": [
@@ -388,7 +392,7 @@
       "apiVersion": "2021-12-01",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups', parameters('_now')))]"
       ],
       "properties": {
         "addressSpace": {
@@ -400,7 +404,7 @@
             "properties": {
               "addressPrefix": "[parameters('vnet').subnets.subnet1.addressPrefix]",
               "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups'))]"
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', couchbase.generateResourceName('networkSecurityGroups', parameters('_now')))]"
               }
             }
           }
@@ -409,7 +413,7 @@
     },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "name": "[couchbase.generateResourceName('identity')]",
+      "name": "[couchbase.generateResourceName('identity', parameters('_now'))]",
       "apiVersion": "2018-11-30",
       "location": "[parameters('location')]"
     },
@@ -418,21 +422,21 @@
       "apiVersion": "2018-09-01-preview",
       "name": "[variables('assignmentReaderGuid')]",
       "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]"
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now')))]"
       ],
       "properties": {
         "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleAssignments', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now'))), '2018-11-30').principalId]",
         "principalType": "ServicePrincipal"
       }
     },
     {
       "type": "Microsoft.KeyVault/vaults",
       "apiVersion": "2019-09-01",
-      "name": "[couchbase.generateResourceName('vault')]",
+      "name": "[couchbase.generateResourceName('vault', parameters('_now'))]",
       "location": "[parameters('resourceGroup')]",
       "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now')))]",
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
       ],
       "properties": {
@@ -442,7 +446,7 @@
         "enableRbacAuthorization": false,
         "accessPolicies": [
           {
-            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity')), '2018-11-30').principalId]",
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now'))), '2018-11-30').principalId]",
             "permissions": {
               "secrets": [
                 "Get",
@@ -473,8 +477,8 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2021-06-01-preview",
-      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-secret')]",
-      "dependsOn": [ "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]" ],
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault', parameters('_now')), 'cb-secret')]",
+      "dependsOn": [ "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault', parameters('_now')))]" ],
       "properties": {
         "attributes": {
           "enabled": true
@@ -486,10 +490,10 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2021-06-01-preview",
-      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault'), 'cb-rally')]",
+      "name": "[format('{0}/{1}', couchbase.generateResourceName('vault', parameters('_now')), 'cb-rally')]",
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
-        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main'))]"
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault', parameters('_now')))]",
+        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main', parameters('_now')))]"
       ],
       "properties": {
         "attributes": {
@@ -501,26 +505,26 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[couchbase.generateResourceName('server-main')]",
+      "name": "[couchbase.generateResourceName('server-main', parameters('_now'))]",
       "location": "[parameters('location')]",
       "apiVersion": "2021-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
-        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault', parameters('_now')))]",
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
       ],
       "tags": {
         "couchbase-server-version": "[parameters('serverVersion')]",
         "couchbase-server-make-cluster": "true",
         "couchbase-server-services": "[couchbase.arrayToCSV(parameters('services'))]",
-        "key-vault": "[couchbase.generateResourceName('vault')]",
+        "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
         "couchbase-server-disk": "0",
         "couchbase-server-secret": "cb-secret"
       },
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now')))]": {}
         }
       },
       "plan": {
@@ -561,22 +565,22 @@
               }
             ]
           },
-          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName('server-main'))]",
+          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName('server-main', parameters('_now')))]",
           "networkProfile": {
             "networkInterfaceConfigurations": [
               {
-                "name": "[couchbase.generateResourceName('server-nic')]",
+                "name": "[couchbase.generateResourceName('server-nic', parameters('_now'))]",
                 "properties": {
                   "primary": true,
                   "ipConfigurations": [
                     {
-                      "name": "[couchbase.generateResourceName('server-ipconfig')]",
+                      "name": "[couchbase.generateResourceName('server-ipconfig', parameters('_now'))]",
                       "properties": {
                         "subnet": {
                           "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name ,parameters('vnet').subnets.subnet1.name)]"
                         },
                         "publicipaddressconfiguration": {
-                          "name": "[couchbase.generateResourceName('server-public-ip')]",
+                          "name": "[couchbase.generateResourceName('server-public-ip', parameters('_now'))]",
                           "properties": {
                             "idleTimeoutInMinutes": 30,
                             "dnsSettings": {
@@ -596,7 +600,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[couchbase.generateResourceName(concat('server-', copyIndex()))]",
+      "name": "[couchbase.generateResourceName(concat('server-', copyIndex()), parameters('_now'))]",
       "copy": {
         "name": "mds-count-copy",
         "count": "[length(parameters('mdsConfig'))]",
@@ -607,23 +611,23 @@
       "apiVersion": "2021-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
-        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', couchbase.generateResourceName('vault', parameters('_now')))]",
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]",
-        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main'))]"
+        "[resourceId('Microsoft.Compute/virtualMachineScaleSets', couchbase.generateResourceName('server-main', parameters('_now')))]"
       ],
       "tags": {
         "couchbase-server-version": "[parameters('serverVersion')]",
         "couchbase-server-make-cluster": "false",
         "couchbase-server-rally-parameter": "cb-rally",
         "couchbase-server-services": "[couchbase.arrayToCSV(parameters('mdsConfig')[copyIndex()].colServices)]",
-        "key-vault": "[couchbase.generateResourceName('vault')]",
+        "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
         "couchbase-server-disk": "0",
         "couchbase-server-secret": "cb-secret"
       },
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity'))]": {}
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now')))]": {}
         }
       },
       "plan": {
@@ -664,22 +668,22 @@
               }
             ]
           },
-          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName(concat('server-', copyIndex())))]",
+          "osProfile": "[couchbase.getProfileWithPrefix(variables('osProfile'), couchbase.generateResourceName(concat('server-', copyIndex()), parameters('_now')))]",
           "networkProfile": {
             "networkInterfaceConfigurations": [
               {
-                "name": "[couchbase.generateResourceName(concat('server-nic-', copyIndex()))]",
+                "name": "[couchbase.generateResourceName(concat('server-nic-', copyIndex()), parameters('_now'))]",
                 "properties": {
                   "primary": true,
                   "ipConfigurations": [
                     {
-                      "name": "[couchbase.generateResourceName(concat('server-ipconfig-', copyIndex()))]",
+                      "name": "[couchbase.generateResourceName(concat('server-ipconfig-', copyIndex()), parameters('_now'))]",
                       "properties": {
                         "subnet": {
                           "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet').name ,parameters('vnet').subnets.subnet1.name)]"
                         },
                         "publicipaddressconfiguration": {
-                          "name": "[couchbase.generateResourceName(concat('server-public-ip-', copyIndex()))]",
+                          "name": "[couchbase.generateResourceName(concat('server-public-ip-', copyIndex()), parameters('_now'))]",
                           "properties": {
                             "idleTimeoutInMinutes": 30,
                             "dnsSettings": {
