@@ -61,5 +61,11 @@
   },
   "sync_gateway_sku": {
     "value": "cb-gateway-2022-pre-installed-byol"
+  },
+  "newOrExisting": {
+    "value": "new"
+  },
+  "resourceGroup": {
+    "value": "cb-mkt-sg-test"
   }
 }
