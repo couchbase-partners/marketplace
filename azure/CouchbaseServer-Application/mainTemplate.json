@@ -386,7 +386,7 @@
       "type": "Microsoft.Network/virtualNetworks",
       "condition": "[equals(parameters('newOrExisting'), 'new')]",
       "apiVersion": "2021-12-01",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
       ],
@@ -502,7 +502,7 @@
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "[couchbase.generateResourceName('server-main')]",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "apiVersion": "2021-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
@@ -603,7 +603,7 @@
         "mode": "Parallel"
       },
       "condition": "[parameters('enableMDS')]",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "apiVersion": "2021-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",

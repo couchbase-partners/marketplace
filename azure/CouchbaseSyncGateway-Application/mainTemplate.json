@@ -47,12 +47,12 @@
       "defaultValue": {
         "value": {
           "name": "Couchbase-Vnet",
-          "resourceGroup": "[resourceGroup().id]",
+          "resourceGroup": "[parameters('resourceGroup')]",
           "addressPrefixes": [
             "10.32.0.0/16"
           ],
           "addressPrefix": "10.32.0.0/16",
-          "newOrExisting": "new",
+          "newOrExisting": "[parameters('newOrExisting')]",
           "subnets": {
             "subnet1": {
               "name": "CouchbaseSubnet",
@@ -207,7 +207,7 @@
       "type": "Microsoft.Network/virtualNetworks",
       "condition": "[equals(parameters('newOrExisting'), 'new')]",
       "apiVersion": "2021-12-01",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
       ],
