@@ -49,18 +49,18 @@ else
     echo "Parameters file does not exist."
     exit 1
 fi
-location_exists=$(az account list-locations -o json | jq ".[] | .name" | grep ${LOCATION} -c)
+location_exists=$(az account list-locations -o json | jq ".[] | .name" | grep "${LOCATION}" -c)
 
 if [ "$location_exists" = 0 ]; then
     echo "Invalid location."
     exit 1
 fi
 
-if [ "$(az group exists --name ${RESOURCE_GROUP})" = "true" ]; then
+if [ "$(az group exists --name "${RESOURCE_GROUP}")" = "true" ]; then
     echo "Group Exists, skipping creation"
 else
-    az group create --name $RESOURCE_GROUP --location $LOCATION --output table
+    az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --output table
 fi
 JQVals=".resourceGroup.value = \"$RESOURCE_GROUP\""
 PARAMS=$(jq "$JQVals" "$PARAMETERS")
-az deployment group create --verbose --template-file $TEMPLATE --parameters $PARAMS --resource-group $RESOURCE_GROUP --name $NAME --output table
+az deployment group create --verbose --template-file "$TEMPLATE" --parameters "$PARAMS" --resource-group "$RESOURCE_GROUP" --name "$NAME" --output table
