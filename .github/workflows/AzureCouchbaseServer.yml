@@ -30,7 +30,7 @@ jobs:
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-test-hourly -s
   ServerLaunchHourly:
     runs-on: ubuntu-latest
-    needs: AzureLaunch
+    needs: ServerLaunchBYOL
     steps:
       - uses: actions/checkout@v2
       - name: Azure Login
