@@ -22,7 +22,7 @@
 #     usage: -n test_deployment_one                                           #
 #     purposes: names the deployment in azure                                 #
 ###############################################################################
-
+echo "Beginning Deployment"
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%deploy.sh/}
 
 dir="${SCRIPT_SOURCE}../"
