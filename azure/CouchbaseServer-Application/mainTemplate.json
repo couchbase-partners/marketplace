@@ -239,7 +239,7 @@
       "apiVersion": "2021-12-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[couchbase.generateResourceName('networkSecurityGroups', parameters('_now'))]",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "properties": {
         "securityRules": [
           {
@@ -434,7 +434,7 @@
       "type": "Microsoft.KeyVault/vaults",
       "apiVersion": "2019-09-01",
       "name": "[couchbase.generateResourceName('vault', parameters('_now'))]",
-      "location": "[parameters('resourceGroup')]",
+      "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', couchbase.generateResourceName('identity', parameters('_now')))]",
         "[resourceId('Microsoft.Authorization/roleAssignments', variables('assignmentReaderGuid'))]"
