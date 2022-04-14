@@ -61,5 +61,6 @@ if [ "$(az group exists --name ${RESOURCE_GROUP})" = "true" ]; then
 else
     az group create --name $RESOURCE_GROUP --location $LOCATION --output table
 fi
-
-az deployment group create --verbose --template-file $TEMPLATE --parameters $PARAMETERS --resource-group $RESOURCE_GROUP --name $NAME --output table
+JQVals=".resourceGroup.value = \"$RESOURCE_GROUP\""
+PARAMS=$(jq "$JQVals" "$PARAMETERS")
+az deployment group create --verbose --template-file $TEMPLATE --parameters $PARAMS --resource-group $RESOURCE_GROUP --name $NAME --output table
