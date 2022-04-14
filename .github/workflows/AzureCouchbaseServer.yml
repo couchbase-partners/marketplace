@@ -24,6 +24,7 @@ jobs:
           inlineScript: |
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/parameters.json -g cb-mkt-test-hourly -n ga-cbs-app-byol
       - name: Teardown From Azure
+        if: always()
         uses: azure/CLI@v1
         with:
           inlineScript: |
@@ -47,6 +48,7 @@ jobs:
             ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/mds_parameters.json -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-two
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-test-hourly -s

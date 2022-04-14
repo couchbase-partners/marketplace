@@ -28,6 +28,7 @@ jobs:
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/test/parameters.json -g cb-mkt-sg-test -n cb-mkt-test-sg -s $SERVER -b default -d default -u $USER -q $PASS -v 2.8.2
       - name: Teardown From Azure
         uses: azure/CLI@v1
+        if: always()
         with:
           inlineScript: |
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/backout.sh -g cb-mkt-sg-test -s
