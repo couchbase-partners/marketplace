@@ -70,5 +70,11 @@
     },
     "_artifactsLocationSasToken": {
       "value": ""
+    },
+    "resourceGroup": {
+      "value": "ja-test-one"
+    },
+    "newOrExisting": {
+      "value": "new"
     }
   }
