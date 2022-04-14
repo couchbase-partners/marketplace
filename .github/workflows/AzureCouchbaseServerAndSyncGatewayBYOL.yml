@@ -33,7 +33,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Deploy To Azure
-        timeout-minutes: 20
+        timeout-minutes: 30
         uses: azure/CLI@v1
         with:
           inlineScript: |
@@ -63,7 +63,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Deploy To Azure
-        timeout-minutes: 20
+        timeout-minutes: 30
         uses: azure/CLI@v1
         with:
           inlineScript: |
@@ -92,7 +92,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Deploy To Azure
-        timeout-minutes: 20
+        timeout-minutes: 30
         uses: azure/CLI@v1
         with:
           inlineScript: |
@@ -121,7 +121,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Deploy To Azure
-        timeout-minutes: 20
+        timeout-minutes: 30
         uses: azure/CLI@v1
         with:
           inlineScript: |
