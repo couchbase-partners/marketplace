@@ -41,7 +41,7 @@
       "defaultValue": {
         "value": {
           "name": "Couchbase-Vnet",
-          "resourceGroup": "[resourceGroup().location]",
+          "resourceGroup": "[parameters('resourceGroup')]",
           "addressPrefixes": [
             "10.32.0.0/16"
           ],
@@ -312,7 +312,7 @@
       "apiVersion": "2021-12-01",
       "location": "[parameters('location')]",
       "tags": {
-        "usedBy": "[parameters('resourceGroup')]"
+        "usedBy": "[parameters('location')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups'))]"
