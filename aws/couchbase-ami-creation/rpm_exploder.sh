@@ -8,6 +8,8 @@ SYNC_GATEWAY=$2
 SCRIPT_URL=$3
 mkdir /setup
 
+ARCHITECTURE=$(uname -m)
+
 echo "Setting Swappiness"
 # Setting swappiness to 0
 SWAPPINESS=0
@@ -74,24 +76,24 @@ if [[ "$SYNC_GATEWAY" -gt 0 ]]; then
     echo "Preinstalling Gateway"
     echo "#!/usr/bin/env sh
     export COUCHBASE_GATEWAY_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
-    if [[ ! -f "/home/ec2-user/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm" ]]; then
-      wget -O "/setup/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm" \
-          "https://packages.couchbase.com/releases/couchbase-sync-gateway/${VERSION}/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm" --quiet
+    if [[ ! -f "/home/ec2-user/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm" ]]; then
+      wget -O "/setup/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm" \
+          "https://packages.couchbase.com/releases/couchbase-sync-gateway/${VERSION}/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm" --quiet
     else
-      cp "/home/ec2-user/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm" "/setup/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm"
+      cp "/home/ec2-user/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm" "/setup/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm"
     fi
-    RPM="/setup/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.rpm"
+    RPM="/setup/couchbase-sync-gateway-enterprise_${VERSION}_${ARCHITECTURE}.rpm"
 else 
     echo "Preinstalling Server"
     echo "#!/usr/bin/env sh
     export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
-    if [[ ! -f "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.x86_64.rpm" ]]; then
-      wget -O "/setup/couchbase-server-enterprise-$VERSION-amzn2.x86_64.rpm"  \
-          "https://packages.couchbase.com/releases/$VERSION/couchbase-server-enterprise-$VERSION-amzn2.x86_64.rpm" --quiet
+    if [[ ! -f "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" ]]; then
+      wget -O "/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"  \
+          "https://packages.couchbase.com/releases/$VERSION/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm" --quiet
     else
-      cp "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.x86_64.rpm" "/setup/couchbase-server-enterprise-${VERSION}-amzn2.x86_64.rpm"
+      cp "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" "/setup/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm"
     fi
-    RPM="/setup/couchbase-server-enterprise-$VERSION-amzn2.x86_64.rpm"
+    RPM="/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"
 fi
 
 echo "Installing prerequisites"
