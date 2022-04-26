@@ -17,8 +17,20 @@ on:
         description: "Couchbase Server/Gateway Version"
         required: true
         default: "6.6.2"
+      arm:
+        description: "Arm AMI (Y/N)?"
+        type: choice
+        options:
+          - "Y"
+          - "N"
+        required: true
+        default: "N"
       syncgateway: 
         description: "Gateway (Y/N)?"
+        type: choice
+        options:
+          - "Y"
+          - "N"
         required: true
         default: "N"
       syncgatewayversion:
@@ -36,7 +48,14 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
+      - name: Set up Arm Parameter With ARM
+        if: startsWith(github.event.inputs.arm, 'Y')
+        run: |
+          echo "ARM=-a" >> $GITHUB_ENV
+      - name: Set up without ARM
+        if: startsWith(github.event.inputs.arm, 'N')
+        run: |
+          echo "ARM=" >> $GITHUB_ENV
       # Runs a single command using the runners shell
       - name: Setup AWS CLI
         run: |
@@ -60,7 +79,8 @@ jobs:
           bash ${GITHUB_WORKSPACE}/aws/couchbase-ami-creation/create.sh \
                                                                 -r "$REGION" \
                                                                 -n "$NAME" \
-                                                                -v "$VERSION" 
+                                                                -v "$VERSION" \
+                                                                ${{ env.ARM  }}
       - name: Create AMI for Couchbase Sync Gateway
         if: ${{ github.event.inputs.syncgateway == 'Y' }}
         env:
@@ -73,7 +93,9 @@ jobs:
                                                                 -r "$REGION" \
                                                                 -n "$NAME" \
                                                                 -v "$VERSION" \
-                                                                -g                                                                
+                                                                -g \
+                                                                ${{ env.ARM  }}
+
       - name: Upload AMI details
         uses: actions/upload-artifact@v2
         with:

@@ -20,32 +20,34 @@ if curl http://127.0.0.1:8091/; then
    exit 0
 fi
 
-TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
+function __get_tag_value() {
+   __get_meta_data "tags/instance/$1"
+}
 
-HASROLE=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/iam)
+function __get_meta_data() {
+   curl -sf "http://169.254.169.254/latest/meta-data/$1"
+}
+
+HASTAGS=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/tags)
 # we may not be able to retrieve tags due to IAM permissions.  If not we just want to start the instance and go away
-if [[ -z "$TAGS" ]] && [[ "$HASROLE" == "404" ]]; then 
-      echo "Unable to retrieve tags, check IAM permissions, simply starting couchbase server service."
+if [[  "$HASTAGS" == "404" ]]; then 
+      echo "Unable to retrieve tags, enable tags in metadata option."
       bash /setup/postinstall.sh 0
       bash /setup/posttransaction.sh
       exit 0
-else
-   # Let's wait a sec and try again
-   sleep 10
-   TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
 fi
 
-VERSION=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:version").Value')
-SECRET=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:secret").Value')
-SERVICES=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:services").Value')
-RALLY_PARAM=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:rally_parameter").Value')
-RALLY_URL=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:rally_url").Value')
-RALLY_AUTOSCALING_GROUP=$(echo "$TAGS" | jq -r 'select(.Key == "aws:autoscaling:groupName").Value')
-STACK_NAME=$(echo "$TAGS" | jq -r 'select(.Key == "aws:cloudformation:stack-name").Value')
-RESOURCE=$(echo "$TAGS" | jq -r 'select(.Key == "aws:cloudformation:logical-id").Value') 
-MAKE_CLUSTER=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:make_cluster").Value')
-TAGGED_USERNAME=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:username").Value')
-TAGGED_PASSWORD=$(echo "$TAGS" | jq -r 'select(.Key == "couchbase:server:password").Value')
+VERSION=$(__get_tag_value "couchbase:server:version")
+SECRET=$(__get_tag_value "couchbase:server:secret")
+SERVICES=$(__get_tag_value "couchbase:server:services")
+RALLY_PARAM=$(__get_tag_value "couchbase:server:rally_parameter")
+RALLY_URL=$(__get_tag_value "couchbase:server:rally_url")
+RALLY_AUTOSCALING_GROUP=$(__get_tag_value "aws:autoscaling:groupName")
+STACK_NAME=$(__get_tag_value "aws:cloudformation:stack-name")
+RESOURCE=$(__get_tag_value "aws:cloudformation:logical-id")
+MAKE_CLUSTER=$(__get_tag_value "couchbase:server:make_cluster")
+TAGGED_USERNAME=$(__get_tag_value "couchbase:server:username")
+TAGGED_PASSWORD=$(__get_tag_value "couchbase:server:password")
 
 # If no services, we should use some defaults
 # TODO:  Add backup for > 7.0.0 versions
@@ -71,7 +73,7 @@ else
 fi
 
 # Rally DNS will default to self regardless.  We'll do --no-cluster if MAKE_CLUSTER != true
-rallyPublicDNS=$(curl -sf http://169.254.169.254/latest/meta-data/public-hostname) || nodePublicDNS=$(hostname)
+rallyPublicDNS=$(__get_meta_data "public-hostname") || nodePublicDNS=$(hostname)
 # Rally DNS can be a few different things beyond the default
 # 1)  It can be the RALLY_PARAM's value (If we have a rally param but no RALLY_URL)
 if [[ -n "$RALLY_PARAM" ]] && [[ "$MAKE_CLUSTER" != "true" ]]; then
@@ -128,7 +130,7 @@ elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
    fi
 fi
 
-nodePublicDNS=$(curl -sf http://169.254.169.254/latest/meta-data/public-hostname) || nodePublicDNS=$(hostname)
+nodePublicDNS=$(__get_meta_data "public-hostname") || nodePublicDNS=$(hostname)
 echo "Using the settings:"
 echo "rallyPublicDNS $rallyPublicDNS"
 echo "region $region"
@@ -156,7 +158,7 @@ else
    NAME="couchbase-${SERVICES//,/$'-'}-server"
 fi
 
-TAGGED_NAME=$(echo "$TAGS" | jq -r 'select(.Key == "Name").Value')
+TAGGED_NAME=$(__get_tag_value "Name")
 
 # We should only name the instance if they haven't already
 # no need to overwrite their name

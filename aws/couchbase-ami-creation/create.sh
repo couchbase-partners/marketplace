@@ -21,6 +21,18 @@ set -eu
 #  -n : AMI Name                                                              #
 #     usage: -n ja-test-ami                                                   #
 #     purpose: specifies the name of the AMI to create                        #
+#  -v : Couchbase Version                                                     #
+#     usage: -v 7.0.3                                                         #
+#     purpose: specifies the version of couchbase product to use              #
+#  -g : Gateway                                                               #
+#     usage: -g                                                               #
+#     purpose: specifies if the AMI is for server or gateway                  #
+#  -p : package                                                               #
+#     usage: -p couchbase-server-enterprise-7.1.0-2534-amzn2.aarch64.rpm      #
+#     purpose: specifies rpm to use to install couchbase                      #
+#  -a : ARM Build                                                             #
+#     usage: -a                                                               #
+#     purpose: specifies the ami to be an ARM AMI                             #
 ###############################################################################
 
 function __generate_random_string() {
@@ -32,10 +44,12 @@ function __generate_random_string() {
 INSTANCE_TYPE=m4.xlarge
 SECURITY_GROUP=aws-ami-creation
 VERSION=7.0.2
+BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 GATEWAY=0
 PACKAGE=""
+ARM=0
 
-while getopts gr:n:v:p: flag
+while getopts agr:n:v:p: flag
 do
     case "${flag}" in
         r) REGION=${OPTARG};;
@@ -43,9 +57,16 @@ do
         v) VERSION=${OPTARG};;
         g) GATEWAY=1;;
         p) PACKAGE=${OPTARG};;
+        a) ARM=1;;
         *) exit 1;;
     esac
 done
+
+# Check if we're using an ARM build.  This changes the INSTANCE_TYPE, The BASE AMI, and the structure of the installer name
+if [[ "$ARM"  == "1" ]]; then
+    INSTANCE_TYPE=m6g.xlarge
+    BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2
+fi
 
 # Create Output Folder
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%create.sh/}
@@ -54,7 +75,7 @@ SCRIPT_URL=$(cat "${SCRIPT_SOURCE}/../../script_url.txt")
 mkdir -p "$SCRIPT_SOURCE/../../build/aws/couchbase-ami-creation/"
 
 #Get AMI from AWS for the approved instance type
-BASE_AMI_ID=$(aws ssm get-parameters --names /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 --region "$REGION" | jq -r '.Parameters[] | .Value')
+BASE_AMI_ID=$(aws ssm get-parameters --names "$BASE_AMI_NAME" --region "$REGION" | jq -r '.Parameters[] | .Value')
 echo "Base AMI:  $BASE_AMI_ID"
 
 #Generate a SSH key for ssh into instance
@@ -114,6 +135,11 @@ fi
 ssh -i "$HOME/.ssh/aws-keypair.pem" -o StrictHostKeyChecking=no "ec2-user@$PUBLIC_IP" "sudo yum update -y && sudo /usr/bin/bash ~/rpm_exploder.sh ${VERSION} ${GATEWAY} ${SCRIPT_URL} && echo 'Removing Exploder' && rm -rf ~/rpm_exploder.sh && echo 'Removing Ec2-User Authorized Keys' && sudo rm -rf /home/ec2-user/.ssh/ && echo 'Removing root Authorized Keys' && sudo rm -rf /root/.ssh/ && exit"
 
 #Create AMI
+SUFFIX="-x86_64"
+if [[ "$ARM" == "1" ]]; then
+    SUFFIX="-aarch64"
+fi
+AMI_NAME="${AMI_NAME}${SUFFIX}"
 echo "Creating AMI:  $AMI_NAME"
 todaysDate=$(date '+%Y-%m-%d %T')
 DESCRIPTION="Auto-generated AMI for Couchbase Server v$VERSION on $todaysDate"

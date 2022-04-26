@@ -9,6 +9,13 @@ if [[ -r /etc/profile.d/couchbaseserver.sh ]]; then
    source /etc/profile.d/couchbaseserver.sh
 fi
 
+function __get_tag_value() {
+   __get_meta_data "tags/instance/$1"
+}
+
+function __get_meta_data() {
+   curl -sf "http://169.254.169.254/latest/meta-data/$1"
+}
 
 # Retrieve metadata per AWS's documentation
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
@@ -20,33 +27,27 @@ if curl http://127.0.0.1:4984/; then
    exit 0
 fi
 
-TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
-
-HASROLE=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/iam)
+HASTAGS=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/tags)
 # we may not be able to retrieve tags due to IAM permissions.  If not we just want to start the instance and go away
-if [[ -z "$TAGS" ]] && [[ "$HASROLE" == "404" ]]; then 
-      echo "Unable to retrieve tags, check IAM permissions, simply starting couchbase server service."
+if [[ "$HASTAGS" == "404" ]]; then 
+      echo "Unable to retrieve tags, enable tags in metadata options"
       bash /setup/postinstall.sh 0 
       bash /setup/posttransaction.sh
       service sync_gateway restart
       exit 0
-else
-   # Let's wait a sec and try again
-   sleep 10
-   TAGS=$(aws ec2 describe-instances --instance-id "$instanceId" --query 'Reservations[*].Instances[*].Tags[*]' --output json  --region "$region" | jq -r 'flatten | .[]')
 fi
 
-VERSION=$(jq -r 'select(.Key == "couchbase:gateway:version").Value' <<< "$TAGS")
-SECRET=$(jq -r 'select(.Key == "couchbase:gateway:secret").Value' <<< "$TAGS")
-CONNECTION_STRING=$(jq -r 'select(.Key == "couchbase:gateway:connectionstring").Value' <<< "$TAGS")
-CONNECTION_PARAM=$(jq -r 'select(.Key == "couchbase:gateway:connection_param").Value' <<< "$TAGS")
-CONFIG=$(jq -r 'select(.Key == "couchbase:gateway:config").Value' <<< "$TAGS")
-BUCKET=$(jq -r 'select(.Key == "couchbase:gateway:bucket").Value' <<< "$TAGS")
-STACK_NAME=$(jq -r 'select(.Key == "aws:cloudformation:stack-name").Value' <<< "$TAGS")
-RESOURCE=$(jq -r 'select(.Key == "aws:cloudformation:logical-id").Value' <<< "$TAGS") 
-TAGGED_USERNAME=$(jq -r 'select(.Key == "couchbase:gateway:username").Value' <<< "$TAGS")
-TAGGED_PASSWORD=$(jq -r 'select(.Key == "couchbase:gateway:password").Value' <<< "$TAGS")
-NAME=$(jq -r 'select(.Key == "Name").Value' <<< "$TAGS")
+VERSION=$(__get_tag_value "couchbase:gateway:version")
+SECRET=$(__get_tag_value "couchbase:gateway:secret")
+CONNECTION_STRING=$(__get_tag_value "couchbase:gateway:connectionstring")
+CONNECTION_PARAM=$(__get_tag_value "couchbase:gateway:connection_param")
+CONFIG=$(__get_tag_value "couchbase:gateway:config")
+BUCKET=$(__get_tag_value "couchbase:gateway:bucket")
+STACK_NAME=$(__get_tag_value "aws:cloudformation:stack-name")
+RESOURCE=$(__get_tag_value "aws:cloudformation:logical-id") 
+TAGGED_USERNAME=$(__get_tag_value "couchbase:gateway:username")
+TAGGED_PASSWORD=$(__get_tag_value "couchbase:gateway:password")
+NAME=$(__get_tag_value "Name")
 
 
 # if no version, use built in version
