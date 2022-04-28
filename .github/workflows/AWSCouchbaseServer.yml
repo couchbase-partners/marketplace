@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'aws/CouchbaseServer/**'
+      - 'aws/CouchbaseServer-Graviton/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -76,3 +77,21 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
+      - name: Deploy To AWS (Graviton)
+        timeout-minutes: 20
+        run: |
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/deploy.sh -n "cb-server-graviton-${GITHUB_SHA::6}" 
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          AWS_REGION: 'us-east-1'
+      - name: Teardown From AWS (Graviton)
+        timeout-minutes: 20
+        run: |
+            bash ${GITHUB_WORKSPACE}/aws/backout.sh "cb-server-graviton-${GITHUB_SHA::6}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          AWS_REGION: 'us-east-1'          
