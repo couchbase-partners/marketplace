@@ -5,6 +5,18 @@
   "parameters": {
     "basics": [
       {
+        "name": "vmUsername",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "Username",
+        "defaultValue": "azureuser",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z0-9A-Z]{5,30}$",
+          "validationMessage": "Only alphanumeric characters are allowed, and the value must be 5-30 characters long."
+        },
+        "osPlatform": "Linux"
+      },
+      {
         "name": "vmCredentials",
         "type": "Microsoft.Compute.CredentialsCombo",
         "toolTip": "The credentials to be used for ssh access to the Couchbase Server Cluster Instances",
@@ -16,8 +28,8 @@
         },
         "constraints": {
           "required": true,
-          "customPasswordRegex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{12,}$",
-          "customValidationMessage": "The password must be alphanumeric, contain at least 12 characters, and have at least 1 letter and 1 number."
+          "customPasswordRegex": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{12,32}$",
+          "customValidationMessage": "Password must be between 12 and 32 characters, contain atleast one digit, lowercase, uppercase and a special character"
         },
         "options": {
           "hideConfirmation": false,
@@ -417,7 +429,8 @@
       "location": "[location()]",
       "vnet": "[basics('virtualNetwork')]",
       "resourceGroup": "[basics('virtualNetwork').resourceGroup",
-      "newOrExisting": "[basics('virtualNetwork').newOrExisting"
+      "newOrExisting": "[basics('virtualNetwork').newOrExisting",
+      "adminUsername": "[basics('vmUsername')"
     }
   }
 }
