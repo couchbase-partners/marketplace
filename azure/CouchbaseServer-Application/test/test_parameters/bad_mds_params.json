@@ -1,0 +1,84 @@
+{
+    "authenticationType": {
+      "value": "password"
+    },
+    "adminPassword": {
+      "value": "FooBarBaz123!"
+    },
+    "serverUsername": {
+      "value": "couchbase"
+    },
+    "serverPassword": {
+      "value": "FooBarBaz123!"
+    },
+    "serverNodeCount": {
+      "value": 1
+    },
+    "serverDiskSize": {
+      "value": 32
+    },
+    "serverVersion": {
+      "value": "7.0.3"
+    },
+    "vmSize": {
+      "value": "Standard_DS12_v2"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "vnet": {
+      "value": {
+        "name": "Couchbase-Vnet",
+        "resourceGroup": "ja-test-one",
+        "addressPrefixes": [
+          "172.16.0.0/16"
+        ],
+        "addressPrefix": "172.16.0.0/16",
+        "newOrExisting": "new",
+        "subnets": {
+          "subnet1": {
+            "name": "CouchbaseSubnet",
+            "addressPrefix": "172.16.0.0/24",
+            "startAddress": "172.16.0.4"
+          }
+        }
+      }
+    },
+    "services": {
+      "value": "\"data\""
+    },
+    "mdsConfig": {
+      "value": [
+        {
+          "colServices": "",
+          "colCount": "",
+          "colSize": "",
+          "colDiskSize": ""
+        }
+      ]
+    },
+    "enableMDS": {
+      "value": true
+    },
+    "resourceGroup": {
+      "value": "ja-test-one"
+    },
+    "newOrExisting": {
+      "value": "new"
+    },
+    "adminUsername": {
+      "value": "[basics('vmUsername')"
+    },
+    "license": {
+        "value": "cbs-2022-hourly-pre-installed"
+      },
+      "publisher": {
+        "value": "couchbase"
+      },
+      "offer": {
+        "value": "couchbase-server-enterprise"
+      },
+      "image_version": {
+        "value": "latest"
+      }
+  }

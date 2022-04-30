@@ -77,10 +77,12 @@
     },
     "mdsConfig": {
       "type": "array",
-      "maxLength": 10
+      "maxLength": 10,
+      "defaultValue": []
     },
     "services": {
-      "type": "array"
+      "type": "string",
+      "defaultValue": "[string(createArray('data', 'index', 'query'))]"
     },
     "vnet": {
       "type": "object",
@@ -167,12 +169,12 @@
           "parameters": [
             {
               "name": "stringArray",
-              "type": "array"
+              "type": "string"
             }
           ],
           "output": {
             "type": "string",
-            "value": "[replace(replace(replace(string(parameters('stringArray')), '[', ''), ']', ''), '\"', '')]"
+            "value": "[replace(replace(replace(parameters('stringArray'), '[', ''), ']', ''), '\"', '')]"
           }
         },
         "getProfileWithPrefix": {
@@ -189,6 +191,18 @@
           "output": {
             "type": "object",
             "value": "[union(parameters('profile'), json(concat('{\"computerNamePrefix\":\"', parameters('prefix'), '\"}')))]"
+          }
+        },
+        "isValidMDS": {
+          "parameters": [
+            {
+              "name": "mdsConfig",
+              "type": "array"
+            }
+          ],
+          "output": {
+            "type": "bool",
+            "value": "[and(greater(length(parameters('mdsConfig')), 0), greater(length(first(parameters('mdsConfig')).colServices), 0))]"
           }
         }
       }
@@ -516,7 +530,7 @@
       "tags": {
         "couchbase-server-version": "[parameters('serverVersion')]",
         "couchbase-server-make-cluster": "true",
-        "couchbase-server-services": "[couchbase.arrayToCSV(parameters('services'))]",
+        "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('services')))]",
         "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
         "couchbase-server-disk": "0",
         "couchbase-server-secret": "cb-secret"
@@ -606,7 +620,7 @@
         "count": "[length(parameters('mdsConfig'))]",
         "mode": "Parallel"
       },
-      "condition": "[parameters('enableMDS')]",
+      "condition": "[and(parameters('enableMDS'), couchbase.isValidMDS(parameters('mdsConfig')))]",
       "location": "[parameters('location')]",
       "apiVersion": "2021-11-01",
       "dependsOn": [
@@ -619,7 +633,7 @@
         "couchbase-server-version": "[parameters('serverVersion')]",
         "couchbase-server-make-cluster": "false",
         "couchbase-server-rally-parameter": "cb-rally",
-        "couchbase-server-services": "[couchbase.arrayToCSV(parameters('mdsConfig')[copyIndex()].colServices)]",
+        "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('mdsConfig')[copyIndex()].colServices))]",
         "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
         "couchbase-server-disk": "0",
         "couchbase-server-secret": "cb-secret"
