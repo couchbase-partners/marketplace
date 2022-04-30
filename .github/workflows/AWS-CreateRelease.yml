@@ -64,6 +64,23 @@ jobs:
           asset_path: ./build/aws/CouchbaseServer/aws-cb-server.template
           asset_name: aws-cb-server.template
           asset_content_type: application/json
+      - name: Build Graviton Server Template
+        run: |
+          bash $GITHUB_WORKSPACE/aws/CouchbaseServer-Graviton/makeArchives.sh \
+                                 -m "$GITHUB_WORKSPACE/aws/CouchbaseServer-Graviton/mappings.json" \
+                                 -o "$GITHUB_WORKSPACE/build/aws/CouchbaseServer-Graviton/" \
+                                 -n "aws-cb-server-graviton.template" \
+                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseServer-Graviton/couchbase-amzn-lnx2.template"      
+      - name: Upload Graviton Server Template
+        id: upload-graviton-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/aws/CouchbaseServer-Graviton/aws-cb-server-graviton.template
+          asset_name: aws-cb-server-graviton.template
+          asset_content_type: application/json          
       - name: Build Gateway Template
         run: |
           bash $GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/makeArchives.sh \

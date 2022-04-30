@@ -304,6 +304,9 @@
             "Type": "AWS::EC2::LaunchTemplate",
             "Properties": {
                 "LaunchTemplateData": {
+                    "MetadataOptions": {
+                        "InstanceMetadataTags": "enabled"
+                    },
                     "ImageId": {
                         "Fn::FindInMap": [
                             "CouchbaseSyncGateway",
