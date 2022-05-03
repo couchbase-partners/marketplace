@@ -80,9 +80,8 @@
       "maxLength": 10,
       "defaultValue": []
     },
-    "services": {
-      "type": "string",
-      "defaultValue": "[string(createArray('data', 'index', 'query'))]"
+    "couchbaseServices": {
+      "type": "string"
     },
     "vnet": {
       "type": "object",
@@ -530,7 +529,7 @@
       "tags": {
         "couchbase-server-version": "[parameters('serverVersion')]",
         "couchbase-server-make-cluster": "true",
-        "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('services')))]",
+        "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('couchbaseServices')))]",
         "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
         "couchbase-server-disk": "0",
         "couchbase-server-secret": "cb-secret"

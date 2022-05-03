@@ -6,15 +6,21 @@
     "basics": [
       {
         "name": "vmUsername",
-        "type": "Microsoft.Compute.UserNameTextBox",
+        "type": "Microsoft.Common.TextBox",
         "label": "Username",
         "defaultValue": "azureuser",
+        "toolTip": "The username used to access the Virtual Machine instances via ssh",
+        "multiLine": false,
         "constraints": {
           "required": true,
-          "regex": "^[a-z0-9A-Z]{5,30}$",
-          "validationMessage": "Only alphanumeric characters are allowed, and the value must be 5-30 characters long."
+          "validations": [
+            {
+              "regex": "^[a-z0-9A-Z]{5,30}$",
+              "message": "Only alphanumeric characters are allowed, and the value must be 5-30 characters long."
+            }
+          ]
         },
-        "osPlatform": "Linux"
+        "visible": true
       },
       {
         "name": "vmCredentials",
@@ -144,6 +150,7 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Server Node Count",
             "toolTip": "Number of virtual machines to provision for Server",
+            "defaultValue": "3",
             "constraints": {
               "allowedValues": [
                 {
@@ -278,6 +285,7 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Server Disk Size",
             "toolTip": "Size of disk on each Server node in the cluster",
+            "defaultValue": "64 GB",
             "constraints": {
               "allowedValues": [
                 {
@@ -347,6 +355,7 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Server Version",
             "toolTip": "What version of Couchbase Server is to be installed",
+            "defaultValue": "7.0.3 (recommended)",
             "constraints": {
               "allowedValues": [
                 {
@@ -874,12 +883,12 @@
       "vmSize": "[steps('couchbaseConfig').vmSize]",
       "location": "[location()]",
       "vnet": "[basics('virtualNetwork')]",
-      "services": "[string(steps('couchbaseConfig').couchbaseServices)]",
+      "couchbaseServices": "[string(steps('couchbaseConfig').couchbaseServices)]",
       "mdsConfig": "[steps('mdsConfig').mdsSection.nodes]",
       "enableMDS": "[equals(bool(coalesce(steps('mdsConfig').enableMDS, 'false')), true)]",
       "resourceGroup": "[basics('virtualNetwork').resourceGroup]",
       "newOrExisting": "[basics('virtualNetwork').newOrExisting]",
-      "adminUsername": "[basics('vmUsername')"
+      "adminUsername": "[basics('vmUsername')]"
     }
   }
 }
