@@ -45,11 +45,7 @@
       }
     },
     "services": {
-      "value": [
-        "data",
-        "index",
-        "query"
-      ]
+      "value": "[\"data\",\"index\",\"query\"]"
     },
     "mdsConfig": {
       "value": [

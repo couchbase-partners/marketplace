@@ -3,16 +3,16 @@
       "value": "password"
     },
     "adminPassword": {
-      "value": "FooBarBaz123"
+      "value": "FooBarBaz123!"
     },
     "serverUsername": {
       "value": "couchbase"
     },
     "serverPassword": {
-      "value": "Foo1234!"
+      "value": "FooBarBaz123!"
     },
     "serverNodeCount": {
-      "value": 3
+      "value": 1
     },
     "serverDiskSize": {
       "value": 32
@@ -29,7 +29,7 @@
     "vnet": {
       "value": {
         "name": "Couchbase-Vnet",
-        "resourceGroup": "ja-test-two",
+        "resourceGroup": "ja-test-one",
         "addressPrefixes": [
           "172.16.0.0/16"
         ],
@@ -45,43 +45,40 @@
       }
     },
     "services": {
-      "value": "[\"data\",\"index\",\"query\"]"
+      "value": "\"data\""
     },
     "mdsConfig": {
       "value": [
         {
-          "colServices": [
-            "fts"
-          ],
-          "colCount": 1,
-          "colSize": "Standard_DS1_v2",
-          "colDiskSize": 32
-        },
-        {
-          "colServices": [
-            "eventing",
-            "analytics",
-            "backup"
-          ],
-          "colCount": 3,
-          "colSize": "Standard_DS1_v2",
-          "colDiskSize": 32
+          "colServices": "",
+          "colCount": "",
+          "colSize": "",
+          "colDiskSize": ""
         }
       ]
     },
     "enableMDS": {
       "value": true
     },
+    "resourceGroup": {
+      "value": "ja-test-one"
+    },
+    "newOrExisting": {
+      "value": "new"
+    },
+    "adminUsername": {
+      "value": "[basics('vmUsername')"
+    },
     "license": {
-      "value": "cbs-2022-hourly-pre-installed"
-    },
-    "publisher": {
-      "value": "couchbase"
-    },
-    "offer": {
-      "value": "couchbase-server-enterprise"
-    },
-    "image_version": {
-      "value": "latest"
-    }
+        "value": "cbs-2022-hourly-pre-installed"
+      },
+      "publisher": {
+        "value": "couchbase"
+      },
+      "offer": {
+        "value": "couchbase-server-enterprise"
+      },
+      "image_version": {
+        "value": "latest"
+      }
   }
