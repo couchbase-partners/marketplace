@@ -67,8 +67,9 @@ properties:
     default: 20
   serverVersion:
     type: string
-    default: 7.0.3
+    default: 7.1.0
     enum:
+      - 7.1.0
       - 7.0.3
       - 7.0.2
       - 6.6.5
