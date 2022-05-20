@@ -12,7 +12,9 @@ fi
 
 # Retrieve metadata per AWS's documentation
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
-region=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+region=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 instanceId=$(ec2-metadata -i | cut -d " " -f 2)
 
 if curl http://127.0.0.1:8091/; then
@@ -25,10 +27,10 @@ function __get_tag_value() {
 }
 
 function __get_meta_data() {
-   curl -sf "http://169.254.169.254/latest/meta-data/$1"
+   curl -sf -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"
 }
 
-HASTAGS=$(curl -s -o /dev/null -w "%{http_code}" http://169.254.169.254/latest/meta-data/tags)
+HASTAGS=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" -o /dev/null -w "%{http_code}"  http://169.254.169.254/latest/meta-data/tags)
 # we may not be able to retrieve tags due to IAM permissions.  If not we just want to start the instance and go away
 if [[  "$HASTAGS" == "404" ]]; then 
       echo "Unable to retrieve tags, enable tags in metadata option."
@@ -48,6 +50,12 @@ RESOURCE=$(__get_tag_value "aws:cloudformation:logical-id")
 MAKE_CLUSTER=$(__get_tag_value "couchbase:server:make_cluster")
 TAGGED_USERNAME=$(__get_tag_value "couchbase:server:username")
 TAGGED_PASSWORD=$(__get_tag_value "couchbase:server:password")
+DISK=$(__get_tag_value "couchbase:server:disk")
+
+# If disk isn't passed and we have a /dev/sdk we'll use that as the default
+if [[ -z "$DISK"  && -b "/dev/sdk" ]]; then
+   DISK="/dev/sdk"
+fi
 
 # If no services, we should use some defaults
 # TODO:  Add backup for > 7.0.0 versions
@@ -181,7 +189,7 @@ if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
       bash /setup/postinstall.sh 0
       bash /setup/posttransaction.sh
       if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then 
-         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os AMAZON -e AWS -s -c -d --cluster-only -sv "$SERVICES"
+         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os AMAZON -e AWS -s -c -d --cluster-only -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$nodePublicDNS"
       fi
       SUCCESS=$?
    fi
@@ -192,9 +200,9 @@ else
    echo "#!/usr/bin/env sh
 export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES"
+      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$nodePublicDNS"
    else
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES" --no-cluster
+      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES" --no-cluster --format-disk "$DISK" --alternate-address "$nodePublicDNS"
    fi
    SUCCESS=$?
 fi

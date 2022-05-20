@@ -1185,6 +1185,10 @@
                                 {
                                     "Key": "couchbase:server:make_cluster",
                                     "Value": "true"
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1316,6 +1320,10 @@
                                     "Value": {
                                         "Ref": "CouchbaseSecret"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1447,6 +1455,10 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1577,6 +1589,10 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1707,6 +1723,10 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1837,6 +1857,10 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -1967,6 +1991,10 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }
@@ -2097,6 +2125,14 @@
                                     "Value": {
                                         "Ref": "ServerVersion"
                                     }
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
+                                },
+                                {
+                                    "Key": "couchbase:server:disk",
+                                    "Value": "/dev/sdk"
                                 }
                             ]
                         }

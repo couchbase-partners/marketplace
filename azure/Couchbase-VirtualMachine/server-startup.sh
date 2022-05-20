@@ -34,20 +34,7 @@ if [[ -z "$DISK_LUN" ]]; then
     DISK_LUN=0
 fi
 
-DISK=$(lsscsi --brief | grep -F "[3:0:0:$DISK_LUN]" | awk -v col=2 '{print $col}')
-
-if [[ ! -d "/datadisk" ]]; then
-    if sudo fdisk -l | grep -wq "$DISK"; then
-        echo "Disk present!"
-        sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard "$DISK"
-        sudo mkdir -p /datadisk
-        sudo mount -o discard,defaults "$DISK" /datadisk
-        sudo chmod a+w /datadisk
-    else
-        sudo mkdir -f /datadisk
-        sudo chmod a+w /datadisk
-    fi
-fi
+DISK=$(lsscsi --brief |  grep -G "\[[1-9]:0:0:1\]" | awk -v col=2 '{print $col}')
 
 if [[ -z "$VERSION" ]]; then
     VERSION="$COUCHBASE_SERVER_VERSION"
@@ -116,6 +103,10 @@ elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
 fi
 
 nodePublicDNS=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | first(.ipv4.ipAddress[]) | .privateIpAddress') || nodePublicDNS=$(hostname)
+alternateAddress=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | .ipv4 | first(.ipAddress[]) | .publicIpAddress')
+if [[ -z "$alternateAddress" ]]; then
+    alternateAddress=$(hostname)
+fi
 echo "Using the settings:"
 echo "rallyPublicDNS $rallyPublicDNS"
 echo "nodePublicDNS $nodePublicDNS"
@@ -141,7 +132,7 @@ if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
       systemctl enable couchbase-server.service
       systemctl restart couchbase-server.service
       if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then 
-         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os UBUNTU -e AZURE -s -c -d --cluster-only -sv "$SERVICES"
+         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os UBUNTU -e AZURE -s -c -d --cluster-only -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$alternateAddress"
       fi
       SUCCESS=$?
    fi
@@ -151,9 +142,9 @@ else
    echo "#!/usr/bin/env sh
 export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES"
+      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$alternateAddress"
    else
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES" --no-cluster
+      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES" --no-cluster --format-disk "$DISK" --alternate-address "$alternateAddress"
    fi
    SUCCESS=$?
 fi
