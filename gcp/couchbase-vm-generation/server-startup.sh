@@ -60,7 +60,7 @@ RALLY_AUTOSCALING_GROUP=$(__get_gcp_attribute_value "created-by")
 DISKNAME=$(__get_gcp_attribute_value "couchbase-server-disk")
 DISK=
 if [[ -n "$DISKNAME" ]]; then
-    DISK=$(find /dev/disk/by-id/ -name "*$DISKNAME*" | head -n 1 | xargs ls -l | cut -d'>' -f2 | sed 's|../../|/dev/|')
+    DISK=$(find /dev/disk/by-id/ -name "*$DISKNAME*" | head -n 1 | xargs ls -l | cut -d'>' -f2 | sed 's|../../|/dev/|' | xargs)
 fi
 
 if [[ -z "$VERSION" ]]; then
@@ -159,7 +159,7 @@ echo "nodePublicDNS $nodePublicDNS"
 
 externalIp=$(__get_gcp_metadata_value "instance/network-interfaces/0/access-configs/0/external-ip")
 
-if [[ -z "$externalIP" ]]; then
+if [[ -z "$externalIp" ]]; then
     externalIp=$(hostname)
 fi
 
@@ -170,7 +170,13 @@ fi
 
 CLUSTER_HOST=$rallyPublicDNS
 SUCCESS=1
-
+args=( -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e GCP -s -c -d -sv "$SERVICES")
+if [ -n "$DISK" ]; then
+   args+=( --format-disk "$DISK" )
+fi
+if [ -n "$externalIp" ]; then
+   args+=( -aa "$externalIp")
+fi
 if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
    CLUSTER_MEMBERSHIP=$(curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default | jq -r '') || CLUSTER_MEMBERSHIP="unknown pool"
    if [[ "$CLUSTER_MEMBERSHIP" != "unknown pool" ]] && curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default; then
@@ -183,7 +189,8 @@ if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
       systemctl enable couchbase-server.service
       systemctl restart couchbase-server.service
       if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then 
-         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os UBUNTU -e GCP -s -c -d --cluster-only -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$externalIp"
+        args+=( --cluster-only ) 
+        bash /setup/couchbase_installer.sh "${args[@]}"
       fi
       SUCCESS=$?
    fi
@@ -193,9 +200,10 @@ else
    echo "#!/usr/bin/env sh
 export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e GCP -s -c -d -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$externalIp"
+      bash /setup/couchbase_installer.sh "${args[@]}"
    else
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e GCP -s -c -d -sv "$SERVICES" --no-cluster --format-disk "$DISK" --alternate-address "$externalIp"
+      args+=( --no-cluster )
+      bash /setup/couchbase_installer.sh "${args[@]}"
    fi
    SUCCESS=$?
 fi

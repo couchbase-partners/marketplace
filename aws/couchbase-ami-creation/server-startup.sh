@@ -167,6 +167,7 @@ else
 fi
 
 TAGGED_NAME=$(__get_tag_value "Name")
+ALTERNATEADDRESS="$nodePublicDNS"
 
 # We should only name the instance if they haven't already
 # no need to overwrite their name
@@ -179,8 +180,15 @@ fi
 
 CLUSTER_HOST=$rallyPublicDNS
 SUCCESS=1
-
+args=( -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES")
+if [ -n "$DISK" ]; then
+   args+=( --format-disk "$DISK" )
+fi
+if [ -n "$ALTERNATEADDRESS" ]; then
+   args+=( -aa "$ALTERNATEADDRESS")
+fi
 if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
+   VERSION="$COUCHBASE_SERVER_VERSION"
    CLUSTER_MEMBERSHIP=$(curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default | jq -r '') || CLUSTER_MEMBERSHIP="unknown pool"
    if [[ "$CLUSTER_MEMBERSHIP" != "unknown pool" ]] && curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default; then
       SUCCESS=0
@@ -188,8 +196,9 @@ if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
       export CLI_INSTALL_LOCATION=${COUCHBASE_HOME:-/opt/couchbase/bin/}
       bash /setup/postinstall.sh 0
       bash /setup/posttransaction.sh
-      if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then 
-         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os AMAZON -e AWS -s -c -d --cluster-only -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$nodePublicDNS"
+      if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
+         args+=( --cluster-only ) 
+         bash /setup/couchbase_installer.sh "${args[@]}"
       fi
       SUCCESS=$?
    fi
@@ -200,9 +209,10 @@ else
    echo "#!/usr/bin/env sh
 export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES" --format-disk "$DISK" --alternate-address "$nodePublicDNS"
+      bash /setup/couchbase_installer.sh "${args[@]}"
    else
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d -sv "$SERVICES" --no-cluster --format-disk "$DISK" --alternate-address "$nodePublicDNS"
+      args+=( --no-cluster )
+      bash /setup/couchbase_installer.sh "${args[@]}"
    fi
    SUCCESS=$?
 fi
