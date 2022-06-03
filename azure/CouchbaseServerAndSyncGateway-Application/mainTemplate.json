@@ -457,7 +457,7 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2022-01-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -471,7 +471,7 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip-outbound')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2022-01-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -485,7 +485,7 @@
       "type": "Microsoft.Network/loadBalancers",
       "name": "[couchbase.generateResourceName('sg-lb')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2021-01-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
