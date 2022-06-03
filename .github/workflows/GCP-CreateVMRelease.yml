@@ -47,7 +47,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: GCP Setup
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with: 
           project_id: ${{ secrets.GCP_VM_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_COUCHBASE_PUBLIC_SA_KEY }}
