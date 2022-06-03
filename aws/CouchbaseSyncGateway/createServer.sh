@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -ux
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -48,7 +48,7 @@ AWS_RESPONSE=$(aws ec2 run-instances \
     --key-name "$KEY_NAME" \
     --region "$REGION" \
     --iam-instance-profile Name="$PROFILE" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG}, {Key=couchbase:server:username,Value=$USERNAME},{Key=couchbase:server:password,Value=$PASSWORD},{Key=couchbase:server:make_cluster,Value=true},]" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG}, {Key=couchbase:server:username,Value=$USERNAME},{Key=couchbase:server:password,Value=$PASSWORD},{Key=couchbase:server:make_cluster,Value=true},{Key=couchbase:server:disk,Value=/dev/sdk},]" \
     --block-device-mappings "DeviceName=/dev/sdk,Ebs={DeleteOnTermination=true,VolumeSize=100,VolumeType=gp3}" \
     --output json)
 
@@ -72,5 +72,5 @@ until [[ "$poolEntry" != "\"unknown pool\"" ]]; do
     sleep 10
     poolEntry=$(curl -X GET http://$PUBLIC_IP:8091/pools/default -s -u "$USERNAME:$PASSWORD")
 done
-
+sleep 10
 curl -X POST -u "$USERNAME:$PASSWORD" "http://$PUBLIC_IP:8091/sampleBuckets/install" -d '["travel-sample"]' -s &> /dev/null
