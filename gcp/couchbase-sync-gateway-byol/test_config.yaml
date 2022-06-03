@@ -9,4 +9,4 @@ resources:
     couchbaseUsername: "couchbase"
     couchbasePassword: "foo123!"
     couchbaseBucketName: "travel-sample"
-    syncGatewayVersion: "2.8.3"
+    syncGatewayVersion: "3.0.3"
