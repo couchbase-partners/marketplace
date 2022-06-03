@@ -127,7 +127,7 @@ jobs:
       - name: Deploy To AWS
         timeout-minutes: 15
         run: |
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-byol-no-cbs byol 0 7.0.3 2 2.8.3
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-byol-no-cbs byol 0 7.0.3 2 3.0.3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
