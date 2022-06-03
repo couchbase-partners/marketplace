@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -x
 echo 'Running startup script...'
 # There is a race condition based on when the env vars are set by profile.d and when cloud-init executes
 # this just removes that race condition
