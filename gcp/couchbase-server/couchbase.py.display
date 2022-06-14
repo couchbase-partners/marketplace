@@ -7,7 +7,7 @@ description:
     title: Couchbase
   tagline: 'Enterprise-class, multi-cloud-to-edge NoSQL database'
   descriptionHtml: 'Couchbase Server is a NoSQL database that delivers unparalleled performance at scale, on premises and in any cloud. It features memory-first architecture, built-in cache, geo-distributed deployment, and workload isolation. Couchbase excels at supporting business-critical applications at scale while maintaining sub-millisecond latencies and 99.999% availability.'
-  eulaUrl: 'https://www.couchbase.com/ESLA08042020'
+  eulaUrl: 'https://www.couchbase.com/ESLA05012022'
   documentations:
     - title: Getting Started on the GCP Marketplace
       url: https://github.com/couchbase-partners/marketplace/blob/main/gcp/shared/README.md

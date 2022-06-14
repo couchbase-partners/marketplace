@@ -7,7 +7,7 @@ description:
     title: Couchbase
   tagline: 'Enterprise-class, multi-cloud-to-edge NoSQL database'
   descriptionHtml: 'Sync Gateway is the synchronization server in a Couchbase for Mobile and Edge deployment. It is designed to provide data synchronization for large-scale interactive web, mobile, and IoT applications'
-  eulaUrl: 'https://www.couchbase.com/ESLA08042020'
+  eulaUrl: 'https://www.couchbase.com/ESLA05012022'
   documentations:
     - title: Getting Started With Sync Gateway
       url: https://docs.couchbase.com/sync-gateway/current/introduction.html
