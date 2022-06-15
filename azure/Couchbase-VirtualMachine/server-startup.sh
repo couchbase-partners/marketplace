@@ -13,6 +13,8 @@ fi
 echo "Retrieving Metadata"
 METADATA=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01")
 
+az login --identity --allow-no-subscriptions
+
 function __get_tag() {
     echo "$METADATA" | jq -r --arg param "$1" '.compute.tagsList[] | select(.name == $param) | .value'
 }
@@ -31,23 +33,10 @@ RALLY_AUTOSCALING_GROUP=$(echo "$METADATA" | jq -r '.compute.vmScaleSetName')
 RESOURCE_GROUP=$(echo "$METADATA" | jq -r '.compute.resourceGroupName')
 
 if [[ -z "$DISK_LUN" ]]; then
-    DISK_LUN=0
+    DISK_LUN=NA
 fi
 
-DISK=$(lsscsi --brief | grep -F "[3:0:0:$DISK_LUN]" | awk -v col=2 '{print $col}')
-
-if [[ ! -d "/datadisk" ]]; then
-    if sudo fdisk -l | grep -wq "$DISK"; then
-        echo "Disk present!"
-        sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard "$DISK"
-        sudo mkdir -p /datadisk
-        sudo mount -o discard,defaults "$DISK" /datadisk
-        sudo chmod a+w /datadisk
-    else
-        sudo mkdir -f /datadisk
-        sudo chmod a+w /datadisk
-    fi
-fi
+DISK=$(lsscsi --brief |  grep -G "\[[1-9]:0:0:$DISK_LUN\]" | awk -v col=2 '{print $col}')
 
 if [[ -z "$VERSION" ]]; then
     VERSION="$COUCHBASE_SERVER_VERSION"
@@ -63,7 +52,6 @@ fi
 
 if [[ -n "$SECRET" ]] && [[ -n "$VAULT" ]]; then
    # We'll need to figure out how to do secrets in GCP eventually
-   az login --identity --allow-no-subscriptions
    SECRET_VALUE=$(az keyvault secret show --name "$SECRET" --vault "$VAULT" | jq -r '.value | fromjson')
    USERNAME=$(echo "$SECRET_VALUE" | jq -r .username)
    PASSWORD=$(echo "$SECRET_VALUE" | jq -r .password)
@@ -81,7 +69,6 @@ rallyPublicDNS=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | first(.
 # 1)  It can be the RALLY_PARAM's value (If we have a rally param but no RALLY_URL)
 if [[ -n "$RALLY_PARAM" ]] && [[ "$MAKE_CLUSTER" != "true" ]]; then
     # Here we need to retrieve a value from a configuration and use it,  I'm sure this will be some set of curl event
-    az login --identity --allow-no-subscriptions
     rallyPublicDNS=$(az keyvault secret show --name "$RALLY_PARAM" --vault "$VAULT" | jq -r '.value')
     # 2) It can be the rally url if they just tag with the url
 elif [[ -n "$RALLY_URL" ]]; then
@@ -91,7 +78,6 @@ elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
     # This is going to occur when we are part of a auto scaling unit and we need to "identify" what is the rally.  I think in GCP this is 
     # easier as we can "know" the rally before deploying.  Not 100% though
     echo "Managed Instance Group?"
-    az login --identity --allow-no-subscriptions
     THISPUBLIC=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | .ipv4 | first(.ipAddress[]) | .publicIpAddress')
     THISPRIVATE=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | .ipv4 | first(.ipAddress[]) | .privateIpAddress')
     PUBLICIP=$(az vmss list-instance-public-ips --name "$RALLY_AUTOSCALING_GROUP" -g "$RESOURCE_GROUP" | jq -r 'first(.[]) | .ipAddress')
@@ -115,7 +101,11 @@ elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
     fi
 fi
 
-nodePublicDNS=$(echo "$METADATA" | jq -r 'first(.network.interface[]) | first(.ipv4.ipAddress[]) | .privateIpAddress') || nodePublicDNS=$(hostname)
+nodePublicDNS=$(echo "$METADATA" | jq -r '.network.interface[0].ipv4.ipAddress[0].publicIpAddress') || nodePublicDNS=$(hostname)
+alternateAddress="$nodePublicDNS"
+if [[ -z "$alternateAddress" ]]; then
+    alternateAddress=$(hostname)
+fi
 echo "Using the settings:"
 echo "rallyPublicDNS $rallyPublicDNS"
 echo "nodePublicDNS $nodePublicDNS"
@@ -128,8 +118,15 @@ fi
 
 CLUSTER_HOST=$rallyPublicDNS
 SUCCESS=1
-
+args=( -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES")
+if [ -n "$DISK" ]; then
+   args+=( --format-disk "$DISK" )
+fi
+if [ -n "$alternateAddress" ]; then
+   args+=( -aa "$alternateAddress")
+fi
 if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
+   VERSION="$COUCHBASE_SERVER_VERSION"
    CLUSTER_MEMBERSHIP=$(curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default | jq -r '') || CLUSTER_MEMBERSHIP="unknown pool"
    if [[ "$CLUSTER_MEMBERSHIP" != "unknown pool" ]] && curl -q -u "$CB_USERNAME:$CB_PASSWORD" http://127.0.0.1:8091/pools/default; then
       SUCCESS=0
@@ -140,8 +137,9 @@ if [[ -z "$VERSION" ]] || [[ "$COUCHBASE_SERVER_VERSION" == "$VERSION" ]]; then
       systemctl unmask couchbase-server.service
       systemctl enable couchbase-server.service
       systemctl restart couchbase-server.service
-      if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then 
-         bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$COUCHBASE_SERVER_VERSION" -os UBUNTU -e AZURE -s -c -d --cluster-only -sv "$SERVICES"
+      if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
+        args+=( --cluster-only ) 
+        bash /setup/couchbase_installer.sh "${args[@]}"
       fi
       SUCCESS=$?
    fi
@@ -151,9 +149,10 @@ else
    echo "#!/usr/bin/env sh
 export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_URL" ]]; then
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES"
+      bash /setup/couchbase_installer.sh "${args[@]}"
    else
-      bash /setup/couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os UBUNTU -e AZURE -s -c -d -sv "$SERVICES" --no-cluster
+      args+=( --no-cluster )
+      bash /setup/couchbase_installer.sh "${args[@]}"
    fi
    SUCCESS=$?
 fi

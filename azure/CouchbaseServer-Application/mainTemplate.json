@@ -543,7 +543,7 @@
         "couchbase-server-make-cluster": "true",
         "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('couchbaseServices')))]",
         "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
-        "couchbase-server-disk": "0",
+        "couchbase-server-disk": "33",
         "couchbase-server-secret": "cb-secret"
       },
       "identity": {
@@ -580,7 +580,7 @@
             },
             "dataDisks": [
               {
-                "lun": 0,
+                "lun": 33,
                 "createOption": "Empty",
                 "managedDisk": {
                   "storageAccountType": "Premium_LRS"

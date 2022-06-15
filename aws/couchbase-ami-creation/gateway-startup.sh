@@ -8,18 +8,19 @@ if [[ -r /etc/profile.d/couchbaseserver.sh ]]; then
    # shellcheck disable=SC1091
    source /etc/profile.d/couchbaseserver.sh
 fi
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 function __get_tag_value() {
    __get_meta_data "tags/instance/$1"
 }
 
 function __get_meta_data() {
-   curl -sf "http://169.254.169.254/latest/meta-data/$1"
+   curl -sf -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"
 }
 
 # Retrieve metadata per AWS's documentation
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
-region=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+region=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 instanceId=$(ec2-metadata -i | cut -d " " -f 2)
 
 if curl http://127.0.0.1:4984/; then

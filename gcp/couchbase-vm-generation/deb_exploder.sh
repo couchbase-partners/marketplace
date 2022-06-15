@@ -8,7 +8,7 @@ done
 # shellcheck disable=SC2034
 DEBIAN_FRONTEND=noninteractive
 echo "Installing Prequisites"
-until apt-get install --assume-yes apt-utils dialog python-httplib2 jq net-tools wget lsb-release apt-transport-https ca-certificates gnupg -qq > /dev/null; do
+until apt-get install --assume-yes apt-utils dialog python-httplib2 jq net-tools wget lsb-release apt-transport-https ca-certificates gnupg libtinfo5 -qq > /dev/null; do
     echo "Error during pre-requisite installation"
     sleep 1
 done

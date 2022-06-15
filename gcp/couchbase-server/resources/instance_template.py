@@ -42,7 +42,7 @@ def generate_config(context):
                         'diskSizeGb': 10
                     }                  
                 }, {
-                    'deviceName': 'data',
+                    'deviceName': 'cb-server-data',
                     'type': 'PERSISTENT',
                     'boot': False,
                     'autoDelete': False,
@@ -60,6 +60,7 @@ def generate_config(context):
                         { 'key': 'status-success-base-path', 'value': 'status/cluster/cb-cluster-{}/success'.format(suffix) },
                         { 'key': 'status-failure-base-path', 'value': 'status/cluster/cb-cluster-{}/failure'.format(suffix) },
                         { 'key': 'external-ip-variable-path', 'value': 'ExternalIp' },
+                        { 'key': 'couchbase-server-disk', 'value': 'cb-server-data' },
                     ]
                 },
                 'serviceAccounts': [{

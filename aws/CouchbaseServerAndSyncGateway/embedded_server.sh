@@ -99,7 +99,7 @@ if [[ ! -e "couchbase_installer.sh" ]]; then
     curl -L --output "couchbase_installer.sh" "__SCRIPT_URL__"
 fi
 
-if bash ./couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d; then
+if bash ./couchbase_installer.sh -ch "$CLUSTER_HOST" -u "$USERNAME" -p "$PASSWORD" -v "$VERSION" -os AMAZON -e AWS -s -c -d --format-disk /dev/sdk --alternate-address "$nodePublicDNS"; then
    # Calls back to AWS to signify that installation is complete
    /opt/aws/bin/cfn-signal -e 0 --stack "$stackName" --resource "$resource" --region "$region"
 else
