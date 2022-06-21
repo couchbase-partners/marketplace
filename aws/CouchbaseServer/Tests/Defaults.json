@@ -2,7 +2,7 @@
   "TestDefinitions": [
     {
       "Name": "IsNodeClustered",
-      "ExpectedResult": "False"
+      "ExpectedResult": "True"
     },
     {
       "Name": "NodeCount",
@@ -38,11 +38,11 @@
     },
     {
       "Name": "AvailableMemory",
-      "ExpectedResult": "15"
+      "ExpectedResult": "46"
     },
     {
       "Name": "DiskStorage",
-      "ExpectedResult": "95"
+      "ExpectedResult": "294"
     },
     {
       "Name": "VersionValidator",
