@@ -50,6 +50,17 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Install CouchbaseVerifier
+        run: |
+          bash dotnet tool install CouchbaseVerifier --global --version 1.0.2
+      - name: Run Default Tests
+        run: |
+          DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-defaults-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
+          bash CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/Defaults.json
       - name: Teardown From AWS
         timeout-minutes: 20
         run: |
@@ -68,6 +79,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
+      - name: Run Non-Default Tests
+        run: |
+          DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-non-defaults-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
+          bash CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/NonDefaults.json          
       - name: Teardown From AWS
         timeout-minutes: 20
         run: |
@@ -86,6 +101,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
           AWS_REGION: 'us-east-1'
+      - name: Run Graviton Tests
+        run: |
+          DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-graviton-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
+          bash CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/Tests/Defaults.json       
       - name: Teardown From AWS (Graviton)
         timeout-minutes: 20
         run: |

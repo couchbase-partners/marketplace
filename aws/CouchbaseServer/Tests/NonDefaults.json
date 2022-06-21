@@ -1,0 +1,52 @@
+{
+  "TestDefinitions": [
+    {
+      "Name": "IsNodeClustered",
+      "ExpectedResult": "False"
+    },
+    {
+      "Name": "NodeCount",
+      "ExpectedResult": "3"
+    },
+    {
+      "Name": "DataNodeCount",
+      "ExpectedResult": "3"
+    },
+    {
+      "Name": "QueryNodeCount",
+      "ExpectedResult": "3"
+    },
+    {
+      "Name": "IndexNodeCount",
+      "ExpectedResult": "3"
+    },
+    {
+      "Name": "SearchNodeCount",
+      "ExpectedResult": "0"
+    },
+    {
+      "Name": "BackupNodeCount",
+      "ExpectedResult": "0"
+    },
+    {
+      "Name": "AnalyticsNodeCount",
+      "ExpectedResult": "0"
+    },
+    {
+      "Name": "EventingNodeCount",
+      "ExpectedResult": "0"
+    },
+    {
+      "Name": "AvailableMemory",
+      "ExpectedResult": "15"
+    },
+    {
+      "Name": "DiskStorage",
+      "ExpectedResult": "95"
+    },
+    {
+      "Name": "VersionValidator",
+      "ExpectedResult": "6.6.4"
+    }
+  ]
+}
