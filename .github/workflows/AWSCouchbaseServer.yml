@@ -60,7 +60,7 @@ jobs:
       - name: Run Default Tests
         run: |
           DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-defaults-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
-          CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/Defaults.json
+          CouchbaseVerifier verify --host http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/Defaults.json
       - name: Teardown From AWS
         timeout-minutes: 20
         run: |
@@ -82,7 +82,7 @@ jobs:
       - name: Run Non-Default Tests
         run: |
           DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-non-defaults-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
-          CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/NonDefaults.json          
+          CouchbaseVerifier verify --host http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer/Tests/NonDefaults.json          
       - name: Teardown From AWS
         timeout-minutes: 20
         run: |
@@ -104,7 +104,7 @@ jobs:
       - name: Run Graviton Tests
         run: |
           DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-graviton-${GITHUB_SHA::6}" | jq '.Reservations[0].Instances[0].PublicDnsName')
-          CouchbaseVerifier verify -h http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/Tests/Defaults.json       
+          CouchbaseVerifier verify --host http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/Tests/Defaults.json       
       - name: Teardown From AWS (Graviton)
         timeout-minutes: 20
         run: |
