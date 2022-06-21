@@ -38,7 +38,7 @@
     },
     {
       "Name": "AvailableMemory",
-      "ExpectedResult": "46"
+      "ExpectedResult": "45"
     },
     {
       "Name": "DiskStorage",
