@@ -55,7 +55,7 @@ echo "Default: $SERVER_INSTANCE_COUNT_DEFAULT"
 echo "ServerVersion: $SERVER_VERSION"
 echo "Default: $SERVER_VERSION_DEFAULT"
 
-VPC_NAME=$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" | jq -r '.Vpcs[].VpcId')
+VPC_NAME=$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true"  --region "$REGION" | jq -r '.Vpcs[].VpcId')
 #VpcName=vpc-0c1cd329084365f10
 SUBNET_ID=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VPC_NAME}" --max-items 1 --region "$REGION" | jq -r '.Subnets[].SubnetId')
 #SubnetId=subnet-08476a90d895839b4
@@ -64,7 +64,7 @@ SUBNET_ID=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VPC_NAME}" -
 BUCKET="mp-test-templates$(__generate_random_string)"
 aws s3api create-bucket --acl public-read --bucket "$BUCKET" --region "$REGION"
 KEY="aws-cb-server$(__generate_random_string).template"
-aws s3api put-object --bucket "$BUCKET" --key "$KEY" --body "$TEMPLATE_BODY_FILE"
+aws s3api put-object --bucket "$BUCKET" --key "$KEY" --body "$TEMPLATE_BODY_FILE" --region "$REGION"
 
 aws cloudformation create-stack \
 --disable-rollback \
@@ -83,28 +83,28 @@ ParameterKey=VpcName,ParameterValue="${VPC_NAME}" \
 ParameterKey=Subnets,ParameterValue="${SUBNET_ID}"
 
 
-OUTPUT=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
+OUTPUT=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}"  --region "$REGION" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
 COUNTER=0
 
 printf "Waiting on Stack Creation to Complete ..."
 while [[ $OUTPUT != '"CREATE_COMPLETE"' && $OUTPUT != '"ROLLBACK_COMPLETE"' && $COUNTER -le 50 ]]
 do
     printf "."
-    OUTPUT=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
+    OUTPUT=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}"  --region "$REGION" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
     (( COUNTER += 1 ))
     sleep 10
 done
 
 if [[ $OUTPUT == '"CREATE_COMPLETE"' ]]; then
     printf "Complete!\n"
-    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"
-    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"
+    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"  --region "$REGION"
+    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"  --region "$REGION"
     exit 0
 fi
 
 if [[ $OUTPUT == '"ROLLBACK_COMPLETE"' || $COUNTER -ge 50 ]]; then
     printf "Failed!\n"
-    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"
-    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"
+    aws s3api delete-object --key "$KEY" --bucket "$BUCKET"  --region "$REGION"
+    aws s3api delete-bucket --bucket "$BUCKET" --region "$REGION"  --region "$REGION"
     exit 1
 fi
