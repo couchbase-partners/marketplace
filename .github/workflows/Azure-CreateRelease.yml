@@ -57,15 +57,24 @@ jobs:
                                           -o couchbase-server-enterprise \
                                           -v latest \
                                           -z
-      - name: Build Hourly CBS Package
+      - name: Build Hourly CBS Package - Gold Support
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
-                                        -l hourly-pricing \
-                                        -s cbs-2022-hourly-pre-installed \
+                                        -l hourly-pricing-gold-support \
+                                        -s cbs-2022-gold-support \
                                         -p couchbase \
                                         -o couchbase-server-enterprise \
                                         -v latest  \
-                                        -z                                      
+                                        -z
+      - name: Build Hourly CBS Package - Silver Support
+        run: |
+          bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
+                                        -l hourly-pricing-silver-support \
+                                        -s cbs-2022-silver-support \
+                                        -p couchbase \
+                                        -o couchbase-server-enterprise \
+                                        -v latest  \
+                                        -z                                         
       - name: Build BYOL Gateway Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
@@ -75,15 +84,24 @@ jobs:
                                           -i latest \
                                           -u cb-gateway-2022-pre-installed-byol \
                                           -z
-      - name: Build Hourly Gateway Package
+      - name: Build Hourly Gateway Package - Gold Support
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
-                                        -l hourly-pricing \
+                                        -l hourly-pricing-gold-support \
                                         -p couchbase \
                                         -g couchbase-sync-gateway-enterprise \
                                         -i latest \
-                                        -u cb-gateway-2022-pre-installed-hourly \
-                                        -z                                        
+                                        -u cb-gateway-2022-pre-installed-gold \
+                                        -z
+      - name: Build Hourly Gateway Package - Silver Support
+        run: |
+          bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
+                                        -l hourly-pricing-silver-support \
+                                        -p couchbase \
+                                        -g couchbase-sync-gateway-enterprise \
+                                        -i latest \
+                                        -u cb-gateway-2022-pre-installed-silver \
+                                        -z                                                                                 
       - name: Upload Combined BYOL Package
         id: upload-combined-byol-asset
         uses: actions/upload-release-asset@v1
@@ -114,16 +132,26 @@ jobs:
           asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-byol.zip
           asset_name: azure-cbs-archive-byol.zip
           asset_content_type: application/zip
-      - name: Upload CBS Hourly Package
-        id: upload-cbs-hourly-asset
+      - name: Upload CBS Hourly Package - Gold
+        id: upload-cbs-hourly-asset-gold
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing.zip
-          asset_name: azure-cbs-archive-hourly-pricing.zip
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing-gold-support.zip
+          asset_name: azure-cbs-archive-hourly-pricing-gold-support.zip
           asset_content_type: application/zip
+      - name: Upload CBS Hourly Package - Silver
+        id: upload-cbs-hourly-asset-silver
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing-silver-support.zip
+          asset_name: azure-cbs-archive-hourly-pricing-silver-support.zip
+          asset_content_type: application/zip          
       - name: Upload Gateway BYOL Package
         id: upload-sg-byol-asset
         uses: actions/upload-release-asset@v1
@@ -134,13 +162,23 @@ jobs:
           asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-byol.zip
           asset_name: azure-sg-archive-byol.zip
           asset_content_type: application/zip
-      - name: Upload Gateway Hourly Package
-        id: upload-sg-hourly-asset
+      - name: Upload Gateway Hourly Package - Silver
+        id: upload-sg-hourly-asset-silver
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-hourly-pricing.zip
-          asset_name: azure-sg-archive-hourly-pricing.zip
-          asset_content_type: application/zip                    
+          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-hourly-pricing-silver-support.zip
+          asset_name: azure-sg-archive-hourly-pricing-silver-support.zip
+          asset_content_type: application/zip
+      - name: Upload Gateway Hourly Package - Gold
+        id: upload-sg-hourly-asset-gold
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-hourly-pricing-gold-support.zip
+          asset_name: azure-sg-archive-hourly-pricing-gold-support.zip
+          asset_content_type: application/zip                                 
