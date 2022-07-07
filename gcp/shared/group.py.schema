@@ -22,8 +22,11 @@ properties:
     description: Type of Couchbase license to be supported by the deployment.
   serverVersion:
     type: string
-    default: 7.0.0
+    default: 7.1.1
     enum:
+      - 7.1.1
+      - 7.1.0
+      - 7.0.4
       - 7.0.0
       - 6.6.3
       - 6.6.2
