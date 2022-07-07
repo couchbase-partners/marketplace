@@ -367,11 +367,15 @@
             "type": "Microsoft.Common.DropDown",
             "label": "Server Version",
             "toolTip": "What version of Couchbase Server is to be installed",
-            "defaultValue": "7.1.0 (recommended)",
+            "defaultValue": "7.1.1 (recommended)",
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "7.1.0 (recommended)",
+                  "label": "7.1.1 (recommended)",
+                  "value": "7.1.1"
+                },
+                {
+                  "label": "7.1.0",
                   "value": "7.1.0"
                 },
                 {
