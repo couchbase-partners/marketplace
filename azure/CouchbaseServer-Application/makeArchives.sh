@@ -40,10 +40,17 @@ function makeArchive()
   offer=$5
   image_version=$6
   ZIP=$7
+  unlicensed=$8
+
+  if [ "$unlicensed" == "1" ]; then
+    license="unlicensed"
+  fi
+
   mkdir -p "$dir../../build/azure/CouchbaseServer/"
   if [ -f "$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}.zip" ]; then
     rm "$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}.zip"
   fi
+  
   PACKAGE_DIR="$dir../../build/azure/CouchbaseServer/azure-cbs-archive-${license}"
   mkdir -p "$PACKAGE_DIR"
   SED_VALUE="s~<<LICENSE>>~${sku}~g;s~<<PUBLISHER>>~${publisher}~g;s~<<OFFER>>~${offer}~g;s~<<IMAGE_VERSION>>~${image_version}~g;"
@@ -54,7 +61,11 @@ function makeArchive()
   fi
 
   #cp "$dir/mainTemplate.json" "$dir../../build/tmp/mainTemplate.json"
-  cp "$dir/createUiDefinition.json" "$PACKAGE_DIR"
+  if [ "$unlicensed" == "1" ]; then
+    cp "$dir/createUiDefinition.Unlicensed.json" "$PACKAGE_DIR/createUiDefinition.json"
+  else
+    cp "$dir/createUiDefinition.json" "$PACKAGE_DIR"
+  fi
 
   if [[ "$ZIP" == 1 ]]; then
     cd "$PACKAGE_DIR" || exit
@@ -65,7 +76,7 @@ function makeArchive()
 }
 
 ZIP=0
-while getopts l:p:s:o:v:z flag
+while getopts l:p:s:o:v:zu flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
@@ -74,8 +85,9 @@ do
         o) offer=${OPTARG};;
         v) image_version=${OPTARG};;
         z) ZIP=1;;
+        u) UNLICENSED=1;;
         *) exit 1;;
     esac
 done
 
-makeArchive "$license" "$SCRIPT_SOURCE" "$sku" "$publisher" "$offer" "$image_version" "$ZIP"
+makeArchive "$license" "$SCRIPT_SOURCE" "$sku" "$publisher" "$offer" "$image_version" "$ZIP" "$UNLICENSED"

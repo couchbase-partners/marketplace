@@ -27,6 +27,18 @@ jobs:
         run: ls -l "${GITHUB_WORKSPACE}"/build/azure/CouchbaseServer/
       - name: verify server template
         run: docker run --rm --mount type=bind,source="${GITHUB_WORKSPACE}/build/azure/CouchbaseServer/azure-cbs-archive-byol",target=/template az-verification
+      - name: Build server package without license and not zipped
+        run: |
+          bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
+                                         -u \
+                                         -s cbs-2022-byol-pre-installed \
+                                         -p couchbase \
+                                         -o couchbase-server-enterprise \
+                                         -v latest
+      - name: Check files exist
+        run: ls -l "${GITHUB_WORKSPACE}"/build/azure/CouchbaseServer/
+      - name: verify server template
+        run: docker run --rm --mount type=bind,source="${GITHUB_WORKSPACE}/build/azure/CouchbaseServer/azure-cbs-archive-unlicensed",target=/template az-verification
 
       - name: Build gateway package without zip
         run: |

@@ -130,7 +130,7 @@
     },
     "image_version": {
       "type": "string",
-      "defaultValue": "<<IMAGE_VERSION>>"
+      "defaultValue": "latest"
     },
     "_now": {
       "type": "string",
