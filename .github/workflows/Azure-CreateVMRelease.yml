@@ -27,10 +27,10 @@ jobs:
         run: mkdir ${GITHUB_WORKSPACE}/build
       # Runs a set of commands using the runners shell
       - name: Build CBS Packages
-        run: bash ${GITHUB_WORKSPACE}/azure/CouchbaseServerEnterprise-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M)
+        run: bash ${GITHUB_WORKSPACE}/azure/Couchbase-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M)
       - name: Upload VM Configuration
         uses: actions/upload-artifact@v2
         with: 
           name: TechnicalConfiguration.json
-          path: build/azure/CouchbaseServerEnterprise-VirtualMachine/TechnicalConfiguration.json
+          path: build/azure/Couchbase-VirtualMachine/TechnicalConfiguration.json
           retention-days: 14

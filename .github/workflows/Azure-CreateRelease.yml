@@ -61,7 +61,7 @@ jobs:
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
                                         -l hourly-pricing-gold-support \
-                                        -s cbs-2022-gold-support \
+                                        -s cbs-server-gold \
                                         -p couchbase \
                                         -o couchbase-server-enterprise \
                                         -v latest  \
@@ -70,11 +70,20 @@ jobs:
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
                                         -l hourly-pricing-silver-support \
-                                        -s cbs-2022-silver-support \
+                                        -s cbs-server-silver \
                                         -p couchbase \
                                         -o couchbase-server-enterprise \
                                         -v latest  \
-                                        -z                                         
+                                        -z
+      - name: Build Unlicensed CBS Package
+        run: |
+          bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
+                                        -u \
+                                        -s cbs-2022-byol-pre-installed \
+                                        -p couchbase \
+                                        -o couchbase-server-enterprise \
+                                        -v latest  \
+                                        -z                                                                                  
       - name: Build BYOL Gateway Package
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
@@ -151,7 +160,17 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing-silver-support.zip
           asset_name: azure-cbs-archive-hourly-pricing-silver-support.zip
-          asset_content_type: application/zip          
+          asset_content_type: application/zip   
+      - name: Upload CBS Unlicensed Package
+        id: upload-cbs-unlicensed-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-unlicensed.zip
+          asset_name: azure-cbs-archive-unlicensed.zip
+          asset_content_type: application/zip                    
       - name: Upload Gateway BYOL Package
         id: upload-sg-byol-asset
         uses: actions/upload-release-asset@v1
