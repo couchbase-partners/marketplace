@@ -44,40 +44,40 @@
         "osPlatform": "Linux",
         "visible": true
       },
-	  {
-		"name": "virtualNetwork",
-    "type": "Microsoft.Network.VirtualNetworkCombo",
-    "toolTip": "The virtual network to deploy the Couchbase Cluster to.",
-		"label": {
-			"virtualNetwork": "Virtual network",
-			"subnets": "Subnets"
-		},
-		"defaultValue": {
-			"name": "Couchbase-Vnet",
-			"addressPrefixSize": "/16"
-		},
-		"constraints": {
-			"minAddressPrefixSize": "/24"
-		},
-		"options": {
-			"hideExisting": false
-		},
-		"subnets": {
-			"subnet1": {
-				"label": "CouchbaseSubnet",
-				"defaultValue": {
-					"name": "CouchbaseSubnet",
-					"addressPrefixSize": "/24"
-				},
-				"constraints": {
-					"minAddressPrefixSize": "/24",
-					"minAddressCount": 3,
-					"requireContiguousAddresses": false
-				}
-			}
-		},
-		"visible": true
-		}
+      {
+        "name": "virtualNetwork",
+        "type": "Microsoft.Network.VirtualNetworkCombo",
+        "toolTip": "The virtual network to deploy the Couchbase Cluster to.",
+        "label": {
+          "virtualNetwork": "Virtual network",
+          "subnets": "Subnets"
+        },
+        "defaultValue": {
+          "name": "Couchbase-Vnet",
+          "addressPrefixSize": "/16"
+        },
+        "constraints": {
+          "minAddressPrefixSize": "/24"
+        },
+        "options": {
+          "hideExisting": false
+        },
+        "subnets": {
+          "subnet1": {
+            "label": "CouchbaseSubnet",
+            "defaultValue": {
+              "name": "CouchbaseSubnet",
+              "addressPrefixSize": "/24"
+            },
+            "constraints": {
+              "minAddressPrefixSize": "/24",
+              "minAddressCount": 3,
+              "requireContiguousAddresses": false
+            }
+          }
+        },
+        "visible": true
+      }
     ],
     "steps": [
       {
@@ -89,6 +89,25 @@
         },
         "bladeTitle": "Couchbase Sync Gateway Settings",
         "elements": [
+          {
+            "name": "licenseType",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Sync Gateway License Structure",
+            "toolTip": "Select the license of Couchbase Sync Gateway you would like to use.  Pricing is dependent upon the Couchbase Sync Gateway license selected.",
+            "defaultValue": "Couchbase Sync Gateway - BYOL",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Couchbase Sync Gateway - BYOL",
+                  "value": "cb-gateway-2022-pre-installed-byol"
+                },
+                {
+                  "label": "Couchbase Sync Gateway - Silver Support",
+                  "value": "cb-gateway-2022-pre-installed-silver"
+                }
+              ]
+            }
+          },
           {
             "name": "vmSize",
             "type": "Microsoft.Compute.SizeSelector",
@@ -366,10 +385,10 @@
             "constraints": {
               "required": true,
               "validations": [
-              {
-                "regex": "^couchbase://.{1,250}",
-                "message": "Must start with couchbase://"
-              }
+                {
+                  "regex": "^couchbase://.{1,250}",
+                  "message": "Must start with couchbase://"
+                }
               ]
             },
             "visible": true
@@ -436,7 +455,8 @@
       "vnet": "[basics('virtualNetwork')]",
       "resourceGroup": "[basics('virtualNetwork').resourceGroup]",
       "newOrExisting": "[basics('virtualNetwork').newOrExisting]",
-      "adminUsername": "[basics('vmUsername')]"
+      "adminUsername": "[basics('vmUsername')]",
+      "sync_gateway_sku": "[steps('couchbaseConfig').licenseType]"
     }
   }
 }

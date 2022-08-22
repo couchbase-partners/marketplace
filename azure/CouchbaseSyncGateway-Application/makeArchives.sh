@@ -14,9 +14,6 @@
 #  -p : Publisher                                                             #
 #     usage:  -p couchbase                                                    #
 #     purpose:  The publisher of the VM images used in the template           #
-#  -s : Couchbase Server SKU                                                  #
-#     usage: -s byol_2019                                                     #
-#     purpose: specifies the plan id of the VM offer to use                   #
 #  -g : Couchbase Sync Gateway Offer                                          #
 #     usage: -g couchbase-sync-gateway-enterprise                             #
 #     purposes: the offer id of the azure marketplace offer for sg            #
@@ -30,6 +27,10 @@
 #     usage: -z                                                               #
 #     purposes: The package will be created in a specific folder, however if  #
 #     zip is specified that folder will be zipped into an archive             #
+#  -u : Unlicense                                                             #
+#     usage: -u                                                               #
+#     purposes:  creates an "unlicensed" version that uses a different UI     #
+#     definition file to allow user to select license to be used in deployment#
 ###############################################################################
 
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%makeArchives.sh/}
@@ -43,6 +44,12 @@ function makeArchive()
   sync_gateway_image_version=$5
   sync_gateway_sku=$6
   ZIP=$7
+  UNLICENSED=$8
+
+  if [ "$UNLICENSED" == "1" ]; then
+    license="unlicensed"
+  fi
+
   mkdir -p "$dir../../build/azure/CouchbaseSyncGateway/"
   if [[ -f "$dir../../build/azure/CouchbaseSyncGateway/azure-sg-archive-${license}.zip" ]]; then
     rm "$dir../../build/azure/CouchbaseSyncGateway/azure-sg-archive-${license}.zip"
@@ -56,7 +63,12 @@ function makeArchive()
     sed -e "$SED_VALUE" "$dir/mainTemplate.json" > "$PACKAGE_DIR/mainTemplate.json"
   fi
 
-  cp "$dir/createUiDefinition.json" "$PACKAGE_DIR"
+  if [ "$UNLICENSED" == "1" ]; then
+    cp "$dir/createUiDefinition.Unlicensed.json" "$PACKAGE_DIR/createUiDefinition.json"
+  else
+    cp "$dir/createUiDefinition.json" "$PACKAGE_DIR"
+  fi
+
   if [[ "$ZIP" == 1 ]]; then
     cd "$PACKAGE_DIR" || exit
     zip -r -j -X "../azure-sg-archive-${license}.zip" *
@@ -66,17 +78,18 @@ function makeArchive()
 }
 
 ZIP=0
-while getopts l:p:g:i:u:z flag
+while getopts l:p:g:i:s:zu flag
 do
     case "${flag}" in
         l) license=${OPTARG};;
         p) publisher=${OPTARG};;
         g) sync_gateway_offer=${OPTARG};;
         i) sync_gateway_image_version=${OPTARG};;
-        u) sync_gateway_sku=${OPTARG};;
+        s) sync_gateway_sku=${OPTARG};;
         z) ZIP=1;;
+        u) UNLICENSED=1;;
         *) exit 1;;
     esac
 done
 echo "Making Archive"
-makeArchive "$license" "$SCRIPT_SOURCE" "$publisher" "$sync_gateway_offer" "$sync_gateway_image_version" "$sync_gateway_sku" "$ZIP"
+makeArchive "$license" "$SCRIPT_SOURCE" "$publisher" "$sync_gateway_offer" "$sync_gateway_image_version" "$sync_gateway_sku" "$ZIP" "$UNLICENSED"
