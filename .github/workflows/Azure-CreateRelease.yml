@@ -91,7 +91,7 @@ jobs:
                                           -p couchbase \
                                           -g couchbase-sync-gateway-enterprise \
                                           -i latest \
-                                          -u cb-gateway-2022-pre-installed-byol \
+                                          -s cb-gateway-2022-pre-installed-byol \
                                           -z
       - name: Build Hourly Gateway Package - Gold Support
         run: |
@@ -100,7 +100,7 @@ jobs:
                                         -p couchbase \
                                         -g couchbase-sync-gateway-enterprise \
                                         -i latest \
-                                        -u cb-gateway-2022-pre-installed-gold \
+                                        -s cb-gateway-2022-pre-installed-gold \
                                         -z
       - name: Build Hourly Gateway Package - Silver Support
         run: |
@@ -109,8 +109,17 @@ jobs:
                                         -p couchbase \
                                         -g couchbase-sync-gateway-enterprise \
                                         -i latest \
-                                        -u cb-gateway-2022-pre-installed-silver \
-                                        -z                                                                                 
+                                        -s cb-gateway-2022-pre-installed-silver \
+                                        -z
+      - name: Build Unlicensed Gateway Package
+        run: |
+          bash ${GITHUB_WORKSPACE}/azure/CouchbaseSyncGateway-Application/makeArchives.sh \
+                                        -u \
+                                        -p couchbase \
+                                        -g couchbase-sync-gateway-enterprise \
+                                        -i latest \
+                                        -s cb-gateway-2022-pre-installed-byol \
+                                        -z                                                                                                                          
       - name: Upload Combined BYOL Package
         id: upload-combined-byol-asset
         uses: actions/upload-release-asset@v1
@@ -200,4 +209,14 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-hourly-pricing-gold-support.zip
           asset_name: azure-sg-archive-hourly-pricing-gold-support.zip
+          asset_content_type: application/zip
+      - name: Upload Gateway Unlicensed Package
+        id: upload-sg-unlicensed-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/azure/CouchbaseSyncGateway/azure-sg-archive-unlicensed.zip
+          asset_name: azure-sg-archive-unlicensed.zip
           asset_content_type: application/zip                                 

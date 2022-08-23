@@ -98,7 +98,7 @@
         "elements": [
           {
             "name": "serverLicenseType",
-            "type": "Microsoft.Common.Dropdown",
+            "type": "Microsoft.Common.DropDown",
             "label": "Server License Structure",
             "toolTip": "Select the license of Couchbase Server you would like to use.  Pricing is dependent upon the Couchbase Server License selected.",
             "defaultValue": "Couchbase Server - BYOL",
