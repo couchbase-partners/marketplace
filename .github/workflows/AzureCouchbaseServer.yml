@@ -23,6 +23,19 @@ jobs:
         with:
           inlineScript: |
             bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/parameters.json -g cb-mkt-test-hourly -n ga-cbs-app-byol
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Install CouchbaseVerifier
+        run: |
+          dotnet tool install CouchbaseVerifier --global --version 1.0.3
+      - name: Run Default Tests
+        run: |
+          DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-app-byol --query properties.outputs.serverAdminURL.value | jq -r)
+          USERNAME=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/parameters.json | jq -r '.serverUsername.value')
+          PASSWORD=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/parameters.json | jq -r '.serverPassword.value')
+          CouchbaseVerifier verify --host "${DNS}" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/verifier_tests/Defaults.json
       - name: Teardown From Azure
         if: always()
         uses: azure/CLI@v1
@@ -46,6 +59,19 @@ jobs:
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/mds_parameters.json -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-two
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Install CouchbaseVerifier
+        run: |
+          dotnet tool install CouchbaseVerifier --global --version 1.0.3
+      - name: Run mds tests
+        run: |
+          DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-two --query properties.outputs.serverAdminURL.value | jq -r)
+          USERNAME=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/mds_parameters.json | jq -r '.serverUsername.value')
+          PASSWORD=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/mds_parameters.json | jq -r '.serverPassword.value')
+          CouchbaseVerifier verify --host "${DNS}" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/verifier_tests/mds_tests.json
       - name: Teardown From Azure
         uses: azure/CLI@v1
         if: always()
@@ -69,6 +95,19 @@ jobs:
         with:
           inlineScript: |
             ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/deploy.sh -l eastus -p ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/test_parameters/bad_mds_params.json -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-three
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Install CouchbaseVerifier
+        run: |
+          dotnet tool install CouchbaseVerifier --global --version 1.0.3
+      - name: Run mds tests
+        run: |
+          DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-three --query properties.outputs.serverAdminURL.value | jq -r)
+          USERNAME=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/test_parameters/bad_mds_params.json | jq -r '.serverUsername.value')
+          PASSWORD=$(cat ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/test_parameters/bad_mds_params.json | jq -r '.serverPassword.value')
+          CouchbaseVerifier verify --host "${DNS}" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/test/verifier_tests/bad_mds_tests.json
       - name: Teardown From Azure
         uses: azure/CLI@v1
         if: always()

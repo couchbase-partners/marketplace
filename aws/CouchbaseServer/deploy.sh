@@ -52,7 +52,7 @@ SSHCIDR="0.0.0.0/0"
 
 echo "Instance Count: $SERVER_INSTANCE_COUNT"
 echo "Default: $SERVER_INSTANCE_COUNT_DEFAULT"
-echo "GatewayVersion: $SERVER_VERSION"
+echo "ServerVersion: $SERVER_VERSION"
 echo "Default: $SERVER_VERSION_DEFAULT"
 
 VPC_NAME=$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" | jq -r '.Vpcs[].VpcId')
