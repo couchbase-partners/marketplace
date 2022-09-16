@@ -9,7 +9,7 @@ do
     esac
 done
 
-RUNTIME_CONFIG=$(gcloud deployment-manager deployments describe "$STACK_NAME" --format=json | jq -r '.outputs[] | select(.name=="runtimeConfigName") | .finalValue')
-EXTERNALIP=$(gcloud beta runtime-config configs variables describe ExternalIp --config-name="$RUNTIME_CONFIG" --format=json | jq -r '.value')
+RUNTIME_CONFIG=$(gcloud deployment-manager deployments describe "$STACK_NAME" --format=json --quiet | jq -r '.outputs[] | select(.name=="runtimeConfigName") | .finalValue')
+EXTERNALIP=$(gcloud beta runtime-config configs variables describe ExternalIp --config-name="$RUNTIME_CONFIG" --format=json --quiet | jq -r '.value')
 
 echo "$EXTERNALIP"

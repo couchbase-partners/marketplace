@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: GCP - CouchbaseServerAndSyncGatewayBYOL
+name: GCP - CouchbaseServer
 
 # Controls when the action will run. 
 on:
@@ -44,7 +44,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.5
+          dotnet tool install CouchbaseVerifier --global --version 1.0.6
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-byol)
@@ -81,12 +81,12 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.5
+          dotnet tool install CouchbaseVerifier --global --version 1.0.6
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-hourly)
-          USERNAME=$(cat ./test_config.local.yaml | yq '.resources[0].properties.username')
-          PASSWORD=$(cat ./test_config.local.yaml | yq '.resources[0].properties.password')
+          USERNAME=$(cat ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_config.local.yaml | yq '.resources[0].properties.username')
+          PASSWORD=$(cat ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_config.local.yaml | yq '.resources[0].properties.password')
           CouchbaseVerifier verify --host "http://${DNS}:8091" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_definitions/defaults.json
       - name: Teardown From GCP
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/backout.sh -n cb-server-hourly        
