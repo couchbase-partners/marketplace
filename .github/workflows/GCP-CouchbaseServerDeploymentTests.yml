@@ -44,10 +44,10 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
-          DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip/ip_retrieval.sh -n cb-server-byol)
+          DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-byol)
           USERNAME=$(cat ./test_config.local.yaml | yq '.resources[0].properties.username')
           PASSWORD=$(cat ./test_config.local.yaml | yq '.resources[0].properties.password')
           CouchbaseVerifier verify --host "http://${DNS}:8091" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_definitions/defaults.json
@@ -81,10 +81,10 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
-          DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip/ip_retrieval.sh -n cb-server-hourly)
+          DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-hourly)
           USERNAME=$(cat ./test_config.local.yaml | yq '.resources[0].properties.username')
           PASSWORD=$(cat ./test_config.local.yaml | yq '.resources[0].properties.password')
           CouchbaseVerifier verify --host "http://${DNS}:8091" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_definitions/defaults.json
