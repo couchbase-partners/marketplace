@@ -1,13 +1,18 @@
 #!/bin/bash
 
 BYOL=0
+NOZIP=0
+LOCAL=0
+
 ARCHIVE_NAME="gcp-cbs-archive.zip"
 IMAGE_FAMILY="couchbase-server-hourly-pricing"
 SERVICE_ACCOUNT="couchbase-server-hourly"
-while getopts b flag
+while getopts bnl flag
 do
     case "${flag}" in
         b) BYOL=1;;
+        n) NOZIP=1;;
+        l) LOCAL=1;;
         *) exit 1;;
     esac
 done
@@ -32,6 +37,16 @@ cp -a "${SCRIPT_SOURCE}/." "$SCRIPT_SOURCE../../build/gcp/couchbase-server/packa
 # remove the archives creation tool
 rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/makeArchives.sh"
 rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.local.yaml"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/deploy.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/backout.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/ip_retrieval.sh"
+rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_definitions/"
+
+# If we are specifying local copy the test_config.local.yaml over the test_config.yaml
+if [[ "$LOCAL" == "1" ]]; then
+    echo "Copying test_config.local.yaml"
+    cp -f "${SCRIPT_SOURCE}/test_config.local.yaml" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
+fi
 
 # Here is where we need to change the files for byol if byol is set
 if [[ "$BYOL" == "1" ]]; then
@@ -47,8 +62,10 @@ fi
 IMAGE=$(gcloud compute images list --project couchbase-public --filter="family = $IMAGE_FAMILY" --format="value(NAME)" --sort-by="~creationTimestamp" --limit=1)
 expression=".resources[0].properties.imageName = \"$IMAGE\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
-expression=".resources[0].properties.svcAccount = \"$SERVICE_ACCOUNT@cloud-launcher-verifier-prd.iam.gserviceaccount.com\""
-yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
+if [[ "$LOCAL" == "0" ]]; then
+    expression=".resources[0].properties.svcAccount = \"$SERVICE_ACCOUNT@cloud-launcher-verifier-prd.iam.gserviceaccount.com\""
+    yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
+fi
 expression=".properties.imageName.default = \"$IMAGE\""
 yq e -i "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema"
 expression=".imageName = \"$IMAGE\""
@@ -56,11 +73,17 @@ config=$(jq "$expression" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/packag
 cat <<< "$config" > "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/c2d_deployment_configuration.json"
 # remove existing archive
 rm -f "$SCRIPT_SOURCE../../build/gcp/couchbase-server/$ARCHIVE_NAME"
-# Fix pathing
-sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py > $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py
-sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema > $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema
-# zip up the contents of the package into the archive
-WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/" && zip -r -j -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
 
+# Fix pathing if not local
+if [[ "$LOCAL" == "0" ]]; then
+    sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py > $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py
+    sed -e 's|./resources/||g' $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema > $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema.tmp && mv $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema.tmp $SCRIPT_SOURCE../../build/gcp/couchbase-server/package/couchbase.py.schema
+fi
+# zip up the contents of the package into the archive
+if [[ "$NOZIP" == "0" ]]; then
+    WDIR=$(pwd) && cd "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/" && zip -r -j -X  "../$ARCHIVE_NAME" ./* && cd "$WDIR" || exit
+fi
 # remove package folder
-rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
+if [[ "$NOZIP" == "0" ]]; then
+    rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
+fi
