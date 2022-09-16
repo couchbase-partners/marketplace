@@ -730,7 +730,11 @@
   "outputs": {
     "serverAdminURL": {
       "type": "string",
-      "value": "[uri(concat('http://', reference(variables('serverPubIP'), '2017-03-30').dnsSettings.fqdn), ':8091')]"
+      "value": "[uri(concat('http://', reference(variables('serverPubIP'), '2017-03-30').dnsSettings.fqdn, ':8091'), '')]"
+    },
+    "serverRally": {
+      "type": "string",
+      "value": "[reference(variables('serverPubIP'), '2017-03-30').dnsSettings.fqdn]"
     }
   }
 }
