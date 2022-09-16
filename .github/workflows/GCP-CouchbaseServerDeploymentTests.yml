@@ -44,7 +44,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-byol)
@@ -81,7 +81,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-hourly)

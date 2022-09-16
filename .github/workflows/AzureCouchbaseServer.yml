@@ -29,7 +29,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run Default Tests
         run: |
           DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-app-byol --query properties.outputs.serverAdminURL.value | jq -r)
@@ -65,7 +65,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
           DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-two --query properties.outputs.serverAdminURL.value | jq -r)
@@ -101,7 +101,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.4
+          dotnet tool install CouchbaseVerifier --global --version 1.0.5
       - name: Run mds tests
         run: |
           DNS=$(az deployment group show -g cb-mkt-test-hourly -n ga-cbs-sg-app-hourly-three --query properties.outputs.serverAdminURL.value | jq -r)
