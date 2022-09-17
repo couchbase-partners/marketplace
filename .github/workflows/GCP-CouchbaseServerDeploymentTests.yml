@@ -44,14 +44,15 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.6
+          dotnet tool install CouchbaseVerifier --global --version 1.0.7
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-byol)
-          USERNAME=$(cat ./test_config.local.yaml | yq '.resources[0].properties.username')
-          PASSWORD=$(cat ./test_config.local.yaml | yq '.resources[0].properties.password')
+          USERNAME=$(cat ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_config.local.yaml | yq '.resources[0].properties.username')
+          PASSWORD=$(cat ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_config.local.yaml | yq '.resources[0].properties.password')
           CouchbaseVerifier verify --host "http://${DNS}:8091" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_definitions/defaults.json
       - name: Teardown From GCP
+        if: always()
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/backout.sh -n cb-server-byol
   HourlyLaunch:
     # The type of runner that the job will run on
@@ -81,7 +82,7 @@ jobs:
           dotnet-version: 6.0.x
       - name: Install CouchbaseVerifier
         run: |
-          dotnet tool install CouchbaseVerifier --global --version 1.0.6
+          dotnet tool install CouchbaseVerifier --global --version 1.0.7
       - name: Run mds tests
         run: |
           DNS=$(${GITHUB_WORKSPACE}/gcp/couchbase-server/ip_retrieval.sh -n cb-server-hourly)
@@ -89,4 +90,5 @@ jobs:
           PASSWORD=$(cat ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_config.local.yaml | yq '.resources[0].properties.password')
           CouchbaseVerifier verify --host "http://${DNS}:8091" -u "$USERNAME" -p "$PASSWORD" -d ${GITHUB_WORKSPACE}/gcp/couchbase-server/test_definitions/defaults.json
       - name: Teardown From GCP
+        if: always()
         run: bash ${GITHUB_WORKSPACE}/gcp/couchbase-server/backout.sh -n cb-server-hourly        
