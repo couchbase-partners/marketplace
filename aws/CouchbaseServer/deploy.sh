@@ -17,7 +17,7 @@ fi
 SERVER_INSTANCE_COUNT_DEFAULT=$(jq '.Parameters.CoreInstanceCount.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
 SERVER_VERSION_DEFAULT=$(jq '.Parameters.ServerVersion.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
 
-while getopts n:c:v:k:r:u:p: flag
+while getopts n:c:v:k:r:u:p:s: flag
 do
     case "${flag}" in
         n) STACK_NAME=${OPTARG};;
@@ -27,6 +27,7 @@ do
         r) REGION=${OPTARG};;
         u) USERNAME=${OPTARG};;
         p) PASSWORD=${OPTARG};;
+        s) SERVICES=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -38,7 +39,7 @@ SERVER_VERSION=${SERVER_VERSION:-$SERVER_VERSION_DEFAULT}
 KEY_NAME=${KEY_NAME:-"couchbase-${REGION}"}
 USERNAME=${USERNAME:-"couchbase"}
 PASSWORD=${PASSWORD:-"foo123!"}
-
+SERVICES=${SERVICES:-"\"data\,index\,query\""}
 
 ${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
                                  -o "${SCRIPT_DIR}/../../build/aws/CouchbaseServer/" \
@@ -80,7 +81,8 @@ ParameterKey=SSHCIDR,ParameterValue=${SSHCIDR} \
 ParameterKey=CoreInstanceCount,ParameterValue=${SERVER_INSTANCE_COUNT} \
 ParameterKey=ServerVersion,ParameterValue="${SERVER_VERSION}" \
 ParameterKey=VpcName,ParameterValue="${VPC_NAME}" \
-ParameterKey=Subnets,ParameterValue="${SUBNET_ID}"
+ParameterKey=Subnets,ParameterValue="${SUBNET_ID}" \
+ParameterKey=CoreServices,ParameterValue="${SERVICES}"
 
 
 OUTPUT=$(aws cloudformation describe-stack-events --stack-name "${STACK_NAME}" | jq '.StackEvents[] | select(.ResourceType == "AWS::CloudFormation::Stack") | . | select(.ResourceStatus == "CREATE_COMPLETE"  or .ResourceStatus == "ROLLBACK_COMPLETE") | .ResourceStatus ')
