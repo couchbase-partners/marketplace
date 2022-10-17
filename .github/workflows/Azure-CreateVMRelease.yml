@@ -6,7 +6,19 @@ name: Azure VM Release Workflow
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   workflow_dispatch:
-
+    inputs:
+      version:
+        description: "Couchbase Server/Gateway Version"
+        required: true
+        default: "7.1.1"
+      syncgateway: 
+        description: "Gateway (Y/N)?"
+        type: choice
+        options:
+          - "Y"
+          - "N"
+        required: true
+        default: "N"
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -27,10 +39,26 @@ jobs:
         run: mkdir ${GITHUB_WORKSPACE}/build
       # Runs a set of commands using the runners shell
       - name: Build CBS Packages
-        run: bash ${GITHUB_WORKSPACE}/azure/Couchbase-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M)
+        if: ${{ github.event.inputs.syncgateway == 'N' }}
+        env:
+          VERSION: ${{github.event.inputs.version}}
+        run: bash ${GITHUB_WORKSPACE}/azure/Couchbase-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M) -v "$VERSION"
+      - name: Build CBS Packages
+        if: ${{ github.event.inputs.syncgateway == 'Y' }}
+        env:
+          VERSION: ${{github.event.inputs.version}}
+        run: bash ${GITHUB_WORKSPACE}/azure/Couchbase-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M) -v "$VERSION" -m        
       - name: Upload VM Configuration
+        if: ${{ github.event.inputs.syncgateway == 'N' }}
         uses: actions/upload-artifact@v2
         with: 
-          name: TechnicalConfiguration.json
-          path: build/azure/Couchbase-VirtualMachine/TechnicalConfiguration.json
+          name: ServerTechnicalConfiguration.json
+          path: build/azure/Couchbase-VirtualMachine/ServerTechnicalConfiguration.json
           retention-days: 14
+      - name: Upload VM Configuration
+        if: ${{ github.event.inputs.syncgateway == 'Y' }}
+        uses: actions/upload-artifact@v2
+        with: 
+          name: GatewayTechnicalConfiguration.json
+          path: build/azure/Couchbase-VirtualMachine/GatewayTechnicalConfiguration.json
+          retention-days: 14          
