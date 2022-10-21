@@ -57,19 +57,10 @@ jobs:
                                           -o couchbase-server-enterprise \
                                           -v latest \
                                           -z
-      - name: Build Hourly CBS Package - Gold Support
-        run: |
-          bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
-                                        -l hourly-pricing-gold-support \
-                                        -s cbs-server-gold \
-                                        -p couchbase \
-                                        -o couchbase-server-enterprise \
-                                        -v latest  \
-                                        -z
       - name: Build Hourly CBS Package - Silver Support
         run: |
           bash ${GITHUB_WORKSPACE}/azure/CouchbaseServer-Application/makeArchives.sh \
-                                        -l hourly-pricing-silver-support \
+                                        -l cbs-oct-2022-silver-support \
                                         -s cbs-server-silver \
                                         -p couchbase \
                                         -o couchbase-server-enterprise \
@@ -150,16 +141,6 @@ jobs:
           asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-byol.zip
           asset_name: azure-cbs-archive-byol.zip
           asset_content_type: application/zip
-      - name: Upload CBS Hourly Package - Gold
-        id: upload-cbs-hourly-asset-gold
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with: 
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing-gold-support.zip
-          asset_name: azure-cbs-archive-hourly-pricing-gold-support.zip
-          asset_content_type: application/zip
       - name: Upload CBS Hourly Package - Silver
         id: upload-cbs-hourly-asset-silver
         uses: actions/upload-release-asset@v1
@@ -167,7 +148,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-hourly-pricing-silver-support.zip
+          asset_path: ./build/azure/CouchbaseServer/azure-cbs-archive-cbs-oct-2022-silver-support.zip
           asset_name: azure-cbs-archive-hourly-pricing-silver-support.zip
           asset_content_type: application/zip   
       - name: Upload CBS Unlicensed Package
