@@ -39,7 +39,7 @@ if [[ -z "$DISK_LUN" ]]; then
     DISK_LUN=NA
 fi
 
-DISK=$(lsscsi --brief |  grep -G "\[[1-9]:0:0:$DISK_LUN\]" | awk -v col=2 '{print $col}')
+DISK=$(lsscsi | grep -G "\[[1-9]:0:0:0\]" | grep -v "Virtual CD/ROM" | awk -v col=7 '{print $col}')
 
 if [[ -z "$VERSION" ]]; then
     VERSION="$COUCHBASE_SERVER_VERSION"
