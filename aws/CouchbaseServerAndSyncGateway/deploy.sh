@@ -15,7 +15,7 @@ if [ -z "$REGION" ]; then
     REGION="us-east-1"
 fi
 Username="couchbase"
-Password="foo123!"
+Password="foobarbaz123!"
 #KeyName="couchbase-${REGION}"
 KeyName="ja-test-kp"
 SSHCIDR="0.0.0.0/0"
