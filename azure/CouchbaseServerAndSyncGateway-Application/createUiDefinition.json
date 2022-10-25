@@ -316,10 +316,14 @@
             "name": "serverVersion",
             "type": "Microsoft.Common.DropDown",
             "label": "Server Version",
-            "defaultValue": "7.1.1 (recommended)",
+            "defaultValue": "7.1.2 (recommended)",
             "toolTip": "Server Version",
             "constraints": {
               "allowedValues": [
+                {
+                  "label": "7.1.2",
+                  "value": "7.1.2"
+                },
                 {
                   "label": "7.1.1 (recommended)",
                   "value": "7.1.1"

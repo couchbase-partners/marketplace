@@ -25,7 +25,7 @@
     },
     "serverVersion": {
       "type": "string",
-      "defaultValue": "7.0.2"
+      "defaultValue": "7.1.2"
     },
     "vmSize": {
       "type": "string",
