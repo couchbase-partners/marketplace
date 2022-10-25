@@ -41,10 +41,12 @@ fi
 
 # Connection string should be param if passed
 if [[ -n "$CONNECTION_PARAM" ]]; then
-    az login --identity
+    until az login --identity --allow-no-subscriptions
+    do
+        echo "Failed Login.  Trying again."
+    done
     CONNECTION_STRING=$(az keyvault secret show --name "$CONNECTION_PARAM" --vault "$VAULT" | jq -r '.value')
 fi
-
 
 # if we don't have a connection string we need some default.. so we'll default to localhost
 if [[ -z "$CONNECTION_STRING" ]]; then

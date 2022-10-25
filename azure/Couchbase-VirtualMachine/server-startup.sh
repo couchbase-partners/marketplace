@@ -13,7 +13,10 @@ fi
 echo "Retrieving Metadata"
 METADATA=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01")
 
-az login --identity --allow-no-subscriptions
+until az login --identity --allow-no-subscriptions
+do
+    echo "Failed Login.  Trying again."
+done
 
 function __get_tag() {
     echo "$METADATA" | jq -r --arg param "$1" '.compute.tagsList[] | select(.name == $param) | .value'
