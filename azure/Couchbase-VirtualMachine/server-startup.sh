@@ -13,8 +13,15 @@ fi
 echo "Retrieving Metadata"
 METADATA=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01")
 
+RETRY=0
 until az login --identity --allow-no-subscriptions
 do
+    RETRY=$((RETRY+1))
+    if [[ "$RETRY" == "25" ]]; then
+        echo "Attempted 25 times.  Exiting"
+        exit 1
+    fi
+    sleep 1
     echo "Failed Login.  Trying again."
 done
 

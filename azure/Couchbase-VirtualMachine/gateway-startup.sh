@@ -41,8 +41,15 @@ fi
 
 # Connection string should be param if passed
 if [[ -n "$CONNECTION_PARAM" ]]; then
+    RETRY=0
     until az login --identity --allow-no-subscriptions
     do
+        RETRY=$((RETRY+1))
+        if [[ "$RETRY" == "25" ]]; then
+            echo "Attempted 25 times.  Exiting"
+            exit 1
+        fi
+        sleep 1
         echo "Failed Login.  Trying again."
     done
     CONNECTION_STRING=$(az keyvault secret show --name "$CONNECTION_PARAM" --vault "$VAULT" | jq -r '.value')
