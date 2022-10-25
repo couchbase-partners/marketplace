@@ -39,7 +39,7 @@ SERVER_VERSION=${SERVER_VERSION:-$SERVER_VERSION_DEFAULT}
 KEY_NAME=${KEY_NAME:-"couchbase-${REGION}"}
 USERNAME=${USERNAME:-"couchbase"}
 PASSWORD=${PASSWORD:-"foo123!"}
-SERVICES=${SERVICES:-"\"data\,index\,query\""}
+SERVICES=${SERVICES:-"\"data,index,query\""}
 
 ${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
                                  -o "${SCRIPT_DIR}/../../build/aws/CouchbaseServer/" \
