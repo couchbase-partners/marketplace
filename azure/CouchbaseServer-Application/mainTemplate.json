@@ -646,7 +646,7 @@
         "couchbase-server-rally-parameter": "cb-rally",
         "couchbase-server-services": "[couchbase.arrayToCSV(string(parameters('mdsConfig')[copyIndex()].colServices))]",
         "key-vault": "[couchbase.generateResourceName('vault', parameters('_now'))]",
-        "couchbase-server-disk": "0",
+        "couchbase-server-disk": "33",
         "couchbase-server-secret": "cb-secret"
       },
       "identity": {
@@ -683,7 +683,7 @@
             },
             "dataDisks": [
               {
-                "lun": 0,
+                "lun": 33,
                 "createOption": "Empty",
                 "managedDisk": {
                   "storageAccountType": "Premium_LRS"

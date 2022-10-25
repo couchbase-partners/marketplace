@@ -13,7 +13,17 @@ fi
 echo "Retrieving Metadata"
 METADATA=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance?api-version=2021-02-01")
 
-az login --identity --allow-no-subscriptions
+RETRY=0
+until az login --identity --allow-no-subscriptions
+do
+    RETRY=$((RETRY+1))
+    if [[ "$RETRY" == "25" ]]; then
+        echo "Attempted 25 times.  Exiting"
+        exit 1
+    fi
+    sleep 1
+    echo "Failed Login.  Trying again."
+done
 
 function __get_tag() {
     echo "$METADATA" | jq -r --arg param "$1" '.compute.tagsList[] | select(.name == $param) | .value'
@@ -36,7 +46,7 @@ if [[ -z "$DISK_LUN" ]]; then
     DISK_LUN=NA
 fi
 
-DISK=$(lsscsi --brief |  grep -G "\[[1-9]:0:0:$DISK_LUN\]" | awk -v col=2 '{print $col}')
+DISK=$(lsscsi | grep -G "\[[1-9]:0:0:0\]" | grep -v "Virtual CD/ROM" | awk -v col=7 '{print $col}')
 
 if [[ -z "$VERSION" ]]; then
     VERSION="$COUCHBASE_SERVER_VERSION"
