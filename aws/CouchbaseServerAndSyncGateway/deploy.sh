@@ -2,13 +2,15 @@
 
 set -eu
 
+function __generate_random_string() {
+    NEW_UUID=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 10 ; echo '')
+    echo "${NEW_UUID}"
+}
+
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%deploy.sh/}
 bash "${SCRIPT_SOURCE}makeArchives.sh"
 STACK_NAME=$1
 PRICING_TYPE=$2 #byol or hourlypricing
-TEMPLATE_BODY="file://${SCRIPT_SOURCE}../../build/aws/CouchbaseServerAndSyncGateway/aws-cbs-$PRICING_TYPE.template"
-echo "$TEMPLATE_BODY"
-#TEMPLATE_BODY="file://couchbase-$2.template"
 REGION=$(aws configure get region)
 echo "$REGION"
 if [ -z "$REGION" ]; then
@@ -28,11 +30,18 @@ VpcName=$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" | jq -r '.
 SubnetId=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VpcName}" --max-items 1 --region "$REGION" | jq -r '.Subnets[].SubnetId')
 #SubnetId=subnet-08476a90d895839b4
 
+TEMPLATE_BODY_FILE="${SCRIPT_SOURCE}/../../build/aws/CouchbaseServerAndSyncGateway/aws-cbs-$PRICING_TYPE.template"
+echo "$TEMPLATE_BODY_FILE"
+
+BUCKET="mp-test-templates$(__generate_random_string)"
+aws s3api create-bucket --acl public-read --bucket "$BUCKET" --region "$REGION"
+KEY="aws-cb-server$(__generate_random_string).template"
+aws s3api put-object --bucket "$BUCKET" --key "$KEY" --body "$TEMPLATE_BODY_FILE"
 
 aws cloudformation create-stack \
 --disable-rollback \
 --capabilities CAPABILITY_IAM \
---template-body "${TEMPLATE_BODY}" \
+--template-url "https://${BUCKET}.s3.amazonaws.com/${KEY}" \
 --stack-name "${STACK_NAME}" \
 --region "${REGION}" \
 --parameters \
