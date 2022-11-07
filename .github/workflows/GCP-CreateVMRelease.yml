@@ -20,12 +20,16 @@ on:
         default: "7.0.2"
       syncgateway:
         description: "Gateway (Y/N)?"
+        type: choice
         required: true
         default: "N"
+        options:
+          - "Y"
+          - "N"
       syncgatewayversion:
         description: "Couchbase Sync Gateway Version"
         required: true
-        default: "2.8.3"
+        default: "3.0.4"
       license:
         description: "Marketplace License"
         required: true
@@ -56,7 +60,7 @@ jobs:
         run: echo "$GITHUB_WORKSPACE"
       # Runs a set of commands using the runners shell
       - name: Create Couchbase Server Enterprise Image
-        if: ${{ github.event.inputs.name.syncgateway == 'N' }}
+        if: ${{ github.event.inputs.syncgateway == 'N' }}
         env:
           NAME: ${{github.event.inputs.name}}
           ZONE: ${{github.event.inputs.zone}}
@@ -75,7 +79,7 @@ jobs:
                                                                 -c "$FAMILY" \
                                                                 -v "$VERSION"
       - name: Create Couchbase Sync Gateway Image
-        if: ${{ github.event.inputs.name.syncgateway == 'Y' }}
+        if: ${{ github.event.inputs.syncgateway == 'Y' }}
         env:
           NAME: ${{github.event.inputs.name}}
           ZONE: ${{github.event.inputs.zone}}
