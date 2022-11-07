@@ -43,8 +43,10 @@ properties:
       - 6.0.0
   syncGatewayVersion:
     type: string
-    default: 2.8.2
+    default: 3.0.4
     enum:
+      - 3.0.4
+      - 3.0.3
       - 2.8.2
       - 2.8.0
       - 2.7.3
