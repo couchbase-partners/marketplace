@@ -66,6 +66,10 @@ if [[ -z "$SERVICES" ]]; then
    fi
 fi
 
+# If no version, use the default
+if [[ -z "$VERSION" ]]; then
+   VERSION="$COUCHBASE_SERVER_VERSION"
+fi
 
 
 if [[ -n "$SECRET" ]]; then

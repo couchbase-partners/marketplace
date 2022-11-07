@@ -11,8 +11,9 @@ function __generate_random_string() {
 
 REGION="us-east-1"
 INSTANCE_TYPE=m4.xlarge
+VERSION="7.1.1"
 
-while getopts r:t:i:u:p:e: flag
+while getopts r:t:i:u:p:e:v: flag
 do
     case "${flag}" in
         r) REGION=${OPTARG};;
@@ -21,6 +22,7 @@ do
         u) USERNAME=${OPTARG};;
         p) PASSWORD=${OPTARG};;
         e) PROFILE=${OPTARG};;
+        v) VERSION=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -48,7 +50,8 @@ AWS_RESPONSE=$(aws ec2 run-instances \
     --key-name "$KEY_NAME" \
     --region "$REGION" \
     --iam-instance-profile Name="$PROFILE" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG}, {Key=couchbase:server:username,Value=$USERNAME},{Key=couchbase:server:password,Value=$PASSWORD},{Key=couchbase:server:make_cluster,Value=true},{Key=couchbase:server:disk,Value=/dev/sdk},]" \
+    --metadata-options "HttpTokens=required,InstanceMetadataTags=enabled" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=identifier,Value=$TAG},{Key=name,Value=$TAG},{Key=couchbase:server:version,Value=$VERSION},{Key=couchbase:server:username,Value=$USERNAME},{Key=couchbase:server:password,Value=$PASSWORD},{Key=couchbase:server:make_cluster,Value=true},{Key=couchbase:server:disk,Value=/dev/sdk},]" \
     --block-device-mappings "DeviceName=/dev/sdk,Ebs={DeleteOnTermination=true,VolumeSize=100,VolumeType=gp3}" \
     --output json)
 
