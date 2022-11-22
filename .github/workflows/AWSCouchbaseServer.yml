@@ -113,4 +113,26 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: 'us-east-1'
-          AWS_REGION: 'us-east-1'          
+          AWS_REGION: 'us-east-1'
+      - name: Deploy To AWS (Graviton) Non-Defaults
+        timeout-minutes: 20
+        run: |
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/deploy.sh -n "cb-server-graviton-nondefaults-${GITHUB_SHA::6}" -v 7.1.0 
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          AWS_REGION: 'us-east-1'
+      - name: Run Graviton Tests
+        run: |
+          DNS=$(aws ec2 describe-instances --region us-east-1 --filter "Name=tag:aws:cloudformation:stack-name,Values=cb-server-graviton-nondefaults-${GITHUB_SHA::6}" | jq -r '.Reservations[0].Instances[0].PublicDnsName')
+          CouchbaseVerifier verify --host http://${DNS}:8091 -u couchbase -p foo123! -d ${GITHUB_WORKSPACE}/aws/CouchbaseServer-Graviton/Tests/NonDefaults.json       
+      - name: Teardown From AWS (Graviton)
+        timeout-minutes: 20
+        run: |
+            bash ${GITHUB_WORKSPACE}/aws/backout.sh "cb-server-graviton-nondefaults-${GITHUB_SHA::6}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+          AWS_REGION: 'us-east-1'                    
