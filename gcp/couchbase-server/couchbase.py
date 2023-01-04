@@ -14,6 +14,8 @@ def get_services(context):
         services += 'fts,'
     if context.properties['eventing']:
         services += 'eventing,'
+    if context.properties['analytics']:
+        services += 'analytics,'
     major = int(version[0])
     if major >= 7 and context.properties['backup']:
         services += "backup,"
@@ -63,7 +65,8 @@ def generate_config(context):
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
             'bootImage': bootDiskImage,
             'couchbaseServices': get_services(context),
-            'serviceAccount': context.properties['svcAccount']
+            'serviceAccount': context.properties['svcAccount'],
+            'existingRallyUrl': context.properties['existingRallyUrl']
         },
         'metadata': {
             "dependsOn": [ ]

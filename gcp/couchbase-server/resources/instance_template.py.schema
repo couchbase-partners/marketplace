@@ -55,6 +55,10 @@ properties:
   serviceAccount:
     type: string
     description: The service account the instance template should use.
+  existingRallyUrl:
+    type: string
+    description: The rally URL of an existing cluster if joining
+    default: ""
 
 outputs:
   templateName:

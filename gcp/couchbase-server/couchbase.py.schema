@@ -101,6 +101,9 @@ properties:
   imageName:
     type: string
     default: couchbase-server-hourly-pricing
+  existingRallyUrl:
+    type: string
+    default: ""
   data:
     type: boolean
     default: true

@@ -1,11 +1,10 @@
 imports:
   - path: couchbase.py
     name: couchbase.py
-
 resources:
   - name: test-couchbase-deployment
     type: couchbase.py
-    properties: 
+    properties:
       name: couchbase-server-test
       serverNodeCount: 3
       serverNodeType: n1-standard-4
