@@ -12,6 +12,8 @@ do
         *) exit 1;;
     esac
 done
+YQ_COMMAND=".resources[0].properties.name = \"$STACK_NAME\""
+yq -i "$YQ_COMMAND" "$SCRIPT_SOURCE/test_config.local.yaml"
 
 if [[ "$BYOL" == "0" ]]; then
     bash "${SCRIPT_SOURCE}/makeArchives.sh" "-n" "-l"
