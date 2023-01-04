@@ -10,7 +10,7 @@ description:
   eulaUrl: 'https://www.couchbase.com/ESLA05012022'
   documentations:
     - title: Getting Started on the GCP Marketplace
-      url: https://github.com/couchbase-partners/marketplace/blob/main/gcp/shared/README.md
+      url: https://docs.couchbase.com/server/current/cloud/couchbase-gcp-cloud-launcher.html
       destinations:
         - DESTINATION_SOLUTION_DETAILS
         - DESTINATION_CONFIGURATION
@@ -38,31 +38,14 @@ input:
     - name: services
       title: Couchbase Server services
       subtext: "Select services you would like running within your Couchbase Server Cluster."
+      section: server
 
   properties:
-    - name: data
-      title: Data
-      booleanGroup: services
-    - name: index
-      title: Index
-      booleanGroup: services
-    - name: query
-      title: Query
-      booleanGroup: services
-    - name: eventing
-      title: Eventing
-      booleanGroup: services
-    - name: analytics
-      title: Analytics
-      booleanGroup: services
-    - name: search
-      title: Full-Text Search
-      booleanGroup: services
-    - name: backup
-      title: Backup (version 7.0+)
-      booleanGroup: services
     - name: region
       title: Deployment region
+      section: networking
+    - name: defaultZone
+      title: Deployment Zone
       section: networking
     - name: network
       title: Cluster Network
@@ -93,10 +76,37 @@ input:
     - name: password
       title: Couchbase Admin Password
       section: server
+    - name: data
+      title: Data
+      booleanGroup: services
+    - name: index
+      title: Index
+      booleanGroup: services
+    - name: query
+      title: Query
+      booleanGroup: services
+    - name: eventing
+      title: Eventing
+      booleanGroup: services
+    - name: analytics
+      title: Analytics
+      booleanGroup: services
+    - name: search
+      title: Full-Text Search
+      booleanGroup: services
+    - name: backup
+      title: Backup (version 7.0+)
+      booleanGroup: services      
     - name: svcAccount
       title: Service Account
       subtext: Choose an existing or create a new service account for the Couchbase cluster.
       section: networking
+    - name: imageName
+      title: Couchbase Server Image name
+      section: server
+    - name: existingRallyUrl
+      title: Existing Cluster Rally URL
+      subtext: For usage in joining this deployment with an existing Couchbase Server cluster.
 
 runtime:
   deployingMessage: Deployment can take several minutes to complete.

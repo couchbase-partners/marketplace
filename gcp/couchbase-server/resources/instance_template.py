@@ -16,7 +16,21 @@ def generate_config(context):
     runtimeConfigName = context.properties['runtimeConfigName']
     couchbaseServices = context.properties['couchbaseServices']
     serviceAccount = context.properties['serviceAccount']
-
+    existingRally = context.properties['existingRallyUrl']
+    createCluster = str(existingRally == "").lower()
+    metadataItems = []
+    if existingRally:
+        metadataItems.append({ 'key': 'couchbase-server-rally-url', 'value': existingRally})
+    
+    metadataItems.append({ 'key': 'couchbase-server-version', 'value': serverVersion })
+    metadataItems.append({ 'key': 'couchbase-server-make-cluster', 'value': createCluster })
+    metadataItems.append({ 'key': 'couchbase-server-runtime-config', 'value': runtimeConfigName })
+    metadataItems.append({ 'key': 'couchbase-server-services', 'value': couchbaseServices })
+    metadataItems.append({ 'key': 'status-success-base-path', 'value': 'status/cluster/cb-cluster-{}/success'.format(suffix) })
+    metadataItems.append({ 'key': 'status-failure-base-path', 'value': 'status/cluster/cb-cluster-{}/failure'.format(suffix) })
+    metadataItems.append({ 'key': 'external-ip-variable-path', 'value': 'ExternalIp' })
+    metadataItems.append({ 'key': 'couchbase-server-disk', 'value': 'cb-server-data' })
+    
     instanceTemplate = {
         'name': 'cb-server-instance-template-{}'.format(suffix),
         'type': 'compute.v1.instanceTemplate',
@@ -52,16 +66,7 @@ def generate_config(context):
                     } 
                 }],
                 'metadata': {
-                    'items': [
-                        { 'key': 'couchbase-server-version', 'value': serverVersion },
-                        { 'key': 'couchbase-server-make-cluster', 'value': 'true' },
-                        { 'key': 'couchbase-server-runtime-config', 'value': runtimeConfigName },
-                        { 'key': 'couchbase-server-services', 'value': couchbaseServices },
-                        { 'key': 'status-success-base-path', 'value': 'status/cluster/cb-cluster-{}/success'.format(suffix) },
-                        { 'key': 'status-failure-base-path', 'value': 'status/cluster/cb-cluster-{}/failure'.format(suffix) },
-                        { 'key': 'external-ip-variable-path', 'value': 'ExternalIp' },
-                        { 'key': 'couchbase-server-disk', 'value': 'cb-server-data' },
-                    ]
+                    'items': metadataItems
                 },
                 'serviceAccounts': [{
                     'email': serviceAccount,
@@ -77,6 +82,9 @@ def generate_config(context):
             }
         }
     }
+
+
+    
     resources.append(instanceTemplate)
     outputs.append({
         'name': 'templateName',

@@ -120,14 +120,14 @@ fi
 # Determine Rally DNS
 rallyPublicDNS=$(__get_gcp_metadata_value "/instance/hostname") || rallyPublicDNS=$(hostname)
 # Rally DNS can be a few different things beyond the default
-# 1)  It can be the RALLY_PARAM's value (If we have a rally param but no RALLY_URL)
-if [[ -n "$RALLY_PARAM" ]] && [[ "$MAKE_CLUSTER" != "true" ]]; then
-    # Here we need to retrieve a value from a configuration and use it,  I'm sure this will be some set of curl event
-    rallyPublicDNS=$(gcloud secrets versions access latest --secret="$RALLY_PARAM")
-    # 2) It can be the rally url if they just tag with the url
-elif [[ -n "$RALLY_URL" ]]; then
+# 1) It can be the rally url if they just tag with the url
+if [[ -n "$RALLY_URL" ]]; then
     rallyPublicDNS="$RALLY_URL"
-    # 3) It can be the first instance of the auto scaling group that this instance belongs too.
+# 2)  It can be the RALLY_PARAM's value (If we have a rally param but no RALLY_URL)
+elif [[ -n "$RALLY_PARAM" ]] && [[ "$MAKE_CLUSTER" != "true" ]]; then
+# Here we need to retrieve a value from a configuration and use it,  I'm sure this will be some set of curl event
+    rallyPublicDNS=$(gcloud secrets versions access latest --secret="$RALLY_PARAM")
+# 3) It can be the first instance of the auto scaling group that this instance belongs too.
 elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
     # This is going to occur when we are part of a auto scaling unit and we need to "identify" what is the rally.  I think in GCP this is 
     # easier as we can "know" the rally before deploying.  Not 100% though
