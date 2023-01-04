@@ -14,7 +14,6 @@ CREATE_STACK_NAME="${STACK_NAME}-create"
 JOIN_STACK_NAME="${STACK_NAME}-join"
 
 # Step one is perform a deployment to create and read in the runtime config
-
 $SCRIPT_SOURCE/deploy.sh -b -n "$CREATE_STACK_NAME"
 
 JOIN_IP=$($SCRIPT_SOURCE/ip_retrieval.sh -n "$CREATE_STACK_NAME")
