@@ -38,7 +38,6 @@ input:
     - name: services
       title: Couchbase Server services
       subtext: "Select services you would like running within your Couchbase Server Cluster."
-      section: server
 
   properties:
     - name: region
