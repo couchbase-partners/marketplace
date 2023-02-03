@@ -78,34 +78,43 @@ input:
     - name: data
       title: Data
       booleanGroup: services
+      section: server
     - name: index
       title: Index
       booleanGroup: services
+      section: server
     - name: query
       title: Query
       booleanGroup: services
+      section: server
     - name: eventing
       title: Eventing
       booleanGroup: services
+      section: server
     - name: analytics
       title: Analytics
       booleanGroup: services
+      section: server
     - name: search
       title: Full-Text Search
       booleanGroup: services
+      section: server
     - name: backup
       title: Backup (version 7.0+)
-      booleanGroup: services      
+      booleanGroup: services
+      section: server      
     - name: svcAccount
       title: Service Account
       subtext: Choose an existing or create a new service account for the Couchbase cluster.
       section: networking
-    - name: imageName
-      title: Couchbase Server Image name
-      section: server
     - name: existingRallyUrl
       title: Existing Cluster Rally URL
       subtext: For usage in joining this deployment with an existing Couchbase Server cluster.
+      section: server
+    - name: imageName
+      title: Couchbase Server Image name
+      hidden: true
+      section: server
 
 runtime:
   deployingMessage: Deployment can take several minutes to complete.
