@@ -113,7 +113,6 @@ input:
       section: server
     - name: imageName
       title: Couchbase Server Image name
-      hidden: true
       section: server
 
 runtime:
