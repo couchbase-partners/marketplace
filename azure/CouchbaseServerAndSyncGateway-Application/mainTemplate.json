@@ -485,7 +485,7 @@
       "type": "Microsoft.Network/loadBalancers",
       "name": "[couchbase.generateResourceName('sg-lb')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2021-01-01",
+      "apiVersion": "2022-01-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
