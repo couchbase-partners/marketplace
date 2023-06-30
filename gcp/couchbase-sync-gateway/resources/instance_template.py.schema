@@ -9,8 +9,9 @@ properties:
     default: default
   serverVersion:
     type: string
-    default: 3.0.4
+    default: 3.0.5
     enum:
+      - 3.0.5
       - 3.0.4
       - 3.0.3
       - 2.8.3
