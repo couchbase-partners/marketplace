@@ -16,10 +16,19 @@ function __get_tag() {
     echo "$METADATA" | jq -r --arg param "$1" '.compute.tagsList[] | select(.name == $param) | .value'
 }
 
+RETRY=0
+until curl http://127.0.0.1:4984/
+do
+  RETRY=$((RETRY+1))
+  if [[ "$RETRY" == "25" ]]; then
+      break
+  fi
+  sleep 1
+done
 
-if curl http://127.0.0.1:4984/; then
-   echo "Server already running. Exiting"
-   exit 0
+if [[ "$RETRY" != "25" ]]; then
+    echo "Gateway Service already running, exiting"
+    sleep 1
 fi
 
 VAULT=$(__get_tag "key-vault")
