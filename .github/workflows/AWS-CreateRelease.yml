@@ -87,15 +87,34 @@ jobs:
                                  -m "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/mappings.json" \
                                  -o "$GITHUB_WORKSPACE/build/aws/CouchbaseSyncGateway/" \
                                  -n "aws-cb-syncgateway.template" \
-                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/couchbase-amzn-lnx2.template" 
+                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/couchbase-amzn-lnx2.template" \
+                                 -t "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/x86_instance_types.json"
       - name: Upload Gateway Template
-        id: upload-gateway-asset
+        id: upload-gateway-asset-x86
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with: 
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./build/aws/CouchbaseSyncGateway/aws-cb-syncgateway.template
-          asset_name: aws-cb-syncgateway.template
+          asset_name: aws-cb-syncgateway-x86.template
           asset_content_type: application/json
+      - name: Build Gateway aarch64 Template
+        run: |
+          bash $GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/makeArchives.sh \
+                                 -m "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/arm_mappings.json" \
+                                 -o "$GITHUB_WORKSPACE/build/aws/CouchbaseSyncGateway/" \
+                                 -n "aws-cb-syncgateway-aarch64.template" \
+                                 -i "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/couchbase-amzn-lnx2.template" \
+                                 -t "$GITHUB_WORKSPACE/aws/CouchbaseSyncGateway/arm_instance_types.json" 
+      - name: Upload Gateway Template
+        id: upload-gateway-asset-aarch64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with: 
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/aws/CouchbaseSyncGateway/aws-cb-syncgateway-aarch64.template
+          asset_name: aws-cb-syncgateway.template
+          asset_content_type: application/json          
         

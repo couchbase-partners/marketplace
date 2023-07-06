@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-while getopts m:s:o:t:i:n: flag
+while getopts m:o:t:i:n: flag
 do
     case "${flag}" in
         m) mapping_file=${OPTARG};;
         o) output=${OPTARG};;
         n) output_template_name=${OPTARG};;
         i) input_template=${OPTARG};;
+        t) instance_types=${OPTARG};;
         *) exit 1;;
     esac
 done
@@ -32,4 +33,9 @@ if [[ ! -f "$input_template" ]]; then
     exit 1
 fi
 
-jq --argjson map "$(jq -r < "$mapping_file")" '.Mappings = $map' < "${input_template}" > "${output}${output_template_name}"
+if [[ ! -f "$instance_types" ]]; then
+    echo "Invalid instance types"
+    exit1
+fi
+
+jq --argjson map "$(jq -r < "$mapping_file")" --argjson types "$(jq -r < "$instance_types")" '.Mappings = $map | .Parameters.SyncGatewayInstanceType = $types' < "${input_template}" > "${output}${output_template_name}"

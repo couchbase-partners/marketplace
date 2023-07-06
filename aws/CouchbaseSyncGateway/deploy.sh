@@ -14,8 +14,9 @@ SYNC_GATEWAY_INSTANCE_COUNT_DEFAULT=$(jq '.Parameters.SyncGatewayInstanceCount.D
 SYNC_GATEWAY_VERSION_DEFAULT=$(jq '.Parameters.SyncGatewayVersion.Default' "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" -r)
 DEFAULT_REGION=$(aws configure get region)
 KEY_NAME_DEFAULT="couchbase-${DEFAULT_REGION}"
+ARM=0
 
-while getopts n:c:v:u:b:d:k:r:p:l: flag
+while getopts n:c:v:u:b:d:k:r:p:l:a flag
 do
     case "${flag}" in
         n) STACK_NAME=${OPTARG};;
@@ -27,6 +28,7 @@ do
         r) REGION=${OPTARG};;
         p) PASSWORD=${OPTARG};;
         u) USERNAME=${OPTARG};;
+        a) ARM=1;;
         *) exit 1;;
     esac
 done
@@ -40,10 +42,20 @@ USERNAME=${USERNAME:-"couchbase"}
 PASSWORD=${PASSWORD:-"foo123!"}
 
 echo "Before Make Archives : $SCRIPT_DIR"
-${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
-                                 -o "${SCRIPT_DIR}/../../build/aws/CouchbaseSyncGateway/" \
-                                 -n "aws-cb-syncgateway.template" \
-                                 -i "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" 
+if [[ "$ARM" == "1" ]]; then
+    ${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/arm_mappings.json" \
+                                    -o "${SCRIPT_DIR}/../../build/aws/CouchbaseSyncGateway/" \
+                                    -n "aws-cb-syncgateway.template" \
+                                    -i "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" \
+                                    -t "${SCRIPT_DIR}/arm_instance_types.json"  
+else
+    ${SCRIPT_DIR}/makeArchives.sh -m "${SCRIPT_DIR}/mappings.json" \
+                                    -o "${SCRIPT_DIR}/../../build/aws/CouchbaseSyncGateway/" \
+                                    -n "aws-cb-syncgateway.template" \
+                                    -i "${SCRIPT_DIR}/couchbase-amzn-lnx2.template" \
+                                    -t "${SCRIPT_DIR}/x86_instance_types.json"
+fi
+
 TEMPLATE_BODY="file://${SCRIPT_DIR}/../../build/aws/CouchbaseSyncGateway/aws-cb-syncgateway.template"
 echo "$TEMPLATE_BODY"
 #TEMPLATE_BODY="file://couchbase-$2.template"
