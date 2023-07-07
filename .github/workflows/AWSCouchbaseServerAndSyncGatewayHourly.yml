@@ -43,7 +43,7 @@ jobs:
       - name: Deploy To AWS
         timeout-minutes: 20
         run: |
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly hourly-pricing 3 7.1.2 2 3.0.3
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly hourly-pricing 3 7.2.0 2 3.0.3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -85,7 +85,7 @@ jobs:
       - name: Deploy To AWS
         timeout-minutes: 20
         run: |
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly-no-sg hourly-pricing 3 7.1.2 0 2.8.3
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly-no-sg hourly-pricing 3 7.2.0 0 2.8.3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -127,7 +127,7 @@ jobs:
       - name: Deploy To AWS
         timeout-minutes: 15
         run: |
-            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly-no-cbs hourly-pricing 0 7.1.2 2 3.0.3
+            bash ${GITHUB_WORKSPACE}/aws/CouchbaseServerAndSyncGateway/deploy.sh cb-sg-mp-hourly-no-cbs hourly-pricing 0 7.2.0 2 3.0.3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
