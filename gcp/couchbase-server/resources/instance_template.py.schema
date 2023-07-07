@@ -9,8 +9,9 @@ properties:
     default: default
   serverVersion:
     type: string
-    default: 7.1.4
+    default: 7.2.0
     enum:
+      - 7.2.0
       - 7.1.4
       - 7.1.3
       - 7.1.2
@@ -27,14 +28,6 @@ properties:
       - 6.6.2
       - 6.6.1
       - 6.6.0
-      - 6.5.2
-      - 6.5.1
-      - 6.5.0
-      - 6.0.4
-      - 6.0.3
-      - 6.0.2
-      - 6.0.1
-      - 6.0.0
   serverDiskSize:
     type: integer
     default: 500
