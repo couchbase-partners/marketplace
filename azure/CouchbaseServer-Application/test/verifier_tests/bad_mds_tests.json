@@ -42,7 +42,7 @@
     },
     {
       "Name": "DiskStorage",
-      "ExpectedResult": "31"
+      "ExpectedResult": "28"
     },
     {
       "Name": "VersionValidator",
