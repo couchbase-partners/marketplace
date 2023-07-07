@@ -73,7 +73,7 @@ SERVER_STARTUP=$(sed -e "s~__USERNAME__~$USERNAME~g" "$SCRIPT_SOURCE/serverStart
 SECURITY_GROUP=$(az network nsg create --name "$VM_NAME-nsg" -g "$RESOURCE_GROUP" --location "$LOCATION")
 SEC_GROUP_NAME=$(echo "$SECURITY_GROUP" | jq -r '.NewNSG.name')
 export RULE=""
-RULE=$(az network nsg rule create --name "Couchbase Admin Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_Admin_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "100" \
                            -g "$RESOURCE_GROUP" \
@@ -86,7 +86,7 @@ RULE=$(az network nsg rule create --name "Couchbase Admin Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")
 
-RULE=$(az network nsg rule create --name "Couchbase Index Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_Index_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "101" \
                            -g "$RESOURCE_GROUP" \
@@ -99,7 +99,7 @@ RULE=$(az network nsg rule create --name "Couchbase Index Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")                     
 
-RULE=$(az network nsg rule create --name "Couchbase Analytics Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_Analytics_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "102" \
                            -g "$RESOURCE_GROUP" \
@@ -112,7 +112,7 @@ RULE=$(az network nsg rule create --name "Couchbase Analytics Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")
 
-RULE=$(az network nsg rule create --name "Couchbase FTS Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_FTS_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "103" \
                            -g "$RESOURCE_GROUP" \
@@ -125,7 +125,7 @@ RULE=$(az network nsg rule create --name "Couchbase FTS Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")
 
-RULE=$(az network nsg rule create --name "Couchbase Internal Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_Internal_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "104" \
                            -g "$RESOURCE_GROUP" \
@@ -138,7 +138,7 @@ RULE=$(az network nsg rule create --name "Couchbase Internal Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")
 
-RULE=$(az network nsg rule create --name "Couchbase XDCR Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_XDCR_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "105" \
                            -g "$RESOURCE_GROUP" \
@@ -151,7 +151,7 @@ RULE=$(az network nsg rule create --name "Couchbase XDCR Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")                           
 
-RULE=$(az network nsg rule create --name "Couchbase SSL Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_SSL_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "106" \
                            -g "$RESOURCE_GROUP" \
@@ -164,7 +164,7 @@ RULE=$(az network nsg rule create --name "Couchbase SSL Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")
 
-RULE=$(az network nsg rule create --name "Couchbase NDX Ports" \
+RULE=$(az network nsg rule create --name "Couchbase_NDX_Ports" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "107" \
                            -g "$RESOURCE_GROUP" \
@@ -177,7 +177,7 @@ RULE=$(az network nsg rule create --name "Couchbase NDX Ports" \
                            --source-address-prefixes "*" \
                            --destination-address-prefixes "*")                           
 
-RULE=$(az network nsg rule create --name "SSH Inbound" \
+RULE=$(az network nsg rule create --name "SSH_Inbound" \
                            --nsg-name "$SEC_GROUP_NAME" \
                            --priority "108" \
                            -g "$RESOURCE_GROUP" \
