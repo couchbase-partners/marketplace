@@ -63,7 +63,7 @@ SUBNET_ID=$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=${VPC_NAME}" -
 
 # Create Bucket
 BUCKET="mp-test-templates$(__generate_random_string)"
-aws s3api create-bucket --acl public-read --bucket "$BUCKET" --region "$REGION"
+aws s3api create-bucket --acl public-read --bucket "$BUCKET" --object-ownership BucketOwnerPreferred --region "$REGION"
 KEY="aws-cb-server$(__generate_random_string).template"
 aws s3api put-object --bucket "$BUCKET" --key "$KEY" --body "$TEMPLATE_BODY_FILE"
 
