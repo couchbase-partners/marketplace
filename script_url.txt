@@ -1,1 +1,1 @@
-https://github.com/couchbase-partners/marketplace-scripts/releases/download/v1.0.30/couchbase_installer.sh
+https://github.com/couchbase-partners/marketplace-scripts/releases/download/v1.0.31/couchbase_installer.sh

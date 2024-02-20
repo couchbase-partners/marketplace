@@ -1,6 +1,44 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
+function __compareVersions() {
+    if [[ $1 == "$2" ]]
+    then
+        echo 0
+        return
+    fi
+    local IFS=.
+
+    local i ver1 ver2
+    read -r -a ver1 <<< "$1"
+    read -r -a ver2 <<< "$2"
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            echo 1
+            return
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            echo -1
+            return
+        fi
+    done
+    echo 0
+    return
+}
+
 yum install jq aws-cfn-bootstrap -y -q
 
 VERSION=$1
@@ -87,9 +125,13 @@ else
     echo "Preinstalling Server"
     echo "#!/usr/bin/env sh
     export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
+    DOWNLOAD_URL="https://packages.couchbase.com/releases/$VERSION/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"
+    greaterThan722=$(__compareVersions "7.2.2" "$VERSION")
+    if [[ "$greaterThan722" -le "0" ]]; then
+      DOWNLOAD_URL="https://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise-${VERSION}-linux.${ARCHITECTURE}.rpm"
+    fi
     if [[ ! -f "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" ]]; then
-      wget -O "/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"  \
-          "https://packages.couchbase.com/releases/$VERSION/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm" --quiet
+      wget -O "/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm" "$DOWNLOAD_URL" --quiet
     else
       cp "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" "/setup/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm"
     fi
