@@ -91,14 +91,17 @@
         "ServerVersion": {
             "Description": "Couchbase Server Version",
             "Type": "String",
-            "Default": "7.2.0",
+            "Default": "7.2.4",
             "AllowedValues": [
                 "7.1.0",
                 "7.1.1",
                 "7.1.2",
                 "7.1.3",
                 "7.1.4",
-                "7.2.0"
+                "7.2.0",
+                "7.2.2",
+                "7.2.3",
+                "7.2.4"
             ]
         },
         "CoreInstanceType": {

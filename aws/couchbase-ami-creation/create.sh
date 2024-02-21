@@ -43,7 +43,7 @@ function __generate_random_string() {
 #Constants
 INSTANCE_TYPE=m4.xlarge
 SECURITY_GROUP=aws-ami-creation
-VERSION=7.0.2
+VERSION="7.2.4"
 BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 GATEWAY=0
 PACKAGE=""
