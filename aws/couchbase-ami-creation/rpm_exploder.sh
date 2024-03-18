@@ -126,16 +126,22 @@ else
     echo "#!/usr/bin/env sh
     export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
     DOWNLOAD_URL="https://packages.couchbase.com/releases/$VERSION/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"
+    FILE_NAME="couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"
     greaterThan722=$(__compareVersions "7.2.2" "$VERSION")
     if [[ "$greaterThan722" -le "0" ]]; then
       DOWNLOAD_URL="https://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise-${VERSION}-linux.${ARCHITECTURE}.rpm"
+      FILE_NAME="couchbase-server-enterprise-${VERSION}-linux.${ARCHITECTURE}.rpm"
     fi
-    if [[ ! -f "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" ]]; then
-      wget -O "/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm" "$DOWNLOAD_URL" --quiet
+    echo "File Name: $FILE_NAME"
+    echo $(test -f "/home/ec2-user/$FILE_NAME")
+    echo $(ls -l /home/ec2-user)
+
+    if [[ ! -f "/home/ec2-user/$FILE_NAME" ]]; then
+      wget -O "/setup/$FILE_NAME" "$DOWNLOAD_URL" --quiet
     else
-      cp "/home/ec2-user/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm" "/setup/couchbase-server-enterprise-${VERSION}-amzn2.${ARCHITECTURE}.rpm"
+      cp "/home/ec2-user/$FILE_NAME" "/setup/$FILE_NAME"
     fi
-    RPM="/setup/couchbase-server-enterprise-$VERSION-amzn2.${ARCHITECTURE}.rpm"
+    RPM="/setup/$FILE_NAME"
 fi
 
 echo "Installing prerequisites"

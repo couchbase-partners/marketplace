@@ -1,6 +1,45 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
+
+function __compareVersions() {
+    if [[ $1 == "$2" ]]
+    then
+        echo 0
+        return
+    fi
+    local IFS=.
+
+    local i ver1 ver2
+    read -r -a ver1 <<< "$1"
+    read -r -a ver2 <<< "$2"
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            echo 1
+            return
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            echo -1
+            return
+        fi
+    done
+    echo 0
+    return
+}
+
 until apt-get update > /dev/null; do
     echo "Error performing package repository update"
     sleep 1
@@ -96,15 +135,29 @@ _EOF
     DEB="/setup/couchbase-sync-gateway-enterprise_${VERSION}_x86_64.deb"
 else
     echo "Preinstalling Server"
+    ARCH=$(uname -m)
+    OS_VERSION="20.04"
+    if [[ "$ARCH" == "aarch64" ]]; then
+        ARCH=arm64
+    fi
+    if [[ "$ARCH" == "x86_64" ]]; then
+        ARCH=amd64
+    fi
+    download_url="http://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise_${VERSION}-ubuntu${OS_VERSION}_${ARCH}.deb"
+    file_path="/setup/couchbase-server-enterprise_${VERSION}-ubuntu${OS_VERSION}_${ARCH}.deb"
     echo "#!/usr/bin/env sh
     export COUCHBASE_SERVER_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
-    if [[ ! -f "./couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb" ]]; then
-      wget -O "/setup/couchbase-server-enterprise-$VERSION-ubuntu20.04_amd64.deb"  \
-          "http://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb"
-    else
-      cp "./couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb" "/setup/couchbase-server-enterprise-${VERSION}-ubuntu20.04_amd64.deb"
+    greaterThan722=$(__compareVersions "7.2.2" "$VERSION")
+    if [[ "$greaterThan722" -le "0" ]]; then
+        download_url="https://packages.couchbase.com/releases/${VERSION}/couchbase-server-enterprise_${VERSION}-linux_${ARCH}.deb"
+        file_path="/setup/couchbase-server-enterprise-${VERSION}-linux_${ARCH}.deb"
     fi
-    DEB="/setup/couchbase-server-enterprise-$VERSION-ubuntu20.04_amd64.deb"
+    if [[ ! -f "./couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb" ]]; then
+      wget -O "$file_path" "$download_url"
+    else
+      cp "./couchbase-server-enterprise_${VERSION}-ubuntu20.04_amd64.deb" "$file_path"
+    fi
+    DEB="$file_path"
 fi
 
 mkdir -p /setup/couchbase
