@@ -155,7 +155,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2021-12-01",
+      "apiVersion": "2022-07-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[couchbase.generateResourceName('networkSecurityGroups', parameters('_now'))]",
       "location": "[parameters('location')]",
@@ -210,7 +210,7 @@
       "name": "[parameters('vnet').name]",
       "type": "Microsoft.Network/virtualNetworks",
       "condition": "[equals(parameters('newOrExisting'), 'new')]",
-      "apiVersion": "2021-12-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', couchbase.generateResourceName('networkSecurityGroups', parameters('_now')))]"
@@ -235,7 +235,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip', parameters('_now'))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -248,7 +248,7 @@
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip-outbound', parameters('_now'))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -261,7 +261,7 @@
     {
       "type": "Microsoft.Network/loadBalancers",
       "name": "[couchbase.generateResourceName('sg-lb', parameters('_now'))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"

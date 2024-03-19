@@ -142,7 +142,7 @@
   },
   "resources": [
     {
-      "apiVersion": "2021-12-01",
+      "apiVersion": "2022-07-01",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[couchbase.generateResourceName('networkSecurityGroups')]",
       "location": "[parameters('location')]",
@@ -309,7 +309,7 @@
       "name": "[parameters('vnet').name]",
       "type": "Microsoft.Network/virtualNetworks",
       "condition": "[equals(parameters('newOrExisting'), 'new')]",
-      "apiVersion": "2021-12-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "tags": {
         "usedBy": "[parameters('location')]"
@@ -338,7 +338,7 @@
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "[couchbase.generateResourceName('server')]",
       "location": "[parameters('location')]",
-      "apiVersion": "2021-11-01",
+      "apiVersion": "2022-07-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]"
       ],
@@ -457,7 +457,7 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -471,7 +471,7 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[couchbase.generateResourceName('sg-lb-ip-outbound')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -485,7 +485,7 @@
       "type": "Microsoft.Network/loadBalancers",
       "name": "[couchbase.generateResourceName('sg-lb')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
-      "apiVersion": "2022-01-01",
+      "apiVersion": "2022-07-01",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
@@ -699,7 +699,7 @@
       "name": "[couchbase.generateResourceName('syncgateway')]",
       "condition": "[not(equals(parameters('syncGatewayNodeCount'), 0))]",
       "location": "[parameters('location')]",
-      "apiVersion": "2021-11-01",
+      "apiVersion": "2022-07-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet').name)]",
         "[resourceId('Microsoft.Network/loadBalancers', couchbase.generateResourceName('sg-lb'))]"
