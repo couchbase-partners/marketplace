@@ -65,6 +65,8 @@ def generate_config(context):
             'nameSuffix': suffix,
             'network': context.properties['network'],
             'serverVersion': context.properties['serverVersion'],
+            'serverInstanceType': context.properties['serverNodeType'],
+            'defaultZone': context.properties['defaultZone'],
             'runtimeConfigName': '$(ref.{}.runtimeConfigName)'.format(config['name']),
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
             'bootImage': bootDiskImage,
