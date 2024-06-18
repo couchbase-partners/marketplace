@@ -3,6 +3,8 @@ def generate_config(context):
     # All required parameters defined in the schema will be present on the context object.  This must return a
     # python dict with a structure that matches the API items found
     network = context.properties['network']
+    if isinstance(network, list):
+        network = network[0]
     suffix = context.properties['nameSuffix']
     project = context.env['project']
     sourceCidr = context.properties['accessCIDR']

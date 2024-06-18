@@ -49,17 +49,21 @@ def generate_config(context):
         'type': './resources/firewall_rule.py',
         'properties': {
             'nameSuffix': suffix,
-            'accessCIDR': context.properties['accessCIDR']
+            'accessCIDR': context.properties['accessCIDR'],
+            'network': context.properties['network']
         }
     }
     resources.append(firewallRule)
+    subnetwork = None
+    if 'subnetwork' in context.properties:
+        subnetwork = context.properties['subnetwork']
     bootDiskImage = 'projects/couchbase-public/global/images/' + context.properties['imageName']
     instanceTemplate = {
         'name': 'cb-server-instance-template-{}'.format(suffix),
         'type': './resources/instance_template.py',
         'properties': {
             'nameSuffix': suffix,
-            'network': 'default',
+            'network': context.properties['network'],
             'serverVersion': context.properties['serverVersion'],
             'runtimeConfigName': '$(ref.{}.runtimeConfigName)'.format(config['name']),
             'networkTag': '$(ref.{}.ruleTag)'.format(firewallRule['name']),
@@ -72,6 +76,8 @@ def generate_config(context):
             "dependsOn": [ ]
         }
     }
+    if subnetwork != None:
+        instanceTemplate['properties']['subnetwork'] = subnetwork
     resources.append(instanceTemplate)
     managedInstanceGroup = {
         'name': 'cb-server-instance-group-{}'.format(suffix),

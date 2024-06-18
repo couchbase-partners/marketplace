@@ -6,7 +6,13 @@ def generate_config(context):
     outputs = []
     project = context.env['project']
     network = context.properties['network']
-    network = 'projects/{}/global/networks/{}'.format(project, network)
+    if isinstance(network, list):
+         network = network[0]
+    if network == "default":
+            network = 'projects/{}/global/networks/{}'.format(project, network)
+    subnetwork = None
+    if 'subnetwork' in context.properties:
+        subnetwork = context.properties['subnetwork']
     networkTag = context.properties['networkTag']
     suffix = context.properties['nameSuffix']
     serverInstanceType = context.properties['serverInstanceType']
@@ -83,7 +89,8 @@ def generate_config(context):
         }
     }
 
-
+    if subnetwork != None:
+        instanceTemplate['properties']['properties']['networkInterfaces'][0]['subnetwork'] = subnetwork
     
     resources.append(instanceTemplate)
     outputs.append({
