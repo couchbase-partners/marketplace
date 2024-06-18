@@ -9,11 +9,6 @@ properties:
     default: [default]
     minItems: 1
     maxItems: 8
-    x-googleProperty:
-      type: GCE_NETWORK
-      gceNetwork:
-        allowSharedVpcs: True
-        machineTypeProperty: serverNodeType
   accessCIDR:
     type: string
     default: 0.0.0.0/0
