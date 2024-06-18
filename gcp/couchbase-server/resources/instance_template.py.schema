@@ -8,21 +8,11 @@ properties:
     type: array
     default: [default]
     minItems: 1
-    maxItems: 8
-    x-googleProperty:
-      type: GCE_NETWORK
-      gceNetwork:
-        allowSharedVpcs: True
-        machineTypeProperty: serverInstanceType      
+    maxItems: 8    
   subnetwork:
     type: array
     minItems: 1
     maxItems: 8
-    x-googleProperty:
-      type: GCE_SUBNETWORK
-      zoneProperty: defaultZone
-      gceSubnetwork:
-        networkProperty: network
   defaultZone:
     type: string
     default: us-central1-f        
