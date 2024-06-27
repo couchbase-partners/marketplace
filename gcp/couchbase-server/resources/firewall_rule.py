@@ -2,15 +2,15 @@ def generate_config(context):
     # Here is where work is done.  This method is what is called to retrieve a dictionary that represents the type.
     # All required parameters defined in the schema will be present on the context object.  This must return a
     # python dict with a structure that matches the API items found
+    suffix = context.properties['nameSuffix']
+    project = context.env['project']
     network = context.properties['network']
     if isinstance(network, list):
         network = network[0]
     if network == "default":
         network = 'projects/{}/global/networks/{}'.format(project, network)
-    suffix = context.properties['nameSuffix']
-    project = context.env['project']
+
     sourceCidr = context.properties['accessCIDR']
-    network = 'projects/{}/global/networks/{}'.format(project, network)
     tag = 'couchbase-server-{}'.format(suffix)
     resources = []
     output = []
