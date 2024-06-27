@@ -5,6 +5,10 @@ def generate_config(context):
     network = context.properties['network']
     if isinstance(network, list):
         network = network[0]
+    
+    if network == "default":
+            network = 'projects/{}/global/networks/{}'.format(project, network)
+    
     suffix = context.properties['nameSuffix']
     project = context.env['project']
     sourceCidr = context.properties['accessCIDR']
