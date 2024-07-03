@@ -21,7 +21,6 @@ def generate_config(context):
         'properties': {
             'network': network,
             'priority': 1000,
-            'project': project,
             'description': 'Firewall tag for Couchbase server,  allows ingress from {} CIDR and network tag: {}'.format(sourceCidr, tag),
             'sourceRanges': [sourceCidr],
             'destinationRanges': [],
