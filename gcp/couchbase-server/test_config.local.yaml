@@ -5,7 +5,7 @@ resources:
   - name: test-couchbase-deployment
     type: couchbase.py
     properties:
-      name: ja-test-stack
+      name: ja-test-deploy
       serverNodeCount: 3
       serverNodeType: n1-standard-4
       serverDiskSize: 20
