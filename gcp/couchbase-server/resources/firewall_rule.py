@@ -4,6 +4,7 @@ def generate_config(context):
     # python dict with a structure that matches the API items found
     suffix = context.properties['nameSuffix']
     project = context.env['project']
+    networkProject = project
     network = context.properties['network']
     if isinstance(network, list):
         network = network[0]
