@@ -10,6 +10,13 @@ def generate_config(context):
     if network == "default":
         network = 'projects/{}/global/networks/{}'.format(project, network)
 
+    if network.startswith("https://www.googleapis.com/compute/v1/projects/"):
+        startIndex = network.index("projects/") + 9
+        endIndex = network.index("/", startIndex)
+        networkProject = network[startIndex:endIndex]
+    
+    if project != networkProject:
+        project = networkProject
     sourceCidr = context.properties['accessCIDR']
     tag = 'couchbase-server-{}'.format(suffix)
     resources = []
@@ -23,6 +30,7 @@ def generate_config(context):
             'priority': 1000,
             'description': 'Firewall tag for Couchbase server,  allows ingress from {} CIDR and network tag: {}'.format(sourceCidr, tag),
             'sourceRanges': [sourceCidr],
+            'project': project,
             'destinationRanges': [],
             'targetTags': [tag],
             'sourceTags': [tag],
