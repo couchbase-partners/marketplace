@@ -11,7 +11,7 @@ function __generate_random_string() {
 
 REGION="us-east-1"
 INSTANCE_TYPE=m4.xlarge
-VERSION="7.1.1"
+VERSION="7.6.0"
 
 while getopts r:t:i:u:p:e:v: flag
 do

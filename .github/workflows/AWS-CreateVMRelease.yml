@@ -97,7 +97,7 @@ jobs:
                                                                 ${{ env.ARM  }}
 
       - name: Upload AMI details
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{github.event.inputs.name}}.json
           path: build/aws/couchbase-ami-creation/${{github.event.inputs.name}}.json
