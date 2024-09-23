@@ -50,14 +50,14 @@ jobs:
         run: bash ${GITHUB_WORKSPACE}/azure/Couchbase-VirtualMachine/create.sh -l eastus -g cb-mkt-artifacts -s cbmktvm$(date +%Y)$(date +%m)$(date +%d)$(date +%H)$(date +%M) -v "$VERSION" -m        
       - name: Upload VM Configuration
         if: ${{ github.event.inputs.syncgateway == 'N' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with: 
           name: ServerTechnicalConfiguration.json
           path: build/azure/Couchbase-VirtualMachine/ServerTechnicalConfiguration.json
           retention-days: 14
       - name: Upload VM Configuration
         if: ${{ github.event.inputs.syncgateway == 'Y' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with: 
           name: GatewayTechnicalConfiguration.json
           path: build/azure/Couchbase-VirtualMachine/GatewayTechnicalConfiguration.json

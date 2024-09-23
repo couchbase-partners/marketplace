@@ -1,49 +1,49 @@
 {
     "CouchbaseSyncGateway": {
         "ap-northeast-1": {
-            "AMI": "ami-049e4171fc41b65a4"
+            "AMI": "ami-0b503d985c2ecbdd3"
         },
         "ap-northeast-2": {
-            "AMI": "ami-02ecc6970684ba805"
+            "AMI": "ami-0515951e968307b79"
         },
         "ap-south-1": {
-            "AMI": "ami-07a4545fe977a8954"
+            "AMI": "ami-045d8b88af7f0e98e"
         },
         "ap-southeast-1": {
-            "AMI": "ami-0b9c71adee54742da"
+            "AMI": "ami-02ee375fb7cb88de2"
         },
         "ap-southeast-2": {
-            "AMI": "ami-01a134e0fc1ef74c4"
+            "AMI": "ami-0086bdd4a168549fa"
         },
         "ca-central-1": {
-            "AMI": "ami-03e21db52a6ac65ce"
+            "AMI": "ami-0c317e5d5759d69f4"
         },
         "eu-central-1": {
-            "AMI": "ami-0b7dfb4de1a1b7b04"
+            "AMI": "ami-072ef83398f7cac08"
         },
         "eu-west-1": {
-            "AMI": "ami-0e83024f8d0098cc9"
+            "AMI": "ami-05e714f4b44b9c742"
         },
         "eu-west-2": {
-            "AMI": "ami-09644677411a2b1ec"
+            "AMI": "ami-0a0374dbc51b8b986"
         },
         "eu-west-3": {
-            "AMI": "ami-09622e2345bb69348"
+            "AMI": "ami-036a6e7a4cc821cc7"
         },
         "sa-east-1": {
-            "AMI": "ami-0f8dba6877031a196"
+            "AMI": "ami-09eddc69d92b50cb5"
         },
         "us-east-1": {
-            "AMI": "ami-0d5ce9feb5b28c043"
+            "AMI": "ami-09971637fb45c8a9b"
         },
         "us-east-2": {
-            "AMI": "ami-0474dd4f41087b407"
+            "AMI": "ami-0dd6a561d5c9aa815"
         },
         "us-west-1": {
-            "AMI": "ami-05a4face7ebb06bec"
+            "AMI": "ami-021f67e6af8e1cd4a"
         },
         "us-west-2": {
-            "AMI": "ami-02590b4b831ab2dbb"
+            "AMI": "ami-057c3566934e592cb"
         }
     }
 }
