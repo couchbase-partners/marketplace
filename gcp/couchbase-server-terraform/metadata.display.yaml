@@ -1,0 +1,171 @@
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: couchbase-server-byol
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  info:
+    title: Couchbase Server BYOL
+    source:
+      repo: https://github.com/couchbase-partners/marketplace.git
+      sourceType: git
+      dir: /gcp/couchbase-server-terraform
+  ui:
+    input:
+      variables:
+        project_id:
+          name: project_id
+          title: Project Id
+          invisible: true
+        goog_cm_deployment_name:
+          name: goog_cm_deployment_name
+          title: Goog Cm Deployment Name
+        source_image:
+          name: source_image
+          title: Image Version
+          enumValueLabels:
+            - label: couchbase-server-byol-v20250316
+              value: projects/couchbase-public/global/images/couchbase-server-byol-v20250316
+          xGoogleProperty:
+            type: ET_GCE_DISK_IMAGE
+        machine_type:
+          name: machine_type
+          title: Couchbase Server Instance Type
+          xGoogleProperty:
+            type: ET_GCE_MACHINE_TYPE
+            zoneProperty: zone
+        boot_disk_type:
+          name: boot_disk_type
+          title: Boot disk type
+          section: disk
+          xGoogleProperty:
+            type: ET_GCE_DISK_TYPE
+            zoneProperty: zone
+        boot_disk_size:
+          name: boot_disk_size
+          title: Boot disk size in GB
+          min: 20
+          max: 10000
+          section: disk
+          xGoogleProperty:
+            type: ET_GCE_DISK_SIZE
+            gceDiskSize:
+              diskTypeVariable: boot_disk_type
+        data_disk_type:
+          name: boot_disk_type
+          title: Boot disk type
+          section: disk
+          xGoogleProperty:
+            type: ET_GCE_DISK_TYPE
+            zoneProperty: zone
+        data_disk_size:
+          name: boot_disk_size
+          title: Boot disk size in GB
+          min: 20
+          max: 10000
+          section: disk
+          xGoogleProperty:
+            type: ET_GCE_DISK_SIZE
+            gceDiskSize:
+              diskTypeVariable: boot_disk_type
+        zone:
+          name: zone
+          title: Zone
+          xGoogleProperty:
+            type: ET_GCE_ZONE
+        networks:
+          name: networks
+          title: Network name
+          minItems: 1
+          maxItems: 8
+          section: networking
+          xGoogleProperty:
+            type: ET_GCE_NETWORK
+            gceNetwork:
+              allowSharedVpcs: true
+              machineTypeVariable: machine_type
+        sub_networks:
+          name: subnetworks
+          title: Subnetwork name
+          minItems: 1
+          maxItems: 8
+          section: networking
+          xGoogleProperty:
+            type: ET_GCE_SUBNETWORK
+            zoneProperty: zone
+            gceSubnetwork:
+              networkVariable: networks
+        access_cidr:
+          name: access_cidr
+          title: Source IP Ranges for Couchbase Server traffic
+          tooltip: 'Traffic is only allowed from sources within these IP address ranges.  Use CIDR notation when entering ranges. <a href="https://cloud.google.com/compute/docs/networking#firewalls">Learn more</a>'
+          placeholder: '0.0.0.0/0, 192.169.0.2/24'
+          section: networking
+          xGoogleProperty:
+            type: ET_GCE_FIREWALL_RANGE
+            gceFirewallRange:
+              firewallVariable: couchbase-server
+        server_node_count:
+          name: server_node_count
+          title: Number of Couchbase Server Nodes
+          min: 1
+          max: 100
+          section: couchbase-server
+        server_username:
+          name: server_username
+          title: Couchbase Server Username
+          section: couchbase-server
+        server_password:
+          name: server_password
+          title: Couchbase Server Password
+          section: couchbase-server
+        server_version:
+          name: server_version
+          title: Couchbase Server Version
+          section: couchbase-server
+        existing_rally_url:
+          name: existing_rally_url
+          title: Existing Cluster Rally URL
+          subtext: "A url pointing at the admin port of an existing Couchbase Server cluster to join this deployment to"
+          section: couchbase-server
+        data_service:
+          name: data_service
+          title: Enable Data Service
+          section: services
+        query_service:
+          name: query_service
+          title: Enable Query Service
+          section: services
+        index_service:
+          name: index_service
+          title: Enable Index Service
+          section: services
+        eventing_service:
+          name: eventing_service
+          title: Enable Eventing Service
+          section: services
+        backup_service:
+          name: backup_service
+          title: Enable Integrated Backup Service
+          section: services
+        analytics_service:
+          name: analytics_service
+          title: Enable Analytics
+          section: services
+        fts_service:
+          name: fts_service
+          title: Enable Full Text Search
+          section: services                                                    
+      sections:
+        - name: disk
+          title: Disk Parameters
+          tooltip: Each instance requires a boot disk and data disk
+        - name: networking
+          title: Networking
+        - name: couchbase-server
+          title: Couchbase Server Configuration
+          subtext: Configuration for the Couchbase Server Deployment          
+        - name: services
+          title: Services per Node
+          subtext: Select what services you want present in the cluster.  You must choose data unless connecting to an existing cluster.
