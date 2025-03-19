@@ -27,25 +27,25 @@ done
 SCRIPT_SOURCE=${BASH_SOURCE[0]/%makeArchives.sh/}
 
 # Create temp directory
-mkdir -p "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
+mkdir -p "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/"
 
 
 
 # copy files into package directory
-cp -a "${SCRIPT_SOURCE}/." "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/"
+cp -a "${SCRIPT_SOURCE}/." "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/"
 
 # remove the archives creation tool
-rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/makeArchives.sh"
-rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.local.yaml"
-rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/deploy.sh"
-rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/backout.sh"
-rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/ip_retrieval.sh"
-rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_definitions/"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/makeArchives.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/test_config.local.yaml"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/deploy.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/backout.sh"
+rm "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/ip_retrieval.sh"
+rm -rf "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/test_definitions/"
 
 # If we are specifying local copy the test_config.local.yaml over the test_config.yaml
 if [[ "$LOCAL" == "1" ]]; then
     echo "Copying test_config.local.yaml"
-    cp -f "${SCRIPT_SOURCE}/test_config.local.yaml" "$SCRIPT_SOURCE../../build/gcp/couchbase-server/package/test_config.yaml"
+    cp -f "${SCRIPT_SOURCE}/test_config.local.yaml" "$SCRIPT_SOURCE../../build/gcp/couchbase-server-tf/package/test_config.yaml"
 fi
 
 # Here is where we need to change the files for byol if byol is set

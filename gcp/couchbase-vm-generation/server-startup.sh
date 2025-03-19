@@ -33,20 +33,10 @@ EXTERNAL_IP=$(__get_gcp_metadata_value "instance/network-interfaces/0/access-con
 echo "GCP External IP:  $EXTERNAL_IP"
 CONFIG=$(__get_gcp_attribute_value "couchbase-server-runtime-config")
 echo "GCP Config: $CONFIG"
-EXTERNAL_IP_VAR_PATH=$(__get_gcp_attribute_value "external-ip-variable-path")
-echo "GCP External Ip Var Path: $EXTERNAL_IP_VAR_PATH"
-SUCCESS_STATUS_PATH="$(__get_gcp_attribute_value "status-success-base-path")/$(hostname)"
-echo "GCP Success Status Path: $SUCCESS_STATUS_PATH"
-FAILURE_STATUS_PATH="$(__get_gcp_attribute_value "status-failure-base-path")/$(hostname)"
-echo "GCP Failure Status Path: $FAILURE_STATUS_PATH"
 NODE_PRIVATE_DNS=$(__get_gcp_metadata_value "instance/hostname")
 echo "GCP Node Private DNS: $NODE_PRIVATE_DNS"
 ZONE=$(wget -O - --header="Metadata-Flavor:Google" -q "http://metadata/computeMetadata/v1/instance/zone")
 REGION=$(gcloud compute zones describe "$ZONE" --format=json | jq -r '.region')
-
-if [[ -n "$EXTERNAL_IP_VAR_PATH" ]] && [[ -n "$CONFIG" ]]; then
-    gcloud beta runtime-config configs variables set "$EXTERNAL_IP_VAR_PATH" "$EXTERNAL_IP" --config-name="$CONFIG"
-fi
 
 VERSION=$(__get_gcp_attribute_value "couchbase-server-version")
 SECRET=$(__get_gcp_attribute_value "couchbase-server-secret")
@@ -132,21 +122,13 @@ elif [[ -n "$RALLY_AUTOSCALING_GROUP" ]]; then
     # This is going to occur when we are part of a auto scaling unit and we need to "identify" what is the rally.  I think in GCP this is 
     # easier as we can "know" the rally before deploying.  Not 100% though
     echo "Managed Instance Group?"
-    MANAGER=${RALLY_AUTOSCALING_GROUP##*/}
-    RALLY_INSTANCE=$(gcloud compute instance-groups list-instances "$MANAGER" --region="$REGION" --format=json | jq -r '.[0].instance')
-    COUNT=0
-    while [[ -z "$RALLY_INSTANCE" || "$RALLY_INSTANCE" == "null" ]] && [[ "$COUNT" -lt "10" ]]; do
-        sleep 0.1
-        COUNT=$((COUNT + 1))
-        RALLY_INSTANCE=$(gcloud compute instance-groups list-instances "$MANAGER" --region="$REGION" --format=json | jq -r '.[0].instance')
-    done
-    if [[ "$COUNT" == "10" && "$RALLY_INSTANCE" == "null" ]]; then
-        RALLY_INSTANCE=$(gcloud compute instance-groups list-instances "$MANAGER" --zone="$ZONE" --format=json | jq -r '.[0].instance')
-    fi
-    RALLY_IP=$(gcloud compute instances describe "$RALLY_INSTANCE" --format='json' | jq -r '.networkInterfaces[0].networkIP')
+    RALLY_IP=$(gcloud compute instances list \
+                    --filter="metadata.items.key['created-by']['value']='$RALLY_AUTOSCALING_GROUP'" \
+                    --sort-by=creationTimestamp \
+                    --format=json | jq -r '.[0].networkInterfaces[0].networkIP')
     while [[ -z "$RALLY_IP" ]]; do
         sleep 0.1
-        RALLY_IP=$(gcloud compute instances describe "$RALLY_INSTANCE" --format='json' | jq -r '.networkInterfaces[0].networkIP')
+        RALLY_IP=$(gcloud compute instances list --filter="metadata.items.key['created-by']['value']='$RALLY_AUTOSCALING_GROUP'" --sort-by=creationTimestamp --format=json | jq -r '.[0].networkInterfaces[0].networkIP')
     done
     rallyPublicDNS=$(dig +short -x "$RALLY_IP")
     rallyPublicDNS=${rallyPublicDNS%.}
@@ -208,8 +190,4 @@ if [[ "$MAKE_CLUSTER" == "true" ]] || [[ -n "$RALLY_PARAM" ]] || [[ -n "$RALLY_U
    SUCCESS=$?
 fi
 
-if [[ "$SUCCESS" == 0 && -n "$CONFIG" ]]; then
-    gcloud beta runtime-config configs variables set "$SUCCESS_STATUS_PATH" success --config-name="$CONFIG"
-elif [[ -n "$CONFIG" ]]; then
-    gcloud beta runtime-config configs variables set "$FAILURE_STATUS_PATH" failure --config-name="$CONFIG"
-fi
+echo "Success(0 is good, other numbers bad)? $SUCCESS"
