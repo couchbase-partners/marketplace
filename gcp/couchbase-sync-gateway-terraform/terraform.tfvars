@@ -1,0 +1,5 @@
+goog_cm_deployment_name = "test-deployment"
+zone = "us-central1-f"
+server_username = "couchbase"
+connection_string = "random.domain.com"
+bucket = "beer-sample"

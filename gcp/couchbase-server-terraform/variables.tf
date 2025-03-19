@@ -1,15 +1,21 @@
-variable "project_id" {}
-
+variable "project_id" {
+    type = string
+}
+#Required for Marketplace Deployments
+#tflint-ignore: terraform_unused_declarations
 variable "goog_cm_deployment_name" {
   type    = string
   default = "ja-test-value"
 }
 
 variable "region" {
+  type    = string
   default = "us-central1"
+
 }
 
 variable "zone" {
+  type    = string
   default = "us-central1-c"
 }
 
@@ -41,18 +47,18 @@ variable "machine_type" {
 }
 
 variable "boot_disk_type" {
-    type = string
-    default = "pd-ssd"
+  type    = string
+  default = "pd-ssd"
 }
 
 variable "boot_disk_size" {
-    type = string
-    default = "20"
+  type    = string
+  default = "20"
 }
 
 variable "data_disk_type" {
-    type = string
-    default = "pd-ssd"
+  type    = string
+  default = "pd-ssd"
 }
 
 variable "data_disk_size" {
