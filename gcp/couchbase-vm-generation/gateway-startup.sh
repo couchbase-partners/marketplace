@@ -120,6 +120,8 @@ export COUCHBASE_GATEWAY_VERSION=$VERSION" > /etc/profile.d/couchbaseserver.sh
 
 fi
 
+echo "Success (0 is good, 1 is bad)? $SUCCESS"
+
 if [[ -z "$CONFIG" ]]; then
   if [[ !  "$VERSION" =~ ^3 ]]; then
     mkdir -p /opt/sync_gateway/etc/
@@ -211,12 +213,6 @@ else
 fi
 
 service sync_gateway restart
-
-if [[ "$SUCCESS" == 0 && -n "$RUNTIME_CONFIG" ]]; then
-    gcloud beta runtime-config configs variables set "$SUCCESS_STATUS_PATH" success --config-name="$RUNTIME_CONFIG"
-elif [[ -n "$CONFIG" ]]; then
-    gcloud beta runtime-config configs variables set "$FAILURE_STATUS_PATH" failure --config-name="$RUNTIME_CONFIG"
-fi
 
 # We should be running by here. if not, RESTART!
 RUNNING=$(curl -s -o /dev/null -I -w "%{http_code}" http://localhost:4984)
