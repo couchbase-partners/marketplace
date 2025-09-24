@@ -11,7 +11,7 @@ LOCAL=0
 
 ARCHIVE_NAME="gcp-cbs-tf-archive.zip"
 IMAGE_FAMILY="couchbase-server-hourly-pricing"
-SERVICE_ACCOUNT="couchbase-server-hourly"
+
 while getopts bnl flag
 do
     case "${flag}" in
@@ -30,7 +30,6 @@ if [[ "$BYOL" == "1" ]]; then
     # update the c2d_deployment_configuration.json
     # update the test_config.yaml
     IMAGE_FAMILY="couchbase-server-byol"
-    SERVICE_ACCOUNT="couchbase-server-byol"
 fi
 
 IMAGE=$(gcloud compute images list --project couchbase-public --filter="family = $IMAGE_FAMILY" --format="value(NAME)" --sort-by="~creationTimestamp" --limit=1)
@@ -65,7 +64,7 @@ fi
 
 
 # Set the values in the metadata.display.yaml
-echo $IMAGE
+echo "$IMAGE"
 expression=".spec.ui.input.variables.source_image.enumValueLabels[0].label = \"$IMAGE\""
 yq e -i "$expression"  "${SCRIPT_SOURCE}../../build/gcp/couchbase-server-tf/package/metadata.display.yaml"
 expression=".spec.ui.input.variables.source_image.enumValueLabels[0].value = \"projects/couchbase-public/global/images/$IMAGE\""
@@ -77,6 +76,13 @@ echo "server_password = \"$random_string\"" >> "${SCRIPT_SOURCE}../../build/gcp/
 #Set the value in the variables.tf file
 IMAGE_VALUE="\"projects/couchbase-public/global/images/$IMAGE\""
 hcledit -f "${SCRIPT_SOURCE}../../build/gcp/couchbase-server-tf/package/variables.tf" -u attribute set "variable.source_image.default" "$IMAGE_VALUE"
+
+# Depending on BYOL or not, set title and other spots where it is different
+if [[ "$BYOL" == "1" ]]; then
+    yq e -i '.metadata.name = couchbase-server-byol' "${SCRIPT_SOURCE}../../build/gcp/couchbase-server-tf/package/metadata.display.yaml"
+    yq e -i '.metadata.name = couchbase-server-byol' "${SCRIPT_SOURCE}../../build/gcp/couchbase-server-tf/package/metadata.yaml"
+fi
+
 
 # Zip up the contents of the package into the archive
 if [[ "$NOZIP" == "0" ]]; then
