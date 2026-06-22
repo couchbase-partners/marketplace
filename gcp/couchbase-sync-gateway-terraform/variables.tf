@@ -60,15 +60,17 @@ variable "gateway_version" {
   default = "3.2.3"
   validation {
     condition = contains([
+      "3.3.0",
+      "3.2.6",
+      "3.2.5",
+      "3.2.4",
       "3.2.3",
       "3.2.2",
       "3.2.1",
       "3.2.0",
-      "3.1.11",
-      "3.0.8",
-      "2.8.3"
+      "3.1.12",
     ], var.gateway_version)
-    error_message = "Valid values for sync gateway version are: 3.2.3, 3.1.11, and 3.0.8"
+    error_message = "Valid values for sync gateway version are: 3.2.3, 3.1.12, and 3.3.0"
   }
 }
 

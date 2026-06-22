@@ -46,7 +46,7 @@ done
 # shellcheck disable=SC2034
 DEBIAN_FRONTEND=noninteractive
 echo "Installing Prequisites"
-until apt-get install --assume-yes apt-utils dialog python-httplib2 jq net-tools wget lsb-release apt-transport-https ca-certificates gnupg libtinfo5 -qq > /dev/null; do
+until apt-get install --assume-yes apt-utils dialog python3-httplib2 jq net-tools wget lsb-release apt-transport-https ca-certificates gnupg libtinfo6 -qq > /dev/null; do
     echo "Error during pre-requisite installation"
     sleep 1
 done
@@ -177,10 +177,7 @@ mkdir -p /setup/couchbase
 mkdir -p /setup/control
 dpkg-deb -x "$DEB" /setup/couchbase
 dpkg-deb -e "$DEB" /setup/control
-cp -r /setup/couchbase/etc/. /etc/
-if [[ "$SYNC_GATEWAY" -lt 1 ]]; then
-    cp -r /setup/couchbase/lib/. /lib/
-fi
+cp -r /setup/couchbase/lib/. /lib/
 cp -r /setup/couchbase/opt/. /opt/
 cp -r /setup/couchbase/usr/. /usr/
 

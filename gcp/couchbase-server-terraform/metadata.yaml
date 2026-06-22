@@ -20,7 +20,7 @@ spec:
             version: "20.04"
       - software:
         - title: Couchbase Server
-          version: "7.6.5"
+          version: "8.0.0"
   content: {}
   interfaces:
     variables:

@@ -74,7 +74,7 @@ jobs:
                                                                 -n "$NAME" \
                                                                 -z "$ZONE" \
                                                                 -p couchbase-public \
-                                                                -f ubuntu-2004-lts \
+                                                                -f ubuntu-2404-lts-amd64 \
                                                                 -i ubuntu-os-cloud \
                                                                 -c "$FAMILY" \
                                                                 -v "$VERSION"
@@ -93,7 +93,7 @@ jobs:
                                                                 -n "$NAME" \
                                                                 -z "$ZONE" \
                                                                 -p couchbase-public \
-                                                                -f ubuntu-2004-lts \
+                                                                -f ubuntu-2404-lts-amd64 \
                                                                 -i ubuntu-os-cloud \
                                                                 -c "$FAMILY" \
                                                                 -v "$VERSION" \
