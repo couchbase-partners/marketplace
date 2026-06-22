@@ -46,7 +46,7 @@
     },
     {
       "Name": "VersionValidator",
-      "ExpectedResult": "7.6.0"
+      "ExpectedResult": "8.0.0"
     }
   ]
 }

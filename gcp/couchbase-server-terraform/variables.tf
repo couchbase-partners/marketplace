@@ -72,9 +72,12 @@ variable "data_disk_size" {
 
 variable "server_version" {
   type    = string
-  default = "7.6.5"
+  default = "8.0.0"
   validation {
     condition = contains([
+      "8.0.0",
+      "7.6.7",
+      "7.6.6",
       "7.6.5",
       "7.6.4",
       "7.6.3",
@@ -91,12 +94,8 @@ variable "server_version" {
       "7.1.3",
       "7.1.2",
       "7.1.1",
-      "7.1.0",
-      "7.0.5",
-      "7.0.4",
-      "7.0.3",
-    "7.0.2", ], var.server_version)
-    error_message = "Valid values for server version are: 7.0.5, 7.1.4, 7.2.5, 7.6.5"
+      "7.1.0", ], var.server_version)
+    error_message = "Valid values for server version are: 7.1.4, 7.2.5, 7.6.7, 8.0.0"
   }
 }
 
@@ -112,7 +111,7 @@ variable "server_password" {
 
 variable "source_image" {
   type    = string
-  default = "projects/couchbase-public/global/images/couchbase-server-byol-v20250316"
+  default = "projects/couchbase-public/global/images/couchbase-server-byol-v20251027"
 }
 
 variable "existing_rally_url" {
