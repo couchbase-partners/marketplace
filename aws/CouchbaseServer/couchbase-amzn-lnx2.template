@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Couchbase Enterprise Edition Server on Amazon Linux 2 with Multi-Dimensional Scaling",
+    "Description": "Couchbase Enterprise Edition Server on Amazon Linux 2023 with Multi-Dimensional Scaling",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -66,6 +66,10 @@
     },
     "Mappings": {},
     "Parameters": {
+        "AMIId": {
+            "Type": "AWS::EC2::Image::Id",
+            "Default": "ami-081eef67c50925727"
+        },
         "CoreInstanceCount": {
             "Description": "Number of core Couchbase Server Nodes",
             "Type": "Number",
@@ -91,7 +95,7 @@
         "ServerVersion": {
             "Description": "Couchbase Server Version",
             "Type": "String",
-            "Default": "8.0.0",
+            "Default": "8.0.2",
             "AllowedValues": [
                 "6.6.6",
                 "6.6.5",
@@ -131,7 +135,13 @@
                 "7.6.5",
                 "7.6.6",
                 "7.6.7",
-                "8.0.0"
+                "7.6.8",
+                "7.6.9",
+                "7.6.10",
+                "7.6.11",
+                "8.0.0",
+                "8.0.1",
+                "8.0.2"
             ]
         },
         "CoreInstanceType": {
@@ -3260,13 +3270,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "CoreInstanceType"
@@ -3406,13 +3410,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "AnalyticsInstanceType"
@@ -3541,13 +3539,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "EventingInstanceType"
@@ -3676,13 +3668,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "SearchInstanceType"
@@ -3810,13 +3796,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "BackupInstanceType"
@@ -3944,13 +3924,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "DataInstanceType"
@@ -4078,13 +4052,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "IndexInstanceType"
@@ -4212,13 +4180,7 @@
                         "InstanceMetadataTags": "enabled"
                     },
                     "ImageId": {
-                        "Fn::FindInMap": [
-                            "CouchbaseServer",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "AMI"
-                        ]
+                        "Ref": "AMIId"
                     },
                     "InstanceType": {
                         "Ref": "QueryInstanceType"

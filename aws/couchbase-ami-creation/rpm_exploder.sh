@@ -146,7 +146,7 @@ fi
 
 echo "Installing prerequisites"
 # Install prerequistites
-sudo yum deplist "$RPM" | awk '/provider:/ {print $2}' | sort -u | xargs sudo yum -y install
+sudo yum deplist "$RPM" | awk '/provider:/ {print $2}' | sort -u | grep -v "couchbase" | xargs sudo yum -y install
 
 echo "Extracting Preinstall scripts"
 # Extract Pre-Install
