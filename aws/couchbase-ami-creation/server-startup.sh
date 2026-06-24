@@ -85,7 +85,7 @@ else
 fi
 
 # Rally DNS will default to self regardless.  We'll do --no-cluster if MAKE_CLUSTER != true
-rallyPublicDNS=$(__get_meta_data "public-hostname") || nodePublicDNS=$(hostname)
+rallyPublicDNS=$(__get_meta_data "public-hostname") || rallyPublicDNS=$(hostname)
 # Rally DNS can be a few different things beyond the default
 # 1)  It can be the RALLY_PARAM's value (If we have a rally param but no RALLY_URL)
 if [[ -n "$RALLY_PARAM" ]] && [[ "$MAKE_CLUSTER" != "true" ]]; then

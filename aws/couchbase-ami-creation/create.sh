@@ -44,7 +44,7 @@ function __generate_random_string() {
 INSTANCE_TYPE=m4.xlarge
 SECURITY_GROUP=aws-ami-creation
 VERSION="7.2.4"
-BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
 GATEWAY=0
 PACKAGE=""
 ARM=0
@@ -65,7 +65,7 @@ done
 # Check if we're using an ARM build.  This changes the INSTANCE_TYPE, The BASE AMI, and the structure of the installer name
 if [[ "$ARM"  == "1" ]]; then
     INSTANCE_TYPE=m6g.xlarge
-    BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-arm64-gp2
+    BASE_AMI_NAME=/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64
 fi
 
 # Create Output Folder

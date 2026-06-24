@@ -8,7 +8,7 @@ function __generate_random_string() {
 }
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-STACK_NAME_DEFAULT="cb_test_stack_$(__generate_random_string)"
+STACK_NAME_DEFAULT="cb-test-stack-$(__generate_random_string)"
 DEFAULT_REGION=$(aws configure get region)
 echo "$DEFAULT_REGION"
 if [ -z "$DEFAULT_REGION" ]; then
